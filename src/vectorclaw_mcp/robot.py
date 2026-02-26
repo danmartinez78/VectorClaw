@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -33,12 +34,18 @@ class RobotManager:
         The robot serial number is read from the ``VECTOR_SERIAL`` environment
         variable.  An optional IP address may be supplied via ``VECTOR_HOST``.
 
+        Connection attempts are retried on transient failures.  The maximum
+        number of retries is controlled by ``VECTOR_CONNECT_RETRIES`` (default
+        ``3``) and the initial delay between attempts by ``VECTOR_CONNECT_DELAY``
+        (default ``1.0`` seconds).  Each successive delay is doubled (exponential
+        backoff).
+
         Returns:
             A connected ``anki_vector.Robot`` object.
 
         Raises:
             RuntimeError: If ``VECTOR_SERIAL`` is not set.
-            Exception: If the robot SDK raises during connection.
+            Exception: If the robot SDK raises during connection after all retries.
         """
         with self._lock:
             if self._robot is not None:
@@ -57,10 +64,38 @@ class RobotManager:
             if host:
                 kwargs["ip"] = host
 
-            robot = anki_vector.Robot(**kwargs)
-            robot.connect()
-            self._robot = robot
-            return robot
+            max_retries = int(os.environ.get("VECTOR_CONNECT_RETRIES", "3"))
+            delay = float(os.environ.get("VECTOR_CONNECT_DELAY", "1.0"))
+
+            last_exc: Exception = RuntimeError("No connection attempt was made.")
+            for attempt in range(max_retries + 1):
+                try:
+                    robot = anki_vector.Robot(**kwargs)
+                    robot.connect()
+                    self._robot = robot
+                    return robot
+                except RuntimeError:
+                    raise
+                except Exception as exc:
+                    last_exc = exc
+                    if attempt < max_retries:
+                        logger.warning(
+                            "Failed to connect to robot (attempt %d/%d): %s. "
+                            "Retrying in %.1fs…",
+                            attempt + 1,
+                            max_retries + 1,
+                            exc,
+                            delay,
+                        )
+                        time.sleep(delay)
+                        delay *= 2
+                    else:
+                        logger.error(
+                            "Failed to connect to robot after %d attempt(s): %s",
+                            max_retries + 1,
+                            exc,
+                        )
+            raise last_exc
 
     def disconnect(self) -> None:
         """Disconnect from the robot if currently connected."""
