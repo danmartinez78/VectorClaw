@@ -1,7 +1,34 @@
-# VectorClaw
+<div align="center">
 
-**Anki Vector + OpenClaw integration via MCP.**  
-Give your AI assistant a body. VectorClaw is an MCP server that exposes Anki Vector robot capabilities as tools for AI assistants like OpenClaw.
+# 🤖 VectorClaw
+
+**Give your AI assistant a body.**
+
+VectorClaw is an [MCP](https://modelcontextprotocol.io) server that bridges [Anki Vector](https://www.digitaldreamlabs.com/pages/vector) robots and AI assistants like OpenClaw, exposing the robot's full capabilities as composable tools.
+
+[![PyPI](https://img.shields.io/pypi/v/vectorclaw-mcp?color=blue&label=PyPI)](https://pypi.org/project/vectorclaw-mcp/)
+[![Python](https://img.shields.io/pypi/pyversions/vectorclaw-mcp)](https://pypi.org/project/vectorclaw-mcp/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/protocol-MCP-8A2BE2)](https://modelcontextprotocol.io)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [How It Works](#how-it-works)
+- [Quick Start](#quick-start)
+- [Development](#development)
+- [MCP Client Configuration](#mcp-client-configuration)
+- [Available Tools](#available-tools)
+- [Roadmap](#roadmap)
+- [Community](#community)
+- [License](#license)
+
+---
+
+## How It Works
 
 ```
 ┌─────────────┐    stdio MCP    ┌──────────────────┐    SDK/WiFi    ┌─────────┐
@@ -10,7 +37,11 @@ Give your AI assistant a body. VectorClaw is an MCP server that exposes Anki Vec
 └─────────────┘                 └──────────────────┘                 └─────────┘
 ```
 
-## Setup
+The MCP server sits between your AI agent and the robot. The agent calls tools (e.g. `vector_say`, `vector_drive`) over stdio; the server translates each call into Anki Vector SDK commands sent to the robot over WiFi.
+
+---
+
+## Quick Start
 
 ### 1. Install
 
@@ -41,11 +72,30 @@ vectorclaw-mcp
 python -m vectorclaw_mcp
 ```
 
-## OpenClaw / mcporter configuration
+---
+
+## Development
+
+> **Devcontainer First** — the devcontainer is the canonical dev environment.
+
+1. Open this repo in VS Code.
+2. Run **Dev Containers: Reopen in Container**.
+3. Wait for `postCreateCommand` to finish (`pip install -e .[dev]`).
+4. Run the test suite:
+
+```bash
+pytest -q
+```
+
+Host-level installs are optional and mainly for quick one-off checks.
+
+---
+
+## MCP Client Configuration
 
 Add the following to your `mcporter.json` (or equivalent MCP client config).
 
-**With `uvx`** (no prior installation needed — recommended for MCP clients):
+**Recommended — `uvx`** (no prior installation needed):
 
 ```json
 {
@@ -61,7 +111,7 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 }
 ```
 
-**With `pip install`** (if you installed the package locally):
+**Alternative — `pip install`** (if you installed the package locally):
 
 ```json
 {
@@ -76,25 +126,46 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 }
 ```
 
+---
+
 ## Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `vector_say` | Make the robot speak text aloud |
-| `vector_animate` | Play a named animation |
-| `vector_drive` | Drive straight and/or turn in place |
-| `vector_look` | Capture an image from the front camera |
-| `vector_face` | Display a custom image on the face screen |
-| `vector_pose` | Get current position and orientation |
-| `vector_cube` | Interact with the cube accessory (dock/pickup/drop/roll) |
-| `vector_status` | Get battery level and charging status |
+| `vector_say` | 🔊 Make the robot speak text aloud |
+| `vector_animate` | 🎭 Play a named animation |
+| `vector_drive` | 🚗 Drive straight and/or turn in place |
+| `vector_look` | 📷 Capture an image from the front camera |
+| `vector_face` | 🖥️ Display a custom image on the face screen |
+| `vector_pose` | 📍 Get current position and orientation |
+| `vector_cube` | 🧊 Interact with the cube accessory (dock/pickup/drop/roll) |
+| `vector_status` | 🔋 Get battery level and charging status |
 
-## Future Considerations
+---
 
-- Audio recording from microphones
-- Object detection via camera
-- Multiple robot support
-- Personality modes (curious, shy, energetic)
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the full milestone plan. Highlights:
+
+- 🔬 **v0.2** — Hardware validation (all 8 tools on real robot)
+- 🛠️ **v0.3** — Code quality & test coverage ≥ 80%
+- 🔒 **v0.4** — Security hardening
+- 🚀 **v1.0** — Public release on PyPI
+
+**Future ideas:** audio recording · object detection · multi-robot support · personality modes · ROS2 integration
+
+---
+
+## Community
+
+| Resource | Link |
+|----------|------|
+| Contribution guide | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) |
+| Code of Conduct | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
+| Security policy | [SECURITY.md](SECURITY.md) |
+
+---
 
 ## License
 
