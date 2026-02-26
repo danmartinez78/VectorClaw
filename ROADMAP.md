@@ -131,7 +131,18 @@ Milestone-based development plan from alpha to public release.
 
 ## Long-term Vision: ROS2 Integration (v2.0)
 
-**Goal:** Transform Vector into a legitimate ROS2 robotics platform with autonomous navigation capabilities.
+**Key insight:** v1.0 IS autonomous. The agent queries camera, reasons about what it sees, and commands motion — a full Visual-Language-Action (VLA) loop via tools.
+
+**v2.0's purpose:** Give the agent classical robotics tools (SLAM, NAV2) so it operates at a higher level. Instead of "turn 90°, drive 500mm," the agent says "go to kitchen" and ROS2 handles the low-level execution.
+
+### Division of Labor
+
+| Version | Agent Role | Stack Role |
+|---------|------------|------------|
+| **v1.0** | Perception + Planning + Control (via tool calls) | SDK passthrough |
+| **v2.0** | High-level reasoning + goal-setting | Perception + Planning + Control (ROS2) |
+
+The agent shifts from low-level controller to high-level planner.
 
 ### Phase A: ROS2 Driver
 
@@ -149,7 +160,7 @@ Milestone-based development plan from alpha to public release.
 
 ### Phase B: Perception Stack
 
-**Goal:** Visual perception using ROS2 ecosystem
+**Goal:** Offload perception to ROS2 ecosystem
 
 **Exit Criteria:**
 - [ ] Visual SLAM integration (ORB-SLAM3, RTAB-Map, or similar)
@@ -158,11 +169,13 @@ Milestone-based development plan from alpha to public release.
 - [ ] AprilTag / ArUco detection
 - [ ] Point cloud generation (if applicable)
 
+**Agent benefit:** Queries map/objects instead of raw camera frames
+
 **Version:** v2.1.0
 
 ### Phase C: Navigation Stack
 
-**Goal:** Autonomous navigation using NAV2
+**Goal:** Offload path planning to NAV2
 
 **Exit Criteria:**
 - [ ] NAV2 integration
@@ -172,11 +185,13 @@ Milestone-based development plan from alpha to public release.
 - [ ] Waypoint following
 - [ ] Map persistence
 
+**Agent benefit:** Commands "navigate_to(kitchen)" instead of step-by-step motion
+
 **Version:** v2.2.0
 
 ### Phase D: Autonomy Layer
 
-**Goal:** High-level autonomous behaviors
+**Goal:** High-level behavior primitives
 
 **Exit Criteria:**
 - [ ] Behavior trees (BehaviorTree.CPP)
@@ -185,12 +200,14 @@ Milestone-based development plan from alpha to public release.
 - [ ] Docking automation
 - [ ] Patrol / exploration modes
 
+**Agent benefit:** Commands "patrol_area(living_room)" or "return_to_dock"
+
 **Version:** v2.3.0
 
 ---
 
 **Why this matters:**
-Vector becomes a **$250 ROS2 development platform** — accessible entry point for robotics education, research, and experimentation. Lower barrier than GO2 Pro, more capable than simulation alone.
+Vector becomes a **$250 ROS2 development platform** with an AI agent as the high-level brain. The agent focuses on reasoning and goals; ROS2 handles the robotics heavy lifting.
 
 **Dependencies:**
 - vector_ros2 driver maturity
