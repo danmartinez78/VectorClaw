@@ -2,6 +2,8 @@
 
 Milestone-based development plan from alpha to public release.
 
+**Target:** Public release by end of weekend (Sunday 2026-03-02)
+
 ---
 
 ## Current State: Alpha (v0.1.0)
@@ -72,36 +74,23 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
-## Milestone 4: Beta Release
-
-**Goal:** External validation with trusted testers
-
-**Exit Criteria:**
-- [ ] Public GitHub repo
-- [ ] Beta documentation complete
-- [ ] 3+ beta testers with positive feedback
-- [ ] No critical bugs reported
-- [ ] 2+ weeks of stable beta period
-
-**Version:** v0.5.0-beta
-
----
-
-## Milestone 5: Release Candidate
+## Milestone 4: Release Candidate
 
 **Goal:** Final polish
 
 **Exit Criteria:**
-- [ ] All beta feedback addressed
+- [ ] All feedback addressed
 - [ ] Documentation finalized (README, SETUP, TROUBLESHOOTING)
 - [ ] CHANGELOG.md created
-- [ ] 1 week RC period with no changes
+- [ ] 1-2 days stable period
 
 **Version:** v1.0.0-rc1
 
+**Note:** External beta testing deferred to post-release. Community feedback will guide v1.1+ improvements.
+
 ---
 
-## Milestone 6: Public Release
+## Milestone 5: Public Release
 
 **Goal:** Available to all users
 
@@ -110,8 +99,22 @@ Milestone-based development plan from alpha to public release.
 - [ ] ClawHub skill published
 - [ ] Documentation complete and validated
 - [ ] mcporter config documented
+- [ ] Repo made public
 
 **Version:** v1.0.0
+
+---
+
+## Sprint Plan (Thu 2/26 → Sun 3/2)
+
+| Day | Focus | Target |
+|-----|-------|--------|
+| **Thu PM** | Merge PR #1, Wire-Pod setup, Vector unboxing | v0.1.1 |
+| **Fri** | Vector SDK auth, test all 8 tools | v0.2.0 |
+| **Sat AM** | Address Copilot comments, security review | v0.3.0 |
+| **Sat PM** | Security hardening, edge cases | v0.4.0 |
+| **Sun AM** | Documentation, RC | v1.0.0-rc1 |
+| **Sun PM** | PyPI + ClawHub publish, repo public | v1.0.0 🎉 |
 
 ---
 
