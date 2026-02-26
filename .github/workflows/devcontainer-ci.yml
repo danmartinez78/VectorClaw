@@ -25,6 +25,6 @@ jobs:
       - name: Build dev container
         uses: devcontainers/ci@v0.3
         with:
-          imageName: ghcr.io/${{ github.repository }}/devcontainer
-          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+          imageName: ghcr.io/danmartinez78/vectorclaw/devcontainer
+          cacheFrom: ghcr.io/danmartinez78/vectorclaw/devcontainer
           push: never
