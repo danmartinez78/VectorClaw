@@ -9,6 +9,14 @@ and this project follows Semantic Versioning.
 
 ### Added
 
+- No notable changes yet.
+
+## [0.1.0] - 2026-02-26
+
+### Added
+
+- Initial MCP server implementation for Anki Vector control.
+- Core robot tools including speech, animation, drive, camera capture, face display, pose, cube actions, and status.
 - TestPyPI publishing workflow (`.github/workflows/release-testpypi.yml`) for safe release validation.
 - Contributor and governance docs (`CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, PR/issue templates).
 - GitHub automation for CI, devcontainer validation, release publishing, Dependabot, and CodeQL.
