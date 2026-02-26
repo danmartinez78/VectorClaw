@@ -44,8 +44,13 @@ Prefer concise Conventional Commit style prefixes:
 
 ## Releases
 
-Releases are published from GitHub Releases via `.github/workflows/release.yml`.
-Use a tagged release with release notes after CI passes on `main`.
+Always validate publishing on TestPyPI before publishing to production PyPI.
+
+1. Run `.github/workflows/release-testpypi.yml` from GitHub Actions (`workflow_dispatch`).
+2. Verify the package can be installed from TestPyPI.
+3. Publish a GitHub Release to trigger `.github/workflows/release.yml` for real PyPI.
+
+Both workflows use Trusted Publishing (OIDC), so configure pending publishers in both PyPI and TestPyPI.
 
 ## Community and Security
 
