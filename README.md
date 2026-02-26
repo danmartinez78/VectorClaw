@@ -114,6 +114,7 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 ## Community
 
 - Contribution guide: `CONTRIBUTING.md`
+- Changelog: `CHANGELOG.md`
 - Code of Conduct: `CODE_OF_CONDUCT.md`
 - Security policy: `SECURITY.md`
 

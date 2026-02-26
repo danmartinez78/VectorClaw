@@ -25,6 +25,7 @@ python -m build
 2. Keep commits focused and small.
 3. Open a pull request with a clear summary and testing notes.
 4. Ensure GitHub Actions checks pass.
+5. If behavior changes for users, add an entry under `## [Unreleased]` in `CHANGELOG.md`.
 
 ## Testing Guidance
 
@@ -51,6 +52,9 @@ Always validate publishing on TestPyPI before publishing to production PyPI.
 3. Publish a GitHub Release to trigger `.github/workflows/release.yml` for real PyPI.
 
 Both workflows use Trusted Publishing (OIDC), so configure pending publishers in both PyPI and TestPyPI.
+
+Before publishing a release, move relevant `## [Unreleased]` items from `CHANGELOG.md`
+into a new version section and include that summary in GitHub Release notes.
 
 ## Community and Security
 
