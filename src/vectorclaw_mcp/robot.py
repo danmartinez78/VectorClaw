@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -33,12 +34,23 @@ class RobotManager:
         The robot serial number is read from the ``VECTOR_SERIAL`` environment
         variable.  An optional IP address may be supplied via ``VECTOR_HOST``.
 
+        Connection attempts are retried on transient network failures
+        (``ConnectionError``, ``TimeoutError``, ``OSError``).  The maximum
+        number of retries is controlled by ``VECTOR_CONNECT_RETRIES`` (default
+        ``3``) and the initial delay between attempts by ``VECTOR_CONNECT_DELAY``
+        (default ``1.0`` seconds).  Each successive delay is doubled (exponential
+        backoff).  ``RuntimeError`` and other non-transient exceptions are
+        re-raised immediately without retrying.
+
         Returns:
             A connected ``anki_vector.Robot`` object.
 
         Raises:
-            RuntimeError: If ``VECTOR_SERIAL`` is not set.
-            Exception: If the robot SDK raises during connection.
+            RuntimeError: If ``VECTOR_SERIAL`` is not set, or if
+                ``VECTOR_CONNECT_RETRIES``/``VECTOR_CONNECT_DELAY`` contain
+                invalid (negative) values.
+            ConnectionError | TimeoutError | OSError: If the robot is
+                unreachable after all retry attempts.
         """
         with self._lock:
             if self._robot is not None:
@@ -57,10 +69,48 @@ class RobotManager:
             if host:
                 kwargs["ip"] = host
 
-            robot = anki_vector.Robot(**kwargs)
-            robot.connect()
-            self._robot = robot
-            return robot
+            max_retries = int(os.environ.get("VECTOR_CONNECT_RETRIES", "3"))
+            delay = float(os.environ.get("VECTOR_CONNECT_DELAY", "1.0"))
+            if max_retries < 0:
+                raise RuntimeError(
+                    f"Invalid VECTOR_CONNECT_RETRIES={max_retries!r}: value must be >= 0."
+                )
+            if delay < 0:
+                raise RuntimeError(
+                    f"Invalid VECTOR_CONNECT_DELAY={delay!r}: value must be >= 0."
+                )
+
+            last_exc: Exception = OSError("Connection failed.")
+            for attempt in range(max_retries + 1):
+                robot = anki_vector.Robot(**kwargs)
+                try:
+                    robot.connect()
+                    self._robot = robot
+                    return robot
+                except (ConnectionError, TimeoutError, OSError) as exc:
+                    last_exc = exc
+                    try:
+                        robot.disconnect()
+                    except Exception:
+                        pass
+                    if attempt < max_retries:
+                        logger.warning(
+                            "Failed to connect to robot (attempt %d/%d): %s. "
+                            "Retrying in %.1fs…",
+                            attempt + 1,
+                            max_retries + 1,
+                            exc,
+                            delay,
+                        )
+                        time.sleep(delay)
+                        delay *= 2
+                    else:
+                        logger.error(
+                            "Failed to connect to robot after %d attempt(s): %s",
+                            max_retries + 1,
+                            exc,
+                        )
+            raise last_exc
 
     def disconnect(self) -> None:
         """Disconnect from the robot if currently connected."""
