@@ -111,6 +111,12 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 - Multiple robot support
 - Personality modes (curious, shy, energetic)
 
+## Community
+
+- Contribution guide: `CONTRIBUTING.md`
+- Code of Conduct: `CODE_OF_CONDUCT.md`
+- Security policy: `SECURITY.md`
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

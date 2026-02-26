@@ -46,3 +46,8 @@ Prefer concise Conventional Commit style prefixes:
 
 Releases are published from GitHub Releases via `.github/workflows/release.yml`.
 Use a tagged release with release notes after CI passes on `main`.
+
+## Community and Security
+
+- Follow the project Code of Conduct in `CODE_OF_CONDUCT.md`.
+- Report vulnerabilities via `SECURITY.md` instead of public issues.
