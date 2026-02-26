@@ -73,9 +73,9 @@ def reset_robot_manager():
     """Ensure the robot_manager singleton is reset between tests."""
     from vectorclaw_mcp.robot import robot_manager
 
-    robot_manager._robot = None
+    robot_manager.reset()
     yield
-    robot_manager._robot = None
+    robot_manager.reset()
 
 
 @pytest.fixture()
@@ -141,6 +141,7 @@ def test_vector_drive_turn(mock_robot):
     mock_robot.behavior.drive_straight.assert_not_called()
     mock_robot.behavior.turn_in_place.assert_called_once_with(90)
     assert result["status"] == "ok"
+    assert result["angle_deg"] == 90
 
 
 def test_vector_drive_both(mock_robot):
@@ -271,3 +272,83 @@ def test_robot_manager_disconnect_noop():
     mgr = RobotManager()
     mgr.disconnect()  # should not raise
     assert not mgr.is_connected
+
+
+# ---------------------------------------------------------------------------
+# Additional edge-case tests
+# ---------------------------------------------------------------------------
+
+def test_vector_look_no_latest_image(mock_robot):
+    """vector_look() returns an error when the camera has no image yet."""
+    from vectorclaw_mcp.tools import vector_look
+
+    mock_robot.camera.latest_image = None
+
+    result = vector_look()
+
+    assert result["status"] == "error"
+    assert "No camera image" in result["message"]
+
+
+def test_vector_look_initialises_camera_feed_once(mock_robot):
+    """The camera feed is initialized only on the first vector_look() call."""
+    from vectorclaw_mcp.tools import vector_look
+
+    vector_look()
+    vector_look()
+
+    mock_robot.camera.init_camera_feed.assert_called_once()
+
+
+def test_vector_face_invalid_base64(mock_robot):
+    """vector_face() returns an error for invalid base64 input."""
+    from vectorclaw_mcp.tools import vector_face
+
+    result = vector_face("not-valid-base64!!!")
+
+    assert result["status"] == "error"
+    assert "Invalid image data" in result["message"]
+
+
+def test_vector_face_invalid_duration(mock_robot):
+    """vector_face() returns an error when duration_sec is out of range."""
+    import base64 as b64
+    import io
+    from PIL import Image as PILImage
+    from vectorclaw_mcp.tools import vector_face
+
+    img = PILImage.new("RGB", (10, 10))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    encoded = b64.b64encode(buf.getvalue()).decode("ascii")
+
+    result = vector_face(encoded, duration_sec=-1.0)
+
+    assert result["status"] == "error"
+    assert "duration_sec" in result["message"]
+
+
+def test_vector_cube_no_cube_connected(mock_robot):
+    """vector_cube() returns an error when no cube is connected."""
+    from vectorclaw_mcp.tools import vector_cube
+
+    mock_robot.world.connected_light_cube = None
+
+    result = vector_cube("dock")
+
+    assert result["status"] == "error"
+    assert "No cube is connected" in result["message"]
+
+
+def test_call_tool_exception_becomes_error(mock_robot, monkeypatch):
+    """Exceptions raised by a tool are caught and returned as error results."""
+    import asyncio
+    from vectorclaw_mcp import tools as tools_mod, server
+
+    monkeypatch.setattr(tools_mod, "vector_status", lambda: 1 / 0)
+
+    result = asyncio.run(server.call_tool("vector_status", {}))
+    data = json.loads(result[0].text)
+
+    assert data["status"] == "error"
+    assert "division by zero" in data["message"]

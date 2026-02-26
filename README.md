@@ -43,7 +43,9 @@ python -m vectorclaw_mcp
 
 ## OpenClaw / mcporter configuration
 
-Add the following to your `mcporter.json` (or equivalent MCP client config):
+Add the following to your `mcporter.json` (or equivalent MCP client config).
+
+**With `uvx`** (no prior installation needed — recommended for MCP clients):
 
 ```json
 {
@@ -51,6 +53,21 @@ Add the following to your `mcporter.json` (or equivalent MCP client config):
     "vectorclaw": {
       "command": "uvx",
       "args": ["vectorclaw-mcp"],
+      "env": {
+        "VECTOR_SERIAL": "your-serial-here"
+      }
+    }
+  }
+}
+```
+
+**With `pip install`** (if you installed the package locally):
+
+```json
+{
+  "mcpServers": {
+    "vectorclaw": {
+      "command": "vectorclaw-mcp",
       "env": {
         "VECTOR_SERIAL": "your-serial-here"
       }
