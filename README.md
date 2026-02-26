@@ -18,6 +18,21 @@ Give your AI assistant a body. VectorClaw is an MCP server that exposes Anki Vec
 pip install vectorclaw-mcp
 ```
 
+## Development (Devcontainer First)
+
+For contributor setup, use the devcontainer as the default environment.
+
+1. Open this repo in VS Code.
+2. Run `Dev Containers: Reopen in Container`.
+3. Wait for `postCreateCommand` to finish (`pip install -e .[dev]`).
+4. Run tests in the container:
+
+```bash
+pytest -q
+```
+
+Host-level installs are optional and mainly for quick one-off checks.
+
 ### 2. Configure Vector
 
 Run the Vector SDK configuration wizard once to authenticate with your robot:

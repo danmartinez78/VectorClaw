@@ -15,6 +15,13 @@ dependencies = [
     "Pillow>=9.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "build>=1.2.0",
+    "twine>=5.0.0",
+]
+
 [project.scripts]
 vectorclaw-mcp = "vectorclaw_mcp.server:main"
 
