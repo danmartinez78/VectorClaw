@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm
+FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm
 
 # Keep image lean but include common build tooling for Python packages.
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
