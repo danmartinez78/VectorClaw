@@ -238,9 +238,10 @@ If you want to try the official Digital Dream Labs cloud first:
 
 Once Vector is on your WiFi and Wire-Pod is running, configure the Python SDK.
 
-### Option A: Standard SDK Config (Works with Wire-Pod)
+### Option A: Wire-Pod SDK (Canonical — Recommended)
 
-Wire-Pod acts as a local server, so the SDK can authenticate against it:
+`wirepod_vector_sdk` is the officially supported SDK for VectorClaw. It is
+compatible with Wire-Pod out of the box and works on modern Python runtimes.
 
 ```bash
 # Create venv for Vector work
@@ -248,19 +249,32 @@ python3 -m venv ~/.venv/vector
 source ~/.venv/vector/bin/activate
 
 # Install SDK
-pip install anki_vector
+pip install wirepod_vector_sdk
 
-# Run configuration
-python -m anki_vector.configure
+# Run configuration wizard
+python -m wirepod_vector_sdk.configure
 ```
 
 **When prompted:**
-- Serial number: Enter your Vector's serial
-- Account: If Wire-Pod is running locally, it may accept local credentials
+- Serial number: Enter your Vector's serial (printed on the underside of the robot)
+- The wizard will download the cert from your running Wire-Pod instance automatically
 
-### Option B: Manual Config File
+### Option B: Legacy anki_vector SDK (Best-Effort Only)
 
-If SDK configuration fails, create the config manually:
+> ⚠️ **Legacy / best-effort support only.** The `anki_vector` SDK is brittle on
+> modern Python runtimes and requires working DDL cloud servers.  Use it only if
+> you have a specific reason to do so.
+
+```bash
+pip install "vectorclaw-mcp[legacy]"   # installs anki_vector alongside vectorclaw-mcp
+
+# Run legacy configuration wizard
+python -m anki_vector.configure
+```
+
+### Option C: Manual Config File
+
+If the SDK configuration wizard fails, create the config file manually:
 
 ```bash
 mkdir -p ~/.anki_vector
@@ -276,7 +290,7 @@ EOF
 
 **For Wire-Pod, certificates are generated during authentication.** Check the Wire-Pod data directory for cert files.
 
-### Option C: Extract Cert from Wire-Pod
+### Option D: Extract Cert from Wire-Pod
 
 Wire-Pod stores certificates after bot authentication:
 
@@ -298,10 +312,10 @@ cp ~/wire-pod/chipper/certs/<serial>.cert ~/.anki_vector/
 # Activate venv
 source ~/.venv/vector/bin/activate
 
-# Test connection
+# Test connection (Wire-Pod SDK — canonical)
 python -c "
-import anki_vector
-robot = anki_vector.Robot(serial='YOUR_SERIAL')
+import wirepod_vector_sdk as sdk
+robot = sdk.Robot(serial='YOUR_SERIAL')
 robot.connect()
 robot.behavior.say_text('Hello, I am Vector!')
 print('Connection successful!')
@@ -460,8 +474,8 @@ Tachi should call `vector_say` and Vector should speak.
 # Find Vector on network
 nmap -sP 192.168.1.0/24 | grep -B2 -i vector
 
-# Test SDK connection
-python -c "import anki_vector; r=anki_vector.Robot('SERIAL'); r.connect(); print('OK'); r.disconnect()"
+# Test SDK connection (Wire-Pod SDK — canonical)
+python -c "import wirepod_vector_sdk as sdk; r=sdk.Robot('SERIAL'); r.connect(); print('OK'); r.disconnect()"
 
 # Start Wire-Pod
 sudo systemctl start wire-pod
@@ -481,11 +495,12 @@ cat ~/.anki_vector/*.conf
 ## Resources
 
 - [VectorClaw Repository](https://github.com/danmartinez78/VectorClaw)
-- [Vector Python SDK](https://github.com/anki/vector-python-sdk)
-- [Vector SDK Docs](https://developer.anki.com/vector/docs/index.html)
+- [Wire-Pod Vector SDK (wirepod_vector_sdk)](https://github.com/kercre123/vector-python-sdk)
 - [Wire-Pod GitHub](https://github.com/kercre123/wire-pod)
 - [Wire-Pod Wiki](https://github.com/kercre123/wire-pod/wiki)
 - [Wire-Pod Setup Tool](https://wpsetup.keriganc.com/)
+- [Vector Python SDK (legacy)](https://github.com/anki/vector-python-sdk)
+- [Vector SDK Docs (legacy)](https://developer.anki.com/vector/docs/index.html)
 - [awesome-anki-vector](https://github.com/open-ai-robot/awesome-anki-vector)
 
 ---

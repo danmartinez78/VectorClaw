@@ -18,13 +18,21 @@ Give your AI assistant a body. VectorClaw is an MCP server that exposes Anki Vec
 pip install vectorclaw-mcp
 ```
 
-### 2. Configure Vector
+### 2. Configure Vector (Wire-Pod — recommended)
 
-Run the Vector SDK configuration wizard once to authenticate with your robot:
+[Wire-Pod](https://github.com/kercre123/wire-pod) is the canonical, self-hosted server
+for Vector.  After pairing your robot with Wire-Pod, install the Wire-Pod Python SDK and
+run its configuration wizard:
 
 ```bash
-python -m anki_vector.configure
+pip install wirepod_vector_sdk
+python -m wirepod_vector_sdk.configure
 ```
+
+> **Legacy cloud path (best-effort only):** If you are using the legacy `anki_vector`
+> SDK against a DDL cloud account, install it separately
+> (`pip install "vectorclaw-mcp[legacy]"`) and run `python -m anki_vector.configure`.
+> This path is not officially supported and may break on newer Python runtimes.
 
 ### 3. Set environment variables
 
