@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vectorclaw-mcp"
+version = "0.1.0"
+description = "MCP server connecting Anki Vector robots to AI assistants"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "anki_vector>=0.6.0",
+    "Pillow>=9.0.0",
+]
+
+[project.scripts]
+vectorclaw-mcp = "vectorclaw_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/danmartinez78/VectorClaw"
+Repository = "https://github.com/danmartinez78/VectorClaw"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectorclaw_mcp"]
