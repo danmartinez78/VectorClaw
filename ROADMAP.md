@@ -118,14 +118,84 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
-## Future Considerations
+## Future Considerations (v1.x)
 
-**Not in v1.0:**
+**Near-term enhancements:**
 - Audio recording from microphones
 - Object detection via camera
 - Multiple robot support
 - Personality modes
 - Voice command passthrough
+
+---
+
+## Long-term Vision: ROS2 Integration (v2.0)
+
+**Goal:** Transform Vector into a legitimate ROS2 robotics platform with autonomous navigation capabilities.
+
+### Phase A: ROS2 Driver
+
+**Foundation:** Leverage [vector_ros2](https://github.com/CtfChan/vector_ros2) as baseline
+
+**Exit Criteria:**
+- [ ] ROS2 Humble/Iron driver package
+- [ ] Camera feed as ROS2 topic
+- [ ] Odometry publishing
+- [ ] Velocity commands via cmd_vel
+- [ ] Sensor data (cliff, bump, IMU) as topics
+- [ ] TF2 transforms
+
+**Version:** v2.0.0
+
+### Phase B: Perception Stack
+
+**Goal:** Visual perception using ROS2 ecosystem
+
+**Exit Criteria:**
+- [ ] Visual SLAM integration (ORB-SLAM3, RTAB-Map, or similar)
+- [ ] Depth processing (if camera supports)
+- [ ] Object detection (YOLO, Detectron via ROS2)
+- [ ] AprilTag / ArUco detection
+- [ ] Point cloud generation (if applicable)
+
+**Version:** v2.1.0
+
+### Phase C: Navigation Stack
+
+**Goal:** Autonomous navigation using NAV2
+
+**Exit Criteria:**
+- [ ] NAV2 integration
+- [ ] Costmap from SLAM
+- [ ] Path planning (A*, DWB controller)
+- [ ] Obstacle avoidance
+- [ ] Waypoint following
+- [ ] Map persistence
+
+**Version:** v2.2.0
+
+### Phase D: Autonomy Layer
+
+**Goal:** High-level autonomous behaviors
+
+**Exit Criteria:**
+- [ ] Behavior trees (BehaviorTree.CPP)
+- [ ] Task scheduling
+- [ ] Return-to-home behavior
+- [ ] Docking automation
+- [ ] Patrol / exploration modes
+
+**Version:** v2.3.0
+
+---
+
+**Why this matters:**
+Vector becomes a **$250 ROS2 development platform** — accessible entry point for robotics education, research, and experimentation. Lower barrier than GO2 Pro, more capable than simulation alone.
+
+**Dependencies:**
+- vector_ros2 driver maturity
+- ROS2 ecosystem compatibility
+- Community interest / contributors
 
 ---
 
