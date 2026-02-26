@@ -340,7 +340,7 @@ def test_robot_manager_connect_no_retry_for_missing_serial(monkeypatch):
 
 
 def test_robot_manager_connect_runtime_error_not_retried(monkeypatch):
-    """connect() re-raises RuntimeError from the SDK immediately without retrying."""
+    """connect() propagates RuntimeError from the SDK immediately without retrying."""
     monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
     monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "3")
     monkeypatch.setenv("VECTOR_CONNECT_DELAY", "0")
@@ -355,6 +355,67 @@ def test_robot_manager_connect_runtime_error_not_retried(monkeypatch):
     with pytest.raises(RuntimeError, match="sdk config error"):
         mgr.connect()
     fake_sdk.Robot.assert_called_once()  # no retry
+
+
+def test_robot_manager_connect_invalid_retries(monkeypatch):
+    """connect() raises RuntimeError when VECTOR_CONNECT_RETRIES is negative."""
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "-1")
+
+    fake_sdk = MagicMock()
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    with pytest.raises(RuntimeError, match="VECTOR_CONNECT_RETRIES"):
+        mgr.connect()
+    fake_sdk.Robot.assert_not_called()
+
+
+def test_robot_manager_connect_invalid_delay(monkeypatch):
+    """connect() raises RuntimeError when VECTOR_CONNECT_DELAY is negative."""
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "2")
+    monkeypatch.setenv("VECTOR_CONNECT_DELAY", "-0.5")
+
+    fake_sdk = MagicMock()
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    with pytest.raises(RuntimeError, match="VECTOR_CONNECT_DELAY"):
+        mgr.connect()
+    fake_sdk.Robot.assert_not_called()
+
+
+def test_robot_manager_connect_cleanup_on_failure(monkeypatch):
+    """connect() attempts to disconnect the robot on each failed attempt."""
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "1")
+    monkeypatch.setenv("VECTOR_CONNECT_DELAY", "0")
+
+    robots_created = []
+
+    def fake_robot_factory(**kwargs):
+        r = MagicMock()
+        r.connect.side_effect = OSError("network unreachable")
+        robots_created.append(r)
+        return r
+
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.side_effect = fake_robot_factory
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    with pytest.raises(OSError):
+        mgr.connect()
+    # Each failed robot instance should have had disconnect() called
+    for r in robots_created:
+        r.disconnect.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
