@@ -45,9 +45,10 @@ silently failing:
 
 **Auto drive-off-charger:** Set the environment variable
 `VECTOR_AUTO_DRIVE_OFF_CHARGER=1` (or `true` / `yes`) to have the tool
-automatically call `drive_off_charger()` and continue when the precheck detects a
-charger state.  If the auto-drive itself fails the error is still surfaced with the
-same `on_charger` and `action_required` fields.
+automatically call the `vector_drive_off_charger` tool (which uses
+`robot.behavior.drive_off_charger()` in the SDK) and continue when the precheck
+detects a charger state. If the auto-drive itself fails the error is still surfaced
+with the same `on_charger` and `action_required` fields.
 
 **Example:**
 ```json
