@@ -97,3 +97,45 @@ def vector_status() -> dict:
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
     }
+
+
+def vector_scan() -> dict:
+    robot = _robot()
+    try:
+        robot.behavior.look_around_in_place()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_find_faces() -> dict:
+    robot = _robot()
+    try:
+        robot.behavior.find_faces()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_faces() -> dict:
+    robot = _robot()
+    try:
+        faces = [
+            {"face_id": f.face_id, "name": f.name}
+            for f in robot.world.visible_faces
+        ]
+        return {"status": "ok", "faces": faces}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_objects() -> dict:
+    robot = _robot()
+    try:
+        objects = [
+            {"object_id": o.object_id}
+            for o in robot.world.visible_objects
+        ]
+        return {"status": "ok", "objects": objects}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}

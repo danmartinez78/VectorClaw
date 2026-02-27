@@ -37,6 +37,10 @@ Milestone-based development plan from alpha to public release.
   - [ ] `vector_pose` — Position
   - [ ] `vector_cube` — Cube interaction
   - [ ] `vector_status` — Battery/status
+  - [ ] `vector_scan` — Look around in place (perception discovery)
+  - [ ] `vector_find_faces` — Find faces behavior (perception discovery)
+  - [ ] `vector_list_visible_faces` — List currently visible faces (perception discovery)
+  - [ ] `vector_list_visible_objects` — List currently visible objects (perception discovery)
 - [ ] No crashes on happy path
 
 **Version:** v0.2.0
