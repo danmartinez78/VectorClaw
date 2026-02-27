@@ -5,6 +5,8 @@ Repeatable, low-ambiguity on-robot validation protocol for VectorClaw.
 > **Quick reference:** See [API Reference](API_REFERENCE.md) for tool parameters and [Wire-Pod SDK Implementation Guide](WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) for implementation details.
 >
 > **Running records:** [Hardware Smoke Log](HARDWARE_SMOKE_LOG.md) and [Tool Docking Prerequisites](TOOL_DOCKING_PREREQUISITES.md).
+>
+> **Post-integration add-on:** Run the expanded matrix in `HARDWARE_SMOKE_LOG.md` only after issue #67 (tool registration integration) is merged. Skip any rows still marked as pending registration.
 
 ---
 
@@ -168,7 +170,7 @@ Every hardware validation run must capture:
 | Operator | Yes | `@section9-tachi` |
 | Robot serial | Yes | `00a1546c` |
 | VectorClaw version / commit SHA | Yes | `v0.3.1` / `5143c69` |
-| Wire-Pod / SDK version | Yes | `wirepod_vector_sdk 0.6.x` |
+| Wire-Pod / SDK version | Yes | `wirepod_vector_sdk 0.8.1` |
 | Network topology | Yes | `Wire-Pod on 192.168.1.x` |
 | Phase 0–3 outcome per step | Yes | `PASS`, `FAIL`, or `AMBIGUOUS` |
 | Phase 4–5 outcome per step | If run | `PASS`, `FAIL`, `N/A` |
