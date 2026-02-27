@@ -12,11 +12,14 @@ from __future__ import annotations
 from .tools_motion import vector_drive, vector_drive_off_charger, vector_head, vector_lift
 from .tools_perception import (
     vector_animate,
+    vector_charger_status,
     vector_cube,
     vector_face,
     vector_look,
     vector_pose,
+    vector_proximity_status,
     vector_status,
+    vector_touch_status,
 )
 from .tools_speech import vector_say
 
@@ -30,6 +33,9 @@ __all__ = [
     "vector_pose",
     "vector_cube",
     "vector_status",
+    "vector_charger_status",
+    "vector_touch_status",
+    "vector_proximity_status",
     "vector_head",
     "vector_lift",
 ]
