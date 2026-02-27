@@ -178,24 +178,36 @@ This avoids confusion with ambient idle behavior.
 ### `vector_drive_on_charger` *(experimental — pending MCP registration)*
 
 Drive Vector back onto its charger. Includes a configurable timeout; if the
-maneuver does not complete in time all motors are stopped as a fallback.
+maneuver does not complete in time a motor stop is attempted as a best-effort
+fallback (the stop itself may fail, which is reflected in the response).
 
 > **Status:** module-only lane — not yet registered in the MCP tool registry.
 
 **Input:**
-- `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback
+- `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback; must be `>= 0`
 
 **Example response (success):**
 ```json
 {"status": "ok"}
 ```
 
-**Example response (timeout):**
+**Example response (timeout — motors stopped successfully):**
 ```json
 {
   "status": "error",
   "timed_out": true,
+  "motors_stopped": true,
   "message": "drive_on_charger timed out after 10.0s; motors stopped as fallback"
+}
+```
+
+**Example response (timeout — motor stop also failed):**
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "motors_stopped": false,
+  "message": "drive_on_charger timed out after 10.0s; attempted motor stop failed: <error>"
 }
 ```
 
