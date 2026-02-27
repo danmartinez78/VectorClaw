@@ -224,3 +224,59 @@ Recommended sequence:
 4. `vector_drive` turn (e.g., 90°)
 
 This avoids confusion with ambient idle behavior.
+
+---
+
+## Motion Safety Helpers *(pending registry)*
+
+> **Status:** experimental / module-only lane.  These tools are implemented in
+> `vectorclaw_mcp/tools_motion.py` but are not yet registered in the MCP tool
+> registry.
+
+### `vector_drive_on_charger`
+
+Best-effort helper to drive Vector onto its charger.
+
+**Input:**
+- `timeout_sec` (number, optional, default `30.0`): wall-clock seconds to wait for
+  `drive_on_charger()` to complete before returning a timeout error. The underlying
+  drive action may continue running in the background after this timeout; motors are
+  stopped as a best-effort precaution.
+
+**Behavior:**
+- If Vector is already on the charger, returns `{"status": "ok", "already_on_charger": true}`.
+- On successful drive onto the charger, returns `{"status": "ok"}`.
+- On timeout, SDK exception, or still-off-charger condition, returns an actionable
+  error payload:
+
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "action_required": "check charger placement and retry vector_drive_on_charger",
+  "message": "drive_on_charger did not complete within 30.0s"
+}
+```
+
+```json
+{
+  "status": "error",
+  "still_off_charger": true,
+  "action_required": "manually place Vector on charger and retry",
+  "message": "drive_on_charger completed but Vector is still off the charger"
+}
+```
+
+---
+
+### `vector_emergency_stop`
+
+Immediately stop all Vector motors.
+
+**Input:** none
+
+**Behavior:**
+- Calls `robot.motors.stop_all_motors()` unconditionally.
+- Safe to call repeatedly (idempotent).
+- Returns `{"status": "ok"}` on success, or `{"status": "error", "message": …}` if
+  the SDK call raises.

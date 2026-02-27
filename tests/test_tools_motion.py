@@ -139,3 +139,121 @@ def test_vector_lift_clamp_low(mock_robot):
     assert result["status"] == "ok"
     assert result["height"] == 0.0
     mock_robot.behavior.set_lift_height.assert_called_once_with(0.0)
+
+
+# ---------------------------------------------------------------------------
+# vector_drive_on_charger
+# ---------------------------------------------------------------------------
+
+
+def test_vector_drive_on_charger_already_docked(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.status.is_charging = True
+
+    result = vector_drive_on_charger()
+
+    mock_robot.behavior.drive_on_charger.assert_not_called()
+    assert result == {"status": "ok", "already_on_charger": True}
+
+
+def test_vector_drive_on_charger_success(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+
+    def _charge_side_effect():
+        mock_robot.status.is_charging = True
+
+    mock_robot.behavior.drive_on_charger.side_effect = _charge_side_effect
+
+    result = vector_drive_on_charger()
+
+    mock_robot.behavior.drive_on_charger.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_drive_on_charger_still_off_charger(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+    # drive_on_charger returns without error but is_charging stays False
+    mock_robot.behavior.drive_on_charger.return_value = None
+
+    result = vector_drive_on_charger()
+
+    assert result["status"] == "error"
+    assert result["still_off_charger"] is True
+    assert "action_required" in result
+    assert "message" in result
+
+
+def test_vector_drive_on_charger_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+    mock_robot.behavior.drive_on_charger.side_effect = RuntimeError("comms failure")
+
+    result = vector_drive_on_charger()
+
+    assert result["status"] == "error"
+    assert "comms failure" in result["message"]
+    assert "action_required" in result
+    assert result.get("sdk_error") is True
+
+
+def test_vector_drive_on_charger_timeout(mock_robot):
+    import time
+
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+
+    def _slow_drive():
+        # Sleep slightly longer than the timeout to trigger it, without leaving
+        # a long-running background thread.
+        time.sleep(0.1)
+
+    mock_robot.behavior.drive_on_charger.side_effect = _slow_drive
+
+    result = vector_drive_on_charger(timeout_sec=0.05)
+
+    assert result["status"] == "error"
+    assert result["timed_out"] is True
+    assert "action_required" in result
+
+
+# ---------------------------------------------------------------------------
+# vector_emergency_stop
+# ---------------------------------------------------------------------------
+
+
+def test_vector_emergency_stop_success(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_emergency_stop
+
+    result = vector_emergency_stop()
+
+    mock_robot.motors.stop_all_motors.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_emergency_stop_idempotent(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_emergency_stop
+
+    result1 = vector_emergency_stop()
+    result2 = vector_emergency_stop()
+
+    assert result1 == {"status": "ok"}
+    assert result2 == {"status": "ok"}
+    assert mock_robot.motors.stop_all_motors.call_count == 2
+
+
+def test_vector_emergency_stop_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_emergency_stop
+
+    mock_robot.motors.stop_all_motors.side_effect = RuntimeError("motor fault")
+
+    result = vector_emergency_stop()
+
+    assert result["status"] == "error"
+    assert "motor fault" in result["message"]
