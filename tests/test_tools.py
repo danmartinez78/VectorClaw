@@ -581,11 +581,33 @@ def test_vector_drive_auto_off_charger(mock_robot, monkeypatch):
     mock_robot.status.is_charging = True
     monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
 
+    # Simulate successful undock: status flips to False after drive_off_charger()
+    def _undock():
+        mock_robot.status.is_charging = False
+
+    mock_robot.behavior.drive_off_charger.side_effect = _undock
+
     result = vector_drive(distance_mm=100)
 
     mock_robot.behavior.drive_off_charger.assert_called_once()
     assert result["status"] == "ok"
     mock_robot.behavior.drive_straight.assert_called_once()
+
+
+def test_vector_drive_auto_off_charger_still_on_charger(mock_robot, monkeypatch):
+    """Auto drive-off-charger call succeeds but robot remains on charger — returns error."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True  # stays True after drive_off_charger
+    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+
+    result = vector_drive(distance_mm=100)
+
+    mock_robot.behavior.drive_off_charger.assert_called_once()
+    assert result["status"] == "error"
+    assert result["on_charger"] is True
+    assert "action_required" in result
+    mock_robot.behavior.drive_straight.assert_not_called()
 
 
 def test_vector_drive_auto_off_charger_fails(mock_robot, monkeypatch):

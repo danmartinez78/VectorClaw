@@ -42,7 +42,6 @@ def _motion_precheck(robot) -> Optional[dict]:
     if os.environ.get("VECTOR_AUTO_DRIVE_OFF_CHARGER", "").lower() in ("1", "true", "yes"):
         try:
             robot.behavior.drive_off_charger()
-            return None
         except Exception as exc:
             return {
                 "status": "error",
@@ -50,6 +49,14 @@ def _motion_precheck(robot) -> Optional[dict]:
                 "action_required": "call vector_drive_off_charger first",
                 "message": f"Auto drive-off-charger failed: {exc}",
             }
+        if robot.status.is_charging:
+            return {
+                "status": "error",
+                "on_charger": True,
+                "action_required": "call vector_drive_off_charger first",
+                "message": "Auto drive-off-charger completed but Vector is still on the charger",
+            }
+        return None
 
     return {
         "status": "error",
