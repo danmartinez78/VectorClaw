@@ -527,3 +527,95 @@ def test_vector_drive_off_charger_error(mock_robot):
 
     assert result["status"] == "error"
     assert "charger comms error" in result["message"]
+
+
+# ---------------------------------------------------------------------------
+# MOTION_PRECHECK – charger-aware guard
+# ---------------------------------------------------------------------------
+
+def test_vector_drive_blocked_on_charger(mock_robot):
+    """vector_drive() returns an actionable error when Vector is on the charger."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True
+
+    result = vector_drive(distance_mm=100)
+
+    assert result["status"] == "error"
+    assert result["on_charger"] is True
+    assert "action_required" in result
+    assert "message" in result
+    mock_robot.behavior.drive_straight.assert_not_called()
+
+
+def test_vector_drive_turn_blocked_on_charger(mock_robot):
+    """vector_drive() with angle_deg also returns an actionable error on charger."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True
+
+    result = vector_drive(angle_deg=90)
+
+    assert result["status"] == "error"
+    assert result["on_charger"] is True
+    assert "action_required" in result
+    mock_robot.behavior.turn_in_place.assert_not_called()
+
+
+def test_vector_drive_proceeds_when_not_on_charger(mock_robot):
+    """vector_drive() proceeds normally when Vector is not on the charger."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = False
+
+    result = vector_drive(distance_mm=100)
+
+    assert result["status"] == "ok"
+    mock_robot.behavior.drive_straight.assert_called_once()
+
+
+def test_vector_drive_auto_off_charger(mock_robot, monkeypatch):
+    """With VECTOR_AUTO_DRIVE_OFF_CHARGER=1, vector_drive auto-drives off and proceeds."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True
+    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+
+    result = vector_drive(distance_mm=100)
+
+    mock_robot.behavior.drive_off_charger.assert_called_once()
+    assert result["status"] == "ok"
+    mock_robot.behavior.drive_straight.assert_called_once()
+
+
+def test_vector_drive_auto_off_charger_fails(mock_robot, monkeypatch):
+    """When auto drive-off-charger raises, vector_drive returns an actionable error."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True
+    mock_robot.behavior.drive_off_charger.side_effect = RuntimeError("comms error")
+    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+
+    result = vector_drive(distance_mm=100)
+
+    assert result["status"] == "error"
+    assert result["on_charger"] is True
+    assert "action_required" in result
+    assert "comms error" in result["message"]
+    mock_robot.behavior.drive_straight.assert_not_called()
+
+
+def test_vector_drive_auto_off_charger_fails_non_runtime_error(mock_robot, monkeypatch):
+    """Auto drive-off-charger handles any exception type, not just RuntimeError."""
+    from vectorclaw_mcp.tools import vector_drive
+
+    mock_robot.status.is_charging = True
+    mock_robot.behavior.drive_off_charger.side_effect = OSError("connection refused")
+    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+
+    result = vector_drive(distance_mm=100)
+
+    assert result["status"] == "error"
+    assert result["on_charger"] is True
+    assert "connection refused" in result["message"]
+    mock_robot.behavior.drive_straight.assert_not_called()
