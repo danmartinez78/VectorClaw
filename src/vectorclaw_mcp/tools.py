@@ -56,7 +56,7 @@ def vector_animate(animation_name: str) -> dict:
     return {"status": "ok", "animation": animation_name}
 
 
-def vector_drive(
+def vector_drive(speed: int = 50, 
     distance_mm: Optional[float] = None,
     angle_deg: Optional[float] = None,
 ) -> dict:
@@ -80,7 +80,7 @@ def vector_drive(
 
     robot = _robot()
     if distance_mm is not None:
-        robot.behavior.drive_straight(util.distance_mm(distance_mm))
+        robot.behavior.drive_straight(util.distance_mm(distance_mm), util.speed_mmps(speed))
     if angle_deg is not None:
         robot.behavior.turn_in_place(util.degrees(angle_deg))
 
@@ -204,7 +204,7 @@ def vector_status() -> dict:
 
     Returns:
         A dict containing ``battery_level``, ``is_charging``, and
-        ``is_carrying_object``.
+        ``is_carrying_block``.
     """
     robot = _robot()
     battery = robot.get_battery_state()
@@ -212,5 +212,20 @@ def vector_status() -> dict:
         "status": "ok",
         "battery_level": battery.battery_level,
         "is_charging": robot.status.is_charging,
-        "is_carrying_object": robot.status.is_carrying_object,
+        "is_carrying_block": robot.status.is_carrying_block,
     }
+
+def vector_drive_off_charger() -> dict:
+    """Drive Vector off the charger.
+    
+    Use this first if Vector is on the charger and you want to drive.
+    
+    Returns:
+        A dict with status and any error message.
+    """
+    robot = _robot()
+    try:
+        robot.behavior.drive_off_charger()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

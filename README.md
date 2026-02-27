@@ -110,3 +110,12 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## Documentation
+
+- [Setup Guide](docs/SETUP.md)
+- [API Reference](docs/API_REFERENCE.md)
+- [Runtime Support](docs/RUNTIME_SUPPORT.md)
+- [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
+- [Functionality Matrix](docs/FUNCTIONALITY_MATRIX.md)
