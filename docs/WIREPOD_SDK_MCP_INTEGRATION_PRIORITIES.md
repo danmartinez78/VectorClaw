@@ -22,7 +22,7 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 | SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
 |---|---|---:|---:|---|---|---|---|
-| `behavior.drive_on_charger` | Return robot to charger | High | Medium | Composed | `vector_drive_on_charger` | Later | Verify reliability in real environment; likely needs prechecks and fallback messaging. |
+| `behavior.drive_on_charger` | Return robot to charger | High | Medium | Composed | `vector_drive_on_charger` | Now (experimental) | High lifecycle value; implement with explicit best-effort semantics, timeout, and actionable fallback errors. |
 | `behavior.drive_off_charger` | Leave charger before motion | High | Low | Direct | `vector_drive_off_charger` | Now (already) | Keep as core precondition helper. |
 | `behavior.go_to_pose` | Relative/absolute movement goal | High | High | Composed | `vector_go_to_pose` | Later | Requires strong safety envelope and robust coordinate assumptions. |
 | `behavior.go_to_object` | Move to visible object | Medium | Medium | Composed | `vector_go_to_object` | Later | Needs object identity + visibility checks. |
@@ -48,7 +48,7 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 | `camera.capture_single_image` | Deterministic capture | High | Low | Direct | `vector_capture_image` | Now | Preferred over implicit latest-frame reads. |
 | `camera.latest_image` / `latest_image_id` | Fast current frame access | High | Low | Direct | `vector_look` (existing) + metadata | Now | Add optional metadata payload for traceability. |
 | `camera.set_manual_exposure` / `enable_auto_exposure` / `gain` | Improve image quality | Medium | Medium | Direct | `vector_camera_exposure` | Later | Great for difficult lighting, but tune carefully. |
-| `vision.enable_face_detection` / `detect_faces` | Face detection control | High | Medium | Composed | `vector_face_detection` | Now | Strong value if results are surfaced clearly. |
+| `vision.enable_face_detection` / `detect_faces` | Face detection control | High | Medium | Composed | `vector_face_detection` | Now | Start with summarized detections (stable payload), avoid raw/heavy streaming output initially. |
 | `vision.enable_motion_detection` / `detect_motion` | Motion trigger workflows | Medium | Medium | Composed | `vector_motion_detection` | Later | Useful for reactive behaviors, not core operator path. |
 | `vision.enable_custom_object_detection` | Custom object detection | Medium | High | Composed | `vector_custom_object_detection` | Later | Needs object definition pipeline and calibration docs. |
 | `vision.display_camera_feed_on_face` | UX/display behavior | Low | Low | Direct | `vector_face_camera_feed` | Skip | Cool demo, low operational value. |
