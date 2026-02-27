@@ -30,6 +30,18 @@ Use alongside:
 | `vector_face` |  |  |  |
 | `vector_head` |  |  |  |
 | `vector_lift` |  |  |  |
+| `vector_scan` |  |  |  |
+| `vector_find_faces` |  |  |  |
+| `vector_list_visible_faces` |  |  |  |
+| `vector_list_visible_objects` |  |  |  |
+| `vector_drive_on_charger` |  |  |  |
+| `vector_emergency_stop` |  |  |  |
+| `vector_capture_image` |  |  |  |
+| `vector_face_detection` |  |  |  |
+| `vector_vision_reset` |  |  |  |
+| `vector_charger_status` |  |  |  |
+| `vector_touch_status` |  |  |  |
+| `vector_proximity_status` |  |  |  |
 
 ### Anomalies / Follow-ups
 - 

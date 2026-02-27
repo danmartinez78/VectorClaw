@@ -5,6 +5,8 @@ Repeatable, low-ambiguity on-robot validation protocol for VectorClaw.
 > **Quick reference:** See [API Reference](API_REFERENCE.md) for tool parameters and [Wire-Pod SDK Implementation Guide](WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) for implementation details.
 >
 > **Running records:** [Hardware Smoke Log](HARDWARE_SMOKE_LOG.md) and [Tool Docking Prerequisites](TOOL_DOCKING_PREREQUISITES.md).
+>
+> **Post-integration add-on:** After integration-wiring PRs merge, run the expanded matrix in `HARDWARE_SMOKE_LOG.md` (new tools: scan/find/list, charger+sensors, vision controls, emergency/motion helpers).
 
 ---
 
