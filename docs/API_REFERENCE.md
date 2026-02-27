@@ -186,12 +186,14 @@ This avoids confusion with ambient idle behavior.
 Best-effort helper to drive Vector onto its charger.
 
 **Input:**
-- `timeout_sec` (number, optional, default `30.0`): wall-clock seconds before the
-  call is abandoned and an error is returned.
+- `timeout_sec` (number, optional, default `30.0`): wall-clock seconds to wait for
+  `drive_on_charger()` to complete before returning a timeout error. The underlying
+  drive action may continue running in the background after this timeout; motors are
+  stopped as a best-effort precaution.
 
 **Behavior:**
-  `{"status": "ok", "already_on_charger": true}`.
-- On success returns `{"status": "ok"}`.
+- If Vector is already on the charger, returns `{"status": "ok", "already_on_charger": true}`.
+- On successful drive onto the charger, returns `{"status": "ok"}`.
 - On timeout, SDK exception, or still-off-charger condition, returns an actionable
   error payload:
 

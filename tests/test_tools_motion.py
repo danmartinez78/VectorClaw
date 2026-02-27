@@ -199,6 +199,7 @@ def test_vector_drive_on_charger_sdk_error(mock_robot):
     assert result["status"] == "error"
     assert "comms failure" in result["message"]
     assert "action_required" in result
+    assert result.get("sdk_error") is True
 
 
 def test_vector_drive_on_charger_timeout(mock_robot):
@@ -209,7 +210,9 @@ def test_vector_drive_on_charger_timeout(mock_robot):
     mock_robot.status.is_charging = False
 
     def _slow_drive():
-        time.sleep(5)
+        # Sleep slightly longer than the timeout to trigger it, without leaving
+        # a long-running background thread.
+        time.sleep(0.1)
 
     mock_robot.behavior.drive_on_charger.side_effect = _slow_drive
 

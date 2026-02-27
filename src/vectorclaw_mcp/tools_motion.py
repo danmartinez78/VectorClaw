@@ -68,7 +68,7 @@ def vector_drive_on_charger(timeout_sec: float = _DRIVE_ON_CHARGER_TIMEOUT_SEC) 
     """Best-effort helper to drive Vector onto the charger.
 
     If Vector is already on the charger the call is a no-op and returns
-    ``{"status": "ok", "already_on_charger": true}``.
+    ``{"status": "ok", "already_on_charger": True}``.
 
     The underlying ``behavior.drive_on_charger()`` call is executed with a
     wall-clock *timeout_sec* deadline.  If the call does not complete within
@@ -88,7 +88,6 @@ def vector_drive_on_charger(timeout_sec: float = _DRIVE_ON_CHARGER_TIMEOUT_SEC) 
     if robot.status.is_charging:
         return {"status": "ok", "already_on_charger": True}
 
-    result: dict = {}
     exc_holder: list = []
 
     def _do_drive() -> None:
@@ -102,16 +101,26 @@ def vector_drive_on_charger(timeout_sec: float = _DRIVE_ON_CHARGER_TIMEOUT_SEC) 
     thread.join(timeout=timeout_sec)
 
     if thread.is_alive():
+        # Best-effort mitigation: attempt to stop all motors so the robot does
+        # not continue driving unsupervised while the background thread finishes.
+        try:
+            robot.motors.stop_all_motors()
+        except Exception:  # noqa: BLE001
+            pass
         return {
             "status": "error",
             "timed_out": True,
             "action_required": "check charger placement and retry vector_drive_on_charger",
-            "message": f"drive_on_charger did not complete within {timeout_sec}s",
+            "message": (
+                f"drive_on_charger did not complete within {timeout_sec}s; "
+                "motors stopped as a precaution but the background drive may still finish"
+            ),
         }
 
     if exc_holder:
         return {
             "status": "error",
+            "sdk_error": True,
             "action_required": "check charger placement and retry vector_drive_on_charger",
             "message": str(exc_holder[0]),
         }
