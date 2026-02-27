@@ -41,7 +41,7 @@ def vector_drive_off_charger() -> dict:
     try:
         robot.behavior.drive_off_charger()
         return {"status": "ok"}
-    except Exception as exc:  # pragma: no cover - runtime defensive
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
         return {"status": "error", "message": str(exc)}
 
 

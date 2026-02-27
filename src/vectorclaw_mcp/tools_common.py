@@ -26,7 +26,7 @@ def _motion_precheck(robot) -> Optional[dict]:
     if os.environ.get("VECTOR_AUTO_DRIVE_OFF_CHARGER", "").lower() in ("1", "true", "yes"):
         try:
             robot.behavior.drive_off_charger()
-        except Exception as exc:  # pragma: no cover - defensive
+        except Exception:  # pragma: no cover - defensive
             return {
                 "status": "error",
                 "on_charger": True,
