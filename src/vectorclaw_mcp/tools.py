@@ -255,7 +255,7 @@ def vector_head(angle_deg: float) -> dict:
         A dict with ``status`` and the ``angle_deg`` that was applied after
         clamping.
     """
-    import anki_vector.util as util  # noqa: PLC0415
+    import anki_vector.util as util  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
 
     clamped = max(_HEAD_ANGLE_MIN, min(_HEAD_ANGLE_MAX, angle_deg))
     robot = _robot()
