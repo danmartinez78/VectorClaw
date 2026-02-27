@@ -46,7 +46,7 @@ Deliver a foolproof OpenClaw skill that guides users from zero setup to a valida
 |---|---|---|
 | Missing serial | empty `VECTOR_SERIAL` | provide serial from Vector settings/cert |
 | SDK import fails | `ImportError` | run provided install command |
-| Robot unreachable | connection timeout | verify wire-pod, IP/network, cert context |
+| Robot unreachable | connection timeout | verify Wire-Pod, IP/network, cert context |
 | MCP misconfiguration | startup error | print exact env/config path and fix snippet |
 
 ## Implementation Boundaries
