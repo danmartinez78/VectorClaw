@@ -139,3 +139,64 @@ def test_vector_lift_clamp_low(mock_robot):
     assert result["status"] == "ok"
     assert result["height"] == 0.0
     mock_robot.behavior.set_lift_height.assert_called_once_with(0.0)
+
+
+def test_vector_drive_on_charger_success(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    result = vector_drive_on_charger()
+
+    mock_robot.behavior.drive_on_charger.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_drive_on_charger_error(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    mock_robot.behavior.drive_on_charger.side_effect = RuntimeError("charger nav error")
+
+    result = vector_drive_on_charger()
+
+    assert result["status"] == "error"
+    assert "charger nav error" in result["message"]
+
+
+def test_vector_drive_on_charger_timeout(mock_robot):
+    import threading
+
+    from vectorclaw_mcp.tools_motion import vector_drive_on_charger
+
+    ready = threading.Event()
+
+    def _blocking():
+        ready.wait()
+
+    mock_robot.behavior.drive_on_charger.side_effect = _blocking
+
+    result = vector_drive_on_charger(timeout_sec=0.05)
+    ready.set()  # unblock the background thread so it can exit cleanly
+
+    assert result["status"] == "error"
+    assert result.get("timed_out") is True
+    assert "timed" in result["message"]
+    mock_robot.motors.stop_all_motors.assert_called_once()
+
+
+def test_vector_emergency_stop_success(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_emergency_stop
+
+    result = vector_emergency_stop()
+
+    mock_robot.motors.stop_all_motors.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_emergency_stop_error(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_emergency_stop
+
+    mock_robot.motors.stop_all_motors.side_effect = RuntimeError("motor fault")
+
+    result = vector_emergency_stop()
+
+    assert result["status"] == "error"
+    assert "motor fault" in result["message"]

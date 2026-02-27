@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from typing import Optional
 
 from .tools_common import (
@@ -59,3 +60,43 @@ def vector_lift(height: float) -> dict:
     robot = _robot()
     robot.behavior.set_lift_height(clamped)
     return {"status": "ok", "height": clamped}
+
+
+def vector_drive_on_charger(timeout_sec: float = 10.0) -> dict:
+    """Experimental: drive Vector onto its charger with a timeout and motor-stop fallback."""
+    robot = _robot()
+    result: list = []
+
+    def _attempt() -> None:
+        try:
+            robot.behavior.drive_on_charger()
+            result.append({"status": "ok"})
+        except Exception as exc:
+            result.append({"status": "error", "message": str(exc)})
+
+    t = threading.Thread(target=_attempt, daemon=True)
+    t.start()
+    t.join(timeout=timeout_sec)
+
+    if t.is_alive():
+        try:
+            robot.motors.stop_all_motors()
+        except Exception:  # pragma: no cover - defensive fallback
+            pass
+        return {
+            "status": "error",
+            "timed_out": True,
+            "message": f"drive_on_charger timed out after {timeout_sec}s; motors stopped as fallback",
+        }
+
+    return result[0] if result else {"status": "error", "message": "Thread completed without result"}
+
+
+def vector_emergency_stop() -> dict:
+    """Immediately stop all Vector motors."""
+    robot = _robot()
+    try:
+        robot.motors.stop_all_motors()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}

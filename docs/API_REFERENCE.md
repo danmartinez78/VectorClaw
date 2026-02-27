@@ -172,3 +172,44 @@ Recommended sequence:
 4. `vector_drive` turn (e.g., 90°)
 
 This avoids confusion with ambient idle behavior.
+
+---
+
+### `vector_drive_on_charger` *(experimental — pending MCP registration)*
+
+Drive Vector back onto its charger. Includes a configurable timeout; if the
+maneuver does not complete in time all motors are stopped as a fallback.
+
+> **Status:** module-only lane — not yet registered in the MCP tool registry.
+
+**Input:**
+- `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback
+
+**Example response (success):**
+```json
+{"status": "ok"}
+```
+
+**Example response (timeout):**
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "message": "drive_on_charger timed out after 10.0s; motors stopped as fallback"
+}
+```
+
+---
+
+### `vector_emergency_stop` *(pending MCP registration)*
+
+Immediately stop all Vector motors using `motors.stop_all_motors`.
+
+> **Status:** module-only lane — not yet registered in the MCP tool registry.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```
