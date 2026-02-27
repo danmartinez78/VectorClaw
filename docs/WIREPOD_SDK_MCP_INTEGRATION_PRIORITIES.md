@@ -58,9 +58,19 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 ## Next sections to complete
 
-- Animation
 - Photos + Faces + Sensors (touch/proximity/status)
 - Events/streaming patterns
+
+---
+
+## Section 5 — Animation
+
+| SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
+|---|---|---:|---:|---|---|---|---|
+| `animation.play_animation` | Explicit animation by name | Medium | Medium | Direct | `vector_play_animation` | Later | Defer until core operational surfaces are complete; keep as UX layer. |
+| `animation.play_animation_trigger` | Trigger-based animation playback | Medium | Medium | Direct | `vector_play_animation_trigger` | Later | Same defer rationale as above. |
+| `animation.load_animation_list` / `anim_list` | Enumerate available animations | Low | High | Direct | `vector_list_animations` | Later | Known timeout path in Wire-Pod flows; do not block core workflows on this. |
+| `animation.load_animation_trigger_list` / `anim_trigger_list` | Enumerate trigger names | Low | High | Direct | `vector_list_animation_triggers` | Later | Same timeout caveat; optional utility after stability milestones. |
 
 ---
 
