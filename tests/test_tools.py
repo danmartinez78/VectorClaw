@@ -20,16 +20,16 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def _make_fake_sdk() -> types.ModuleType:
-    """Return a lightweight mock of the wirepod_vector_sdk package."""
-    sdk = types.ModuleType("wirepod_vector_sdk")
+    """Return a lightweight mock of the anki_vector package."""
+    sdk = types.ModuleType("anki_vector")
 
-    # wirepod_vector_sdk.util sub-module with distance_mm / degrees helpers
-    util = types.ModuleType("wirepod_vector_sdk.util")
+    # anki_vector.util sub-module with distance_mm / degrees helpers
+    util = types.ModuleType("anki_vector.util")
     util.distance_mm = lambda v: v
     util.degrees = lambda v: v
     sdk.util = util
-    sys.modules.setdefault("wirepod_vector_sdk", sdk)
-    sys.modules.setdefault("wirepod_vector_sdk.util", util)
+    sys.modules.setdefault("anki_vector", sdk)
+    sys.modules.setdefault("anki_vector.util", util)
     return sdk
 
 
@@ -295,7 +295,7 @@ def test_robot_manager_connect_retries_on_transient_failure(monkeypatch):
 
     fake_sdk = MagicMock()
     fake_sdk.Robot.side_effect = fake_robot_factory
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -313,7 +313,7 @@ def test_robot_manager_connect_raises_after_all_retries(monkeypatch):
 
     fake_sdk = MagicMock()
     fake_sdk.Robot.return_value.connect.side_effect = ConnectionError("always fails")
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -329,7 +329,7 @@ def test_robot_manager_connect_no_retry_for_missing_serial(monkeypatch):
     monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "3")
 
     fake_sdk = MagicMock()
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -347,7 +347,7 @@ def test_robot_manager_connect_runtime_error_not_retried(monkeypatch):
 
     fake_sdk = MagicMock()
     fake_sdk.Robot.return_value.connect.side_effect = RuntimeError("sdk config error")
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -363,7 +363,7 @@ def test_robot_manager_connect_invalid_retries(monkeypatch):
     monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "-1")
 
     fake_sdk = MagicMock()
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -380,7 +380,7 @@ def test_robot_manager_connect_invalid_delay(monkeypatch):
     monkeypatch.setenv("VECTOR_CONNECT_DELAY", "-0.5")
 
     fake_sdk = MagicMock()
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 
@@ -406,7 +406,7 @@ def test_robot_manager_connect_cleanup_on_failure(monkeypatch):
 
     fake_sdk = MagicMock()
     fake_sdk.Robot.side_effect = fake_robot_factory
-    monkeypatch.setitem(sys.modules, "wirepod_vector_sdk", fake_sdk)
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
 
     from vectorclaw_mcp.robot import RobotManager
 

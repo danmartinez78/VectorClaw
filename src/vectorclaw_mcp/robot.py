@@ -29,11 +29,11 @@ class RobotManager:
         self._lock = threading.Lock()
 
     def connect(self) -> object:
-        """Return an active robot instance.
+        """Return an active :class:`anki_vector.Robot` instance.
 
-        ``wirepod_vector_sdk`` is the canonical SDK and is imported first.
-        If it is not installed, ``anki_vector`` is used as a best-effort
-        legacy fallback.
+        The ``anki_vector`` module namespace is provided by installing
+        ``wirepod_vector_sdk`` (recommended) or the legacy ``anki_vector``
+        package — both expose the same ``anki_vector`` Python namespace.
 
         The robot serial number is read from the ``VECTOR_SERIAL`` environment
         variable.  An optional IP address may be supplied via ``VECTOR_HOST``.
@@ -47,7 +47,7 @@ class RobotManager:
         re-raised immediately without retrying.
 
         Returns:
-            A connected robot object.
+            A connected ``anki_vector.Robot`` object.
 
         Raises:
             RuntimeError: If ``VECTOR_SERIAL`` is not set, or if
@@ -60,11 +60,7 @@ class RobotManager:
             if self._robot is not None:
                 return self._robot
 
-            # wirepod_vector_sdk is the canonical SDK; fall back to legacy anki_vector
-            try:
-                import wirepod_vector_sdk as _sdk  # noqa: PLC0415
-            except ImportError:
-                import anki_vector as _sdk  # legacy fallback (best-effort)  # noqa: PLC0415
+            import anki_vector  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
 
             serial = os.environ.get("VECTOR_SERIAL")
             if not serial:
@@ -90,7 +86,7 @@ class RobotManager:
 
             last_exc: Exception = OSError("Connection failed.")
             for attempt in range(max_retries + 1):
-                robot = _sdk.Robot(**kwargs)
+                robot = anki_vector.Robot(**kwargs)
                 try:
                     robot.connect()
                     self._robot = robot
