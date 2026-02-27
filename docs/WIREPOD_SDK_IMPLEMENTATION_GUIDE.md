@@ -106,7 +106,7 @@ robot.connect()
 ## Known compatibility notes
 
 1. `wirepod_vector_sdk` installs under the `anki_vector` namespace.
-2. Modern Python compatibility may require SDK fork patches (see `SDK_FORK_PATCH_NOTES.md`).
+2. Modern Python compatibility may require SDK fork patches ().
 3. Charger preconditions should be handled explicitly for movement reliability.
 
 ## Scope rule
