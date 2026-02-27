@@ -40,6 +40,10 @@ def _make_robot() -> MagicMock:
     robot.status.is_charging = False
     robot.status.is_carrying_block = False
     robot.status.is_carrying_object = False
+    robot.status.is_cliff_detected = False
+    robot.status.is_moving = False
+    robot.status.is_on_charger_platform = False
+    robot.status.is_being_held = False
 
     from PIL import Image as PILImage
 
@@ -47,6 +51,20 @@ def _make_robot() -> MagicMock:
     img_wrapper = MagicMock()
     img_wrapper.raw_image = pil_img
     robot.camera.latest_image = img_wrapper
+
+    # Proximity sensor
+    proximity_reading = MagicMock()
+    proximity_reading.distance.distance_mm = 150.0
+    proximity_reading.found_object = True
+    robot.proximity.last_sensor_reading = proximity_reading
+
+    # Touch sensor
+    robot.touch.last_touch_time = 0.0
+
+    # World objects / faces (empty by default)
+    robot.world.visible_faces = []
+    robot.world.visible_objects = []
+    robot.world.visible_custom_objects = []
 
     return robot
 

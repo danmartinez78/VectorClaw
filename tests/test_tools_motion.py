@@ -139,3 +139,36 @@ def test_vector_lift_clamp_low(mock_robot):
     assert result["status"] == "ok"
     assert result["height"] == 0.0
     mock_robot.behavior.set_lift_height.assert_called_once_with(0.0)
+
+
+def test_vector_drive_on_charger_already_docked(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_on_charger
+
+    mock_robot.status.is_charging = True
+
+    result = vector_drive_on_charger()
+
+    assert result["status"] == "ok"
+    assert result["already_on_charger"] is True
+    mock_robot.behavior.drive_on_charger.assert_not_called()
+
+
+def test_vector_drive_on_charger_success(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+
+    result = vector_drive_on_charger()
+
+    mock_robot.behavior.drive_on_charger.assert_called_once()
+    assert result["status"] == "ok"
+    assert result["already_on_charger"] is False
+
+
+def test_vector_emergency_stop(mock_robot):
+    from vectorclaw_mcp.tools import vector_emergency_stop
+
+    result = vector_emergency_stop()
+
+    mock_robot.motors.stop_all_motors.assert_called_once()
+    assert result["status"] == "ok"

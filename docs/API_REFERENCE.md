@@ -162,6 +162,140 @@ Set Vector's lift/arm height.
 
 > Values outside 0.0–1.0 are silently clamped.  The response always reflects the actual applied height.
 
+---
+
+### `vector_drive_on_charger`
+Best-effort attempt to drive Vector back onto its charger.
+
+**Input:** none
+
+**Output fields:**
+- `already_on_charger` (boolean): true if Vector was already on the charger
+
+> Experimental: if the drive-on command fails, an actionable error is returned with `action_required` set to `"manually place Vector on charger"`.
+
+---
+
+### `vector_emergency_stop`
+Immediately stop all of Vector's motors.
+
+**Input:** none
+
+> Idempotent and safe to call repeatedly.
+
+---
+
+### `vector_status`
+Return robot status (expanded).
+
+**Input:** none
+
+**Output fields:**
+- `battery_level`
+- `is_charging`
+- `is_carrying_block`
+- `is_cliff_detected`
+- `is_moving`
+
+---
+
+### `vector_charger_status`
+Return charger-related status fields.
+
+**Input:** none
+
+**Output fields:**
+- `is_charging`
+- `is_on_charger_platform`
+
+---
+
+### `vector_touch_status`
+Return touch sensor status.
+
+**Input:** none
+
+**Output fields:**
+- `last_touch_time`
+- `is_being_held`
+
+---
+
+### `vector_proximity_status`
+Return the latest proximity sensor reading.
+
+**Input:** none
+
+**Output fields:**
+- `distance_mm` (number or null)
+- `found_object` (boolean)
+
+---
+
+### `vector_scan`
+Scan the environment by looking around in place.
+
+**Input:**
+- `num_rotations` (integer, optional, default `1`)
+
+---
+
+### `vector_find_faces`
+Search for faces by running the find-faces behavior.
+
+**Input:** none
+
+---
+
+### `vector_list_visible_faces`
+Return a list of currently visible faces.
+
+**Input:** none
+
+**Output fields:**
+- `faces` (array): each entry has `face_id` and `name`
+- `count`
+
+---
+
+### `vector_list_visible_objects`
+Return a list of currently visible objects (standard and custom).
+
+**Input:** none
+
+**Output fields:**
+- `objects` (array): each entry has `object_id` and `object_type`
+- `count`
+
+---
+
+### `vector_capture_image`
+Capture a single image using the preferred `camera.capture_single_image` path.
+
+**Input:** none
+
+**Output:**
+- `image_base64` (JPEG payload)
+- `content_type` (`image/jpeg`)
+
+---
+
+### `vector_face_detection`
+Return a summary of currently detected faces from world state.
+
+**Input:** none
+
+**Output fields:**
+- `detected_faces` (array): each entry has `face_id`, `name`, `expression`
+- `count`
+
+---
+
+### `vector_vision_reset`
+Disable all vision modes to reset vision processing state.
+
+**Input:** none
+
 ## Proven Test Pattern
 For motion validation, use a one-command-at-a-time protocol with human confirmation between steps.
 

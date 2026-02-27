@@ -96,4 +96,128 @@ def vector_status() -> dict:
         "battery_level": battery.battery_level,
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
+        "is_cliff_detected": robot.status.is_cliff_detected,
+        "is_moving": robot.status.is_moving,
     }
+
+
+def vector_charger_status() -> dict:
+    """Return charger-related status fields."""
+    robot = _robot()
+    return {
+        "status": "ok",
+        "is_charging": robot.status.is_charging,
+        "is_on_charger_platform": robot.status.is_on_charger_platform,
+    }
+
+
+def vector_touch_status() -> dict:
+    """Return touch sensor status."""
+    robot = _robot()
+    try:
+        last_touch = robot.touch.last_touch_time
+        return {
+            "status": "ok",
+            "last_touch_time": last_touch,
+            "is_being_held": robot.status.is_being_held,
+        }
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_proximity_status() -> dict:
+    """Return proximity sensor reading."""
+    robot = _robot()
+    reading = robot.proximity.last_sensor_reading
+    if reading is None:
+        return {"status": "ok", "distance_mm": None, "found_object": False}
+    return {
+        "status": "ok",
+        "distance_mm": reading.distance.distance_mm,
+        "found_object": reading.found_object,
+    }
+
+
+def vector_scan(num_rotations: int = 1) -> dict:
+    """Scan the environment by looking around in place."""
+    robot = _robot()
+    try:
+        robot.behavior.look_around_in_place(num_rotations=num_rotations)
+        return {"status": "ok", "num_rotations": num_rotations}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_find_faces() -> dict:
+    """Search for faces using the find-faces behavior."""
+    robot = _robot()
+    try:
+        robot.behavior.find_faces()
+        return {"status": "ok"}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_faces() -> dict:
+    """Return a list of currently visible faces."""
+    robot = _robot()
+    faces = [
+        {"face_id": f.face_id, "name": getattr(f, "name", "")}
+        for f in robot.world.visible_faces
+    ]
+    return {"status": "ok", "faces": faces, "count": len(faces)}
+
+
+def vector_list_visible_objects() -> dict:
+    """Return a list of currently visible objects (standard + custom)."""
+    robot = _robot()
+    objects = [
+        {"object_id": str(getattr(o, "object_id", "")), "object_type": type(o).__name__}
+        for o in robot.world.visible_objects
+    ]
+    custom_objects = [
+        {"object_id": str(getattr(o, "object_id", "")), "object_type": "custom"}
+        for o in robot.world.visible_custom_objects
+    ]
+    all_objects = objects + custom_objects
+    return {"status": "ok", "objects": all_objects, "count": len(all_objects)}
+
+
+def vector_capture_image() -> dict:
+    """Capture a single image via camera.capture_single_image."""
+    robot = _robot()
+    try:
+        pil_image = robot.camera.capture_single_image()
+        if pil_image is None:
+            return {"status": "error", "message": "No image captured"}
+        with io.BytesIO() as buf:
+            pil_image.raw_image.save(buf, format="JPEG")
+            encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+        return {"status": "ok", "image_base64": encoded, "content_type": "image/jpeg"}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_face_detection() -> dict:
+    """Return a summary of currently detected faces from world state."""
+    robot = _robot()
+    faces = list(robot.world.visible_faces)
+    summary = [
+        {
+            "face_id": f.face_id,
+            "name": getattr(f, "name", ""),
+            "expression": str(getattr(f, "expression", "")),
+        }
+        for f in faces
+    ]
+    return {"status": "ok", "detected_faces": summary, "count": len(summary)}
+
+
+def vector_vision_reset() -> dict:
+    """Disable all vision modes to reset vision processing state."""
+    robot = _robot()
+    try:
+        robot.vision.disable_all_vision_modes()
+        return {"status": "ok"}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}

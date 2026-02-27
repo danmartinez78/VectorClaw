@@ -9,7 +9,7 @@ conflicts by editing domain modules instead:
 
 from __future__ import annotations
 
-from .tools_motion import vector_drive, vector_drive_off_charger, vector_head, vector_lift
+from .tools_motion import vector_drive, vector_drive_off_charger, vector_head, vector_lift, vector_drive_on_charger, vector_emergency_stop
 from .tools_perception import (
     vector_animate,
     vector_cube,
@@ -17,6 +17,16 @@ from .tools_perception import (
     vector_look,
     vector_pose,
     vector_status,
+    vector_charger_status,
+    vector_touch_status,
+    vector_proximity_status,
+    vector_scan,
+    vector_find_faces,
+    vector_list_visible_faces,
+    vector_list_visible_objects,
+    vector_capture_image,
+    vector_face_detection,
+    vector_vision_reset,
 )
 from .tools_speech import vector_say
 
@@ -25,6 +35,8 @@ __all__ = [
     "vector_animate",
     "vector_drive",
     "vector_drive_off_charger",
+    "vector_drive_on_charger",
+    "vector_emergency_stop",
     "vector_look",
     "vector_face",
     "vector_pose",
@@ -32,4 +44,14 @@ __all__ = [
     "vector_status",
     "vector_head",
     "vector_lift",
+    "vector_charger_status",
+    "vector_touch_status",
+    "vector_proximity_status",
+    "vector_scan",
+    "vector_find_faces",
+    "vector_list_visible_faces",
+    "vector_list_visible_objects",
+    "vector_capture_image",
+    "vector_face_detection",
+    "vector_vision_reset",
 ]

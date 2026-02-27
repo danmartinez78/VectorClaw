@@ -143,6 +143,77 @@ TOOLS: list[Tool] = [
             "required": ["height"],
         },
     ),
+    Tool(
+        name="vector_drive_on_charger",
+        description=(
+            "Best-effort attempt to drive Vector back onto its charger. "
+            "Experimental: returns ok with already_on_charger=true if already docked."
+        ),
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_emergency_stop",
+        description="Immediately stop all of Vector's motors. Idempotent and safe to call repeatedly.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_charger_status",
+        description="Return charger-related status (is_charging, is_on_charger_platform).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_touch_status",
+        description="Return touch sensor status (last_touch_time, is_being_held).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_proximity_status",
+        description="Return the latest proximity sensor reading (distance_mm, found_object).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_scan",
+        description="Scan the environment by looking around in place.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "num_rotations": {
+                    "type": "integer",
+                    "description": "Number of rotation sweeps to perform (default: 1)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_find_faces",
+        description="Search for faces by running the find-faces behavior.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_list_visible_faces",
+        description="Return a list of currently visible faces with face_id and name.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_list_visible_objects",
+        description="Return a list of currently visible objects (standard and custom).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_capture_image",
+        description="Capture a single image using the preferred camera.capture_single_image path.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_face_detection",
+        description="Return a summary of currently detected faces from world state.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_vision_reset",
+        description="Disable all vision modes to reset vision processing state.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
 ]
 
 
@@ -156,6 +227,8 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
             angle_deg=arguments.get("angle_deg"),
         ),
         "vector_drive_off_charger": _tools.vector_drive_off_charger,
+        "vector_drive_on_charger": _tools.vector_drive_on_charger,
+        "vector_emergency_stop": _tools.vector_emergency_stop,
         "vector_look": _tools.vector_look,
         "vector_face": lambda: _tools.vector_face(
             arguments["image_base64"],
@@ -166,4 +239,16 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
         "vector_status": _tools.vector_status,
         "vector_head": lambda: _tools.vector_head(arguments["angle_deg"]),
         "vector_lift": lambda: _tools.vector_lift(arguments["height"]),
+        "vector_charger_status": _tools.vector_charger_status,
+        "vector_touch_status": _tools.vector_touch_status,
+        "vector_proximity_status": _tools.vector_proximity_status,
+        "vector_scan": lambda: _tools.vector_scan(
+            num_rotations=arguments.get("num_rotations", 1)
+        ),
+        "vector_find_faces": _tools.vector_find_faces,
+        "vector_list_visible_faces": _tools.vector_list_visible_faces,
+        "vector_list_visible_objects": _tools.vector_list_visible_objects,
+        "vector_capture_image": _tools.vector_capture_image,
+        "vector_face_detection": _tools.vector_face_detection,
+        "vector_vision_reset": _tools.vector_vision_reset,
     }

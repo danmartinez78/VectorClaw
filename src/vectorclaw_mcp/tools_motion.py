@@ -59,3 +59,29 @@ def vector_lift(height: float) -> dict:
     robot = _robot()
     robot.behavior.set_lift_height(clamped)
     return {"status": "ok", "height": clamped}
+
+
+def vector_drive_on_charger() -> dict:
+    """Best-effort attempt to drive Vector back onto its charger."""
+    robot = _robot()
+    if robot.status.is_charging:
+        return {"status": "ok", "already_on_charger": True}
+    try:
+        robot.behavior.drive_on_charger()
+        return {"status": "ok", "already_on_charger": False}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {
+            "status": "error",
+            "message": f"drive_on_charger failed: {exc}",
+            "action_required": "manually place Vector on charger",
+        }
+
+
+def vector_emergency_stop() -> dict:
+    """Immediately stop all motors (idempotent, safe to call repeatedly)."""
+    robot = _robot()
+    try:
+        robot.motors.stop_all_motors()
+        return {"status": "ok"}
+    except Exception as exc:  # pragma: no cover - defensive runtime handling
+        return {"status": "error", "message": str(exc)}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import io
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -140,3 +141,175 @@ def test_vector_status(mock_robot):
     assert "battery_level" in result
     assert "is_charging" in result
     assert "is_carrying_block" in result
+    assert "is_cliff_detected" in result
+    assert "is_moving" in result
+
+
+def test_vector_charger_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_charger_status
+
+    result = vector_charger_status()
+
+    assert result["status"] == "ok"
+    assert result["is_charging"] is False
+    assert result["is_on_charger_platform"] is False
+
+
+def test_vector_touch_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_touch_status
+
+    result = vector_touch_status()
+
+    assert result["status"] == "ok"
+    assert "last_touch_time" in result
+    assert "is_being_held" in result
+
+
+def test_vector_proximity_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_proximity_status
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "ok"
+    assert result["distance_mm"] == 150.0
+    assert result["found_object"] is True
+
+
+def test_vector_proximity_status_no_reading(mock_robot):
+    from vectorclaw_mcp.tools import vector_proximity_status
+
+    mock_robot.proximity.last_sensor_reading = None
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "ok"
+    assert result["distance_mm"] is None
+    assert result["found_object"] is False
+
+
+def test_vector_scan(mock_robot):
+    from vectorclaw_mcp.tools import vector_scan
+
+    result = vector_scan(num_rotations=2)
+
+    mock_robot.behavior.look_around_in_place.assert_called_once_with(num_rotations=2)
+    assert result["status"] == "ok"
+    assert result["num_rotations"] == 2
+
+
+def test_vector_scan_default_rotations(mock_robot):
+    from vectorclaw_mcp.tools import vector_scan
+
+    result = vector_scan()
+
+    mock_robot.behavior.look_around_in_place.assert_called_once_with(num_rotations=1)
+    assert result["status"] == "ok"
+
+
+def test_vector_find_faces(mock_robot):
+    from vectorclaw_mcp.tools import vector_find_faces
+
+    result = vector_find_faces()
+
+    mock_robot.behavior.find_faces.assert_called_once()
+    assert result["status"] == "ok"
+
+
+def test_vector_list_visible_faces_empty(mock_robot):
+    from vectorclaw_mcp.tools import vector_list_visible_faces
+
+    result = vector_list_visible_faces()
+
+    assert result["status"] == "ok"
+    assert result["faces"] == []
+    assert result["count"] == 0
+
+
+def test_vector_list_visible_faces_with_faces(mock_robot):
+    from vectorclaw_mcp.tools import vector_list_visible_faces
+
+    face = MagicMock()
+    face.face_id = 1
+    face.name = "Alice"
+    mock_robot.world.visible_faces = [face]
+
+    result = vector_list_visible_faces()
+
+    assert result["status"] == "ok"
+    assert result["count"] == 1
+    assert result["faces"][0]["face_id"] == 1
+    assert result["faces"][0]["name"] == "Alice"
+
+
+def test_vector_list_visible_objects_empty(mock_robot):
+    from vectorclaw_mcp.tools import vector_list_visible_objects
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "ok"
+    assert result["objects"] == []
+    assert result["count"] == 0
+
+
+def test_vector_capture_image(mock_robot):
+    from PIL import Image as PILImage
+    from vectorclaw_mcp.tools import vector_capture_image
+
+    pil_img = PILImage.new("RGB", (320, 240), color=(0, 0, 0))
+    img_wrapper = MagicMock()
+    img_wrapper.raw_image = pil_img
+    mock_robot.camera.capture_single_image.return_value = img_wrapper
+
+    result = vector_capture_image()
+
+    mock_robot.camera.capture_single_image.assert_called_once()
+    assert result["status"] == "ok"
+    assert "image_base64" in result
+    assert result["content_type"] == "image/jpeg"
+
+
+def test_vector_capture_image_returns_none(mock_robot):
+    from vectorclaw_mcp.tools import vector_capture_image
+
+    mock_robot.camera.capture_single_image.return_value = None
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "No image captured" in result["message"]
+
+
+def test_vector_face_detection_empty(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    result = vector_face_detection()
+
+    assert result["status"] == "ok"
+    assert result["detected_faces"] == []
+    assert result["count"] == 0
+
+
+def test_vector_face_detection_with_faces(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    face = MagicMock()
+    face.face_id = 5
+    face.name = "Bob"
+    face.expression = "happiness"
+    mock_robot.world.visible_faces = [face]
+
+    result = vector_face_detection()
+
+    assert result["status"] == "ok"
+    assert result["count"] == 1
+    assert result["detected_faces"][0]["face_id"] == 5
+    assert result["detected_faces"][0]["name"] == "Bob"
+
+
+def test_vector_vision_reset(mock_robot):
+    from vectorclaw_mcp.tools import vector_vision_reset
+
+    result = vector_vision_reset()
+
+    mock_robot.vision.disable_all_vision_modes.assert_called_once()
+    assert result["status"] == "ok"
