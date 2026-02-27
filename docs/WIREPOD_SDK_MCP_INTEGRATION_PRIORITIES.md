@@ -58,10 +58,20 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 ## Next sections to complete
 
-- Motors + low-level control
 - Animation
 - Photos + Faces + Sensors (touch/proximity/status)
 - Events/streaming patterns
+
+---
+
+## Section 4 — Motors + Low-Level Control
+
+| SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
+|---|---|---:|---:|---|---|---|---|
+| `motors.set_wheel_motors` | Direct wheel velocity control | High | High | Direct | `vector_set_wheel_motors` | Later | Powerful but easy to misuse; requires strict clamps, timeout, and deadman safeguards. |
+| `motors.set_head_motor` | Direct head motor control | Medium | Medium | Direct | `vector_set_head_motor` | Later | Prefer higher-level head-angle behavior path first. |
+| `motors.set_lift_motor` | Direct lift motor control | Medium | Medium | Direct | `vector_set_lift_motor` | Later | Prefer higher-level lift-height behavior path first. |
+| `motors.stop_all_motors` | Immediate motion halt / safety stop | Very High | Low | Direct | `vector_emergency_stop` | Now | Critical safety primitive; include even while low-level motor controls are deferred. |
 
 ---
 
