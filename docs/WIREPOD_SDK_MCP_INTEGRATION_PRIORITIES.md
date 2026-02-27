@@ -58,7 +58,18 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 ## Next sections to complete
 
-- Events/streaming patterns
+- *(all core sections now covered; refine decisions and start implementation batching)*
+
+---
+
+## Section 7 — Events / Streaming Patterns
+
+| SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
+|---|---|---:|---:|---|---|---|---|
+| `robot.events` + event subscriptions | Reactive workflows from robot events | Medium | High | Composed | `vector_event_subscribe` / `vector_wait_for_event` | Later | Powerful but requires lifecycle management, cancellation semantics, and timeout discipline in MCP context. |
+| camera feed streaming (`camera.init_camera_feed`, viewer patterns) | Continuous perception stream | Medium | High | Composed | `vector_camera_stream_start/stop` | Later | High bandwidth/state complexity; defer until stable single-shot capture workflows are complete. |
+| audio feed enable (`robot.enable_audio_feed`) | Continuous audio stream processing | Low | High | Composed | `vector_audio_stream_start/stop` | Skip | Not needed for current milestones; increases complexity and policy surface area. |
+| nav map / continuous mapping signals | Advanced navigation context | Low | High | Composed | `vector_nav_stream` | Skip | Better aligned with future ROS2/navigation milestone, not v1 MCP scope. |
 
 ---
 
