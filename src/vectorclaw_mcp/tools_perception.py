@@ -97,3 +97,40 @@ def vector_status() -> dict:
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
     }
+
+
+def vector_capture_image() -> dict:
+    robot = _robot()
+    try:
+        image = robot.camera.capture_single_image()
+    except Exception as exc:
+        return {"status": "error", "message": f"Failed to capture image: {exc}"}
+    if image is None:
+        return {"status": "error", "message": "No camera image available"}
+
+    with io.BytesIO() as buf:
+        image.raw_image.save(buf, format="JPEG")
+        encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+    return {"status": "ok", "image_base64": encoded, "content_type": "image/jpeg"}
+
+
+def vector_face_detection() -> dict:
+    robot = _robot()
+    robot.vision.enable_face_detection(detect_faces=True)
+    try:
+        faces = list(robot.world.visible_faces)
+    finally:
+        robot.vision.disable_face_detection()
+    detections = []
+    for face in faces:
+        detections.append({
+            "face_id": face.face_id,
+            "name": face.name if face.name else None,
+        })
+    return {"status": "ok", "face_count": len(detections), "faces": detections}
+
+
+def vector_vision_reset() -> dict:
+    robot = _robot()
+    robot.vision.disable_all_vision_modes()
+    return {"status": "ok"}

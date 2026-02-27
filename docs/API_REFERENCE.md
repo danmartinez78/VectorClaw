@@ -172,3 +172,54 @@ Recommended sequence:
 4. `vector_drive` turn (e.g., 90°)
 
 This avoids confusion with ambient idle behavior.
+
+---
+
+## Camera and Vision Controls *(pending registry)*
+
+> **Status:** draft — tools implemented in `tools_perception.py`; not yet registered in `tool_registry.py` or `server.py`.
+
+### `vector_capture_image`
+Capture a single camera image via `camera.capture_single_image`.
+
+**Input:** none
+
+**Output:**
+- `image_base64` (JPEG payload)
+- `content_type` (`image/jpeg`)
+
+**Example response:**
+```json
+{"status": "ok", "image_base64": "<base64-encoded JPEG>", "content_type": "image/jpeg"}
+```
+
+---
+
+### `vector_face_detection`
+Enable face detection briefly, return a summarized list of visible faces, then disable detection.
+No persistent streaming or session state is introduced.
+
+**Input:** none
+
+**Output:**
+- `face_count` (integer): number of faces detected
+- `faces` (array): each entry contains:
+  - `face_id` (integer)
+  - `name` (string or null): enrolled name if recognised, otherwise `null`
+
+**Example response:**
+```json
+{"status": "ok", "face_count": 1, "faces": [{"face_id": 3, "name": "Alice"}]}
+```
+
+---
+
+### `vector_vision_reset`
+Disable all active vision modes via `vision.disable_all_vision_modes`.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```

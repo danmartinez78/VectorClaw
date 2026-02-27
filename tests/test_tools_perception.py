@@ -140,3 +140,91 @@ def test_vector_status(mock_robot):
     assert "battery_level" in result
     assert "is_charging" in result
     assert "is_carrying_block" in result
+
+
+def test_vector_capture_image(mock_robot):
+    from vectorclaw_mcp.tools import vector_capture_image
+
+    result = vector_capture_image()
+
+    mock_robot.camera.capture_single_image.assert_called_once()
+    assert result["status"] == "ok"
+    assert "image_base64" in result
+    assert result["content_type"] == "image/jpeg"
+    decoded = base64.b64decode(result["image_base64"])
+    assert len(decoded) > 0
+
+
+def test_vector_capture_image_none(mock_robot):
+    from vectorclaw_mcp.tools import vector_capture_image
+
+    mock_robot.camera.capture_single_image.return_value = None
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "No camera image" in result["message"]
+
+
+def test_vector_capture_image_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_capture_image
+
+    mock_robot.camera.capture_single_image.side_effect = RuntimeError("camera unavailable")
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "Failed to capture image" in result["message"]
+
+
+def test_vector_face_detection_no_faces(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    mock_robot.world.visible_faces = []
+
+    result = vector_face_detection()
+
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
+    mock_robot.vision.disable_face_detection.assert_called_once()
+    assert result["status"] == "ok"
+    assert result["face_count"] == 0
+    assert result["faces"] == []
+
+
+def test_vector_face_detection_with_faces(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    face1 = MagicMock()
+    face1.face_id = 1
+    face1.name = "Alice"
+    face2 = MagicMock()
+    face2.face_id = 2
+    face2.name = ""
+    mock_robot.world.visible_faces = [face1, face2]
+
+    result = vector_face_detection()
+
+    assert result["status"] == "ok"
+    assert result["face_count"] == 2
+    assert result["faces"][0] == {"face_id": 1, "name": "Alice"}
+    assert result["faces"][1] == {"face_id": 2, "name": None}
+
+
+def test_vector_face_detection_disables_after_detection(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    mock_robot.world.visible_faces = []
+
+    vector_face_detection()
+
+    mock_robot.vision.disable_face_detection.assert_called_once()
+
+
+def test_vector_vision_reset(mock_robot):
+    from vectorclaw_mcp.tools import vector_vision_reset
+
+    result = vector_vision_reset()
+
+    mock_robot.vision.disable_all_vision_modes.assert_called_once()
+    assert result["status"] == "ok"

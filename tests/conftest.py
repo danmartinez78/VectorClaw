@@ -47,6 +47,7 @@ def _make_robot() -> MagicMock:
     img_wrapper = MagicMock()
     img_wrapper.raw_image = pil_img
     robot.camera.latest_image = img_wrapper
+    robot.camera.capture_single_image.return_value = img_wrapper
 
     return robot
 
