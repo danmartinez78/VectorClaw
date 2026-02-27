@@ -1,4 +1,4 @@
-# Wire-Pod Vector SDK Reference (Implementation Guide)
+# Wire-Pod SDK Implementation Guide
 
 Purpose: implementation-focused reference for building MCP tools on top of the Python SDK (`anki_vector` namespace, distributed via `wirepod_vector_sdk`).
 

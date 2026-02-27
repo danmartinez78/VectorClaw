@@ -1,4 +1,4 @@
-# Last-Night Fixes Ledger (Forensic Backfill)
+# Session Forensics Ledger (2026-02-26 to 2026-02-27)
 
 Date range reconstructed: 2026-02-26 → 2026-02-27 (CST)
 
@@ -51,7 +51,7 @@ Audit result at time of writing:
 ## Open local WIP captured now
 
 Docs taxonomy normalization:
-- `VECTOR_SDK_REFERENCE.md` → `WIREPOD_SDK_REFERENCE.md`
+- `VECTOR_SDK_REFERENCE.md` → `WIREPOD_SDK_IMPLEMENTATION_GUIDE.md`
 - `FUNCTIONALITY_MATRIX.md` → `SDK_TO_MCP_COVERAGE_MATRIX.md`
 
 ## Process guardrails (agreed going forward)
