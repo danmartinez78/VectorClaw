@@ -123,5 +123,6 @@ MIT — see [LICENSE](LICENSE).
 - [**Hardware Test Playbook**](docs/HARDWARE_TEST_PLAYBOOK.md) — repeatable on-robot validation protocol + PR checklist
 - [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
 - [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md)
+- [SDK Fork Strategy](docs/SDK_FORK_STRATEGY.md)
 - [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md)
 - [Session Forensics Ledger (2026-02-26 to 2026-02-27)](docs/SESSION_FORENSICS_LEDGER_2026-02-26_to_2026-02-27.md)

@@ -1,9 +1,18 @@
 # SDK Fork Patch Notes (wirepod_vector_sdk)
 
-These are the local unblock patches applied during hardware validation.
+These are the temporary fork patches required to keep VectorClaw release-ready while upstream convergence is in progress.
+
+Related policy: [SDK Fork Strategy](SDK_FORK_STRATEGY.md)
 
 ## Why
 Current SDK behavior required compatibility and runtime adjustments to unblock real robot testing on modern Python.
+
+## Patch tracking status
+
+| Patch area | Fork status | Upstream PR | Planned removal trigger |
+|---|---|---|---|
+| asyncio Event loop compatibility | Pending fork commit | _TBD_ | Upstream release includes fix |
+| animation cache default behavior | Pending fork commit | _TBD_ | Upstream release or wrapper-level toggle lands |
 
 ## Patches to carry into fork
 
