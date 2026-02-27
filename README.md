@@ -121,3 +121,4 @@ MIT — see [LICENSE](LICENSE).
 - [Runtime Support](docs/RUNTIME_SUPPORT.md)
 - [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
 - [Functionality Matrix](docs/FUNCTIONALITY_MATRIX.md)
+- [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md)

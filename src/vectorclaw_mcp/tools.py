@@ -56,7 +56,8 @@ def vector_animate(animation_name: str) -> dict:
     return {"status": "ok", "animation": animation_name}
 
 
-def vector_drive(speed: int = 50, 
+def vector_drive(
+    speed: int = 50,
     distance_mm: Optional[float] = None,
     angle_deg: Optional[float] = None,
 ) -> dict:

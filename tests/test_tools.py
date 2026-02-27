@@ -497,3 +497,33 @@ def test_call_tool_exception_becomes_error(mock_robot, monkeypatch):
 
     assert data["status"] == "error"
     assert "division by zero" in data["message"]
+
+
+def test_vector_drive_with_custom_speed(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive
+
+    result = vector_drive(distance_mm=200, speed=100)
+
+    mock_robot.behavior.drive_straight.assert_called_once_with(200, 100)
+    assert result["status"] == "ok"
+    assert result["speed"] == 100
+
+
+def test_vector_drive_off_charger_success(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_off_charger
+
+    result = vector_drive_off_charger()
+
+    mock_robot.behavior.drive_off_charger.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_drive_off_charger_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_off_charger
+
+    mock_robot.behavior.drive_off_charger.side_effect = RuntimeError("charger comms error")
+
+    result = vector_drive_off_charger()
+
+    assert result["status"] == "error"
+    assert "charger comms error" in result["message"]
