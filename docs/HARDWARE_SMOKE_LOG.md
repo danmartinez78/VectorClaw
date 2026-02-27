@@ -30,18 +30,18 @@ Use alongside:
 | `vector_face` |  |  |  |
 | `vector_head` |  |  |  |
 | `vector_lift` |  |  |  |
-| `vector_scan` |  |  |  |
-| `vector_find_faces` |  |  |  |
-| `vector_list_visible_faces` |  |  |  |
-| `vector_list_visible_objects` |  |  |  |
-| `vector_drive_on_charger` |  |  |  |
-| `vector_emergency_stop` |  |  |  |
-| `vector_capture_image` |  |  |  |
-| `vector_face_detection` |  |  |  |
-| `vector_vision_reset` |  |  |  |
-| `vector_charger_status` |  |  |  |
-| `vector_touch_status` |  |  |  |
-| `vector_proximity_status` |  |  |  |
+| `vector_scan` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_find_faces` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_list_visible_faces` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_list_visible_objects` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_drive_on_charger` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_emergency_stop` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_capture_image` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_face_detection` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_vision_reset` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_charger_status` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_touch_status` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `vector_proximity_status` |  |  | Pending MCP registration (#67) — skip until integrated |
 
 ### Anomalies / Follow-ups
 - 
