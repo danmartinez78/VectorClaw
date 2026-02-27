@@ -26,6 +26,7 @@ def test_vector_look(mock_robot):
     assert result["status"] == "ok"
     assert "image_base64" in result
     assert result["content_type"] == "image/jpeg"
+    assert set(result.keys()) == {"status", "image_base64", "content_type"}
     decoded = base64.b64decode(result["image_base64"])
     assert len(decoded) > 0
 
@@ -241,6 +242,118 @@ def test_vector_list_visible_faces_error(mock_robot):
     mock_robot.world = _RaisingWorld()
 
     result = vector_list_visible_faces()
+# ── vector_capture_image ─────────────────────────────────────────────────────
+
+def test_vector_capture_image_success(mock_robot):
+    from unittest.mock import MagicMock
+    from PIL import Image as PILImage
+    from vectorclaw_mcp.tools_perception import vector_capture_image
+
+    pil_img = PILImage.new("RGB", (320, 240), color=(0, 128, 255))
+    img_wrapper = MagicMock()
+    img_wrapper.raw_image = pil_img
+    mock_robot.camera.capture_single_image.return_value = img_wrapper
+
+    result = vector_capture_image()
+
+    mock_robot.camera.capture_single_image.assert_called_once()
+    assert result["status"] == "ok"
+    assert "image_base64" in result
+    assert result["content_type"] == "image/jpeg"
+    assert set(result.keys()) == {"status", "image_base64", "content_type"}
+    decoded = base64.b64decode(result["image_base64"])
+    assert len(decoded) > 0
+
+
+def test_vector_capture_image_returns_none(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_capture_image
+
+    mock_robot.camera.capture_single_image.return_value = None
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "No image" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+def test_vector_capture_image_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_capture_image
+
+    mock_robot.camera.capture_single_image.side_effect = RuntimeError("camera failure")
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "camera failure" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+def test_vector_capture_image_encode_error(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_capture_image
+
+    img_wrapper = MagicMock()
+    img_wrapper.raw_image.save.side_effect = OSError("disk full")
+    mock_robot.camera.capture_single_image.return_value = img_wrapper
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "Failed to encode image" in result["message"]
+    assert "disk full" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+# ── vector_face_detection ────────────────────────────────────────────────────
+
+def test_vector_face_detection_no_faces(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_face_detection
+
+    mock_robot.world.visible_faces = []
+
+    result = vector_face_detection()
+
+    assert result["status"] == "ok"
+    assert result["face_count"] == 0
+    assert set(result.keys()) == {"status", "face_count", "faces"}
+    assert result["faces"] == []
+
+
+def test_vector_face_detection_with_faces(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_face_detection
+
+    face1 = MagicMock()
+    face1.face_id = 1
+    face1.expression = "happy"
+    face2 = MagicMock()
+    face2.face_id = 2
+    face2.expression = "neutral"
+    mock_robot.world.visible_faces = [face1, face2]
+
+    result = vector_face_detection()
+
+    assert result["status"] == "ok"
+    assert result["face_count"] == 2
+    assert len(result["faces"]) == 2
+    assert result["faces"][0]["face_id"] == 1
+    assert result["faces"][1]["face_id"] == 2
+    assert set(result.keys()) == {"status", "face_count", "faces"}
+    assert all(set(face.keys()) == {"face_id", "expression"} for face in result["faces"])
+    assert result["faces"][0]["expression"] == "happy"
+    assert result["faces"][1]["expression"] == "neutral"
+
+
+def test_vector_face_detection_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_face_detection
+
+    class _ErrorIterable:
+        def __iter__(self):
+            raise RuntimeError("vision error")
+
+    mock_robot.world.visible_faces = _ErrorIterable()
+    result = vector_face_detection()
 
     assert result["status"] == "error"
     assert "vision error" in result["message"]
@@ -293,6 +406,27 @@ def test_vector_list_visible_objects_error(mock_robot):
 
     assert result["status"] == "error"
     assert "object error" in result["message"]
+# ── vector_vision_reset ──────────────────────────────────────────────────────
+
+def test_vector_vision_reset_success(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_vision_reset
+
+    result = vector_vision_reset()
+
+    mock_robot.vision.disable_all_vision_modes.assert_called_once()
+    assert result == {"status": "ok"}
+    assert result["status"] == "ok"
+
+
+def test_vector_vision_reset_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_vision_reset
+
+    mock_robot.vision.disable_all_vision_modes.side_effect = RuntimeError("vision reset failed")
+
+    result = vector_vision_reset()
+
+    assert result["status"] == "error"
+    assert "vision reset failed" in result["message"]
     assert set(result.keys()) == {"status", "message"}
 
 
