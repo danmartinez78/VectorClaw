@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from typing import Optional
 
 from .tools_common import (
@@ -12,6 +13,8 @@ from .tools_common import (
     _motion_precheck,
     _robot,
 )
+
+_DRIVE_ON_CHARGER_TIMEOUT_SEC = 30.0
 
 
 def vector_drive(
@@ -59,3 +62,84 @@ def vector_lift(height: float) -> dict:
     robot = _robot()
     robot.behavior.set_lift_height(clamped)
     return {"status": "ok", "height": clamped}
+
+
+def vector_drive_on_charger(timeout_sec: float = _DRIVE_ON_CHARGER_TIMEOUT_SEC) -> dict:
+    """Best-effort helper to drive Vector onto the charger.
+
+    If Vector is already on the charger the call is a no-op and returns
+    ``{"status": "ok", "already_on_charger": true}``.
+
+    The underlying ``behavior.drive_on_charger()`` call is executed with a
+    wall-clock *timeout_sec* deadline.  If the call does not complete within
+    that deadline – or if the robot appears to still be off the charger
+    afterward – an actionable error payload is returned.
+
+    Args:
+        timeout_sec: Maximum seconds to wait for ``drive_on_charger`` to
+            return.  Defaults to ``_DRIVE_ON_CHARGER_TIMEOUT_SEC`` (30 s).
+
+    Returns:
+        A dict with ``status`` ``"ok"`` on success or ``"error"`` with
+        ``action_required`` guidance on failure.
+    """
+    robot = _robot()
+
+    if robot.status.is_charging:
+        return {"status": "ok", "already_on_charger": True}
+
+    result: dict = {}
+    exc_holder: list = []
+
+    def _do_drive() -> None:
+        try:
+            robot.behavior.drive_on_charger()
+        except Exception as exc:  # noqa: BLE001
+            exc_holder.append(exc)
+
+    thread = threading.Thread(target=_do_drive, daemon=True)
+    thread.start()
+    thread.join(timeout=timeout_sec)
+
+    if thread.is_alive():
+        return {
+            "status": "error",
+            "timed_out": True,
+            "action_required": "check charger placement and retry vector_drive_on_charger",
+            "message": f"drive_on_charger did not complete within {timeout_sec}s",
+        }
+
+    if exc_holder:
+        return {
+            "status": "error",
+            "action_required": "check charger placement and retry vector_drive_on_charger",
+            "message": str(exc_holder[0]),
+        }
+
+    if not robot.status.is_charging:
+        return {
+            "status": "error",
+            "still_off_charger": True,
+            "action_required": "manually place Vector on charger and retry",
+            "message": "drive_on_charger completed but Vector is still off the charger",
+        }
+
+    return {"status": "ok"}
+
+
+def vector_emergency_stop() -> dict:
+    """Immediately stop all Vector motors.
+
+    This is idempotent and safe to call repeatedly; it will always attempt
+    ``motors.stop_all_motors()`` regardless of the current motion state.
+
+    Returns:
+        ``{"status": "ok"}`` on success, or ``{"status": "error", "message": …}``
+        if the SDK call raises.
+    """
+    robot = _robot()
+    try:
+        robot.motors.stop_all_motors()
+        return {"status": "ok"}
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "message": str(exc)}
