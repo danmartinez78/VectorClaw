@@ -58,8 +58,21 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 ## Next sections to complete
 
-- Photos + Faces + Sensors (touch/proximity/status)
 - Events/streaming patterns
+
+---
+
+## Section 6 — Photos + Faces + Sensors + Status
+
+| SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
+|---|---|---:|---:|---|---|---|---|
+| `photos.load_photo_info` / `photo_info` / `get_photo` / `get_thumbnail` | Retrieve robot photo artifacts | Medium | Medium | Direct | `vector_list_photos`, `vector_get_photo` | Later | Useful, but not core to immediate control loop; adds storage/index selection complexity. |
+| `faces.request_enrolled_names` | Known-face identity context | Medium | Low | Direct | `vector_list_enrolled_faces` | Later | Useful context but not blocking for current milestone. |
+| `faces.update_enrolled_face_by_id` / erase methods | Face identity mutation | Low | Medium | Direct | `vector_update_face`, `vector_delete_face` | Skip | Defer mutable/destructive identity operations until explicit confirmation UX exists. |
+| `touch.last_sensor_reading` | Contact/touch interaction state | Medium | Low | Direct | `vector_touch_status` | Now | Lightweight interaction signal for reactive behavior. |
+| `proximity.last_sensor_reading` | Nearby obstacle/range awareness | High | Low | Direct | `vector_proximity_status` | Now | High value safety/context signal for composed movement logic. |
+| `robot.status` (expanded fields) | Unified operational observability | Very High | Low | Direct | `vector_status` (expanded) | Now | Core state payload should grow to support composed tools and safety gates. |
+| `robot.get_battery_state` / `get_version_state` | Health + runtime compatibility context | High | Low | Direct | `vector_battery_status`, `vector_version_status` (or fold into `vector_status`) | Now | Needed for diagnostics, supportability, and runtime policy checks. |
 
 ---
 
