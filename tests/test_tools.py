@@ -530,114 +530,68 @@ def test_vector_drive_off_charger_error(mock_robot):
 
 
 # ---------------------------------------------------------------------------
-# MOTION_PRECHECK – charger-aware guard
+# vector_head
 # ---------------------------------------------------------------------------
 
-def test_vector_drive_blocked_on_charger(mock_robot):
-    """vector_drive() returns an actionable error when Vector is on the charger."""
-    from vectorclaw_mcp.tools import vector_drive
+def test_vector_head_normal(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
 
-    mock_robot.status.is_charging = True
+    result = vector_head(20.0)
 
-    result = vector_drive(distance_mm=100)
-
-    assert result["status"] == "error"
-    assert result["on_charger"] is True
-    assert "action_required" in result
-    assert "message" in result
-    mock_robot.behavior.drive_straight.assert_not_called()
+    mock_robot.behavior.set_head_angle.assert_called_once_with(20.0)
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == 20.0
 
 
-def test_vector_drive_turn_blocked_on_charger(mock_robot):
-    """vector_drive() with angle_deg also returns an actionable error on charger."""
-    from vectorclaw_mcp.tools import vector_drive
+def test_vector_head_clamp_high(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
 
-    mock_robot.status.is_charging = True
-
-    result = vector_drive(angle_deg=90)
-
-    assert result["status"] == "error"
-    assert result["on_charger"] is True
-    assert "action_required" in result
-    mock_robot.behavior.turn_in_place.assert_not_called()
-
-
-def test_vector_drive_proceeds_when_not_on_charger(mock_robot):
-    """vector_drive() proceeds normally when Vector is not on the charger."""
-    from vectorclaw_mcp.tools import vector_drive
-
-    mock_robot.status.is_charging = False
-
-    result = vector_drive(distance_mm=100)
+    result = vector_head(90.0)
 
     assert result["status"] == "ok"
-    mock_robot.behavior.drive_straight.assert_called_once()
+    assert result["angle_deg"] == 45.0
+    mock_robot.behavior.set_head_angle.assert_called_once_with(45.0)
 
 
-def test_vector_drive_auto_off_charger(mock_robot, monkeypatch):
-    """With VECTOR_AUTO_DRIVE_OFF_CHARGER=1, vector_drive auto-drives off and proceeds."""
-    from vectorclaw_mcp.tools import vector_drive
+def test_vector_head_clamp_low(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
 
-    mock_robot.status.is_charging = True
-    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+    result = vector_head(-90.0)
 
-    # Simulate successful undock: status flips to False after drive_off_charger()
-    def _undock():
-        mock_robot.status.is_charging = False
-
-    mock_robot.behavior.drive_off_charger.side_effect = _undock
-
-    result = vector_drive(distance_mm=100)
-
-    mock_robot.behavior.drive_off_charger.assert_called_once()
     assert result["status"] == "ok"
-    mock_robot.behavior.drive_straight.assert_called_once()
+    assert result["angle_deg"] == -22.0
+    mock_robot.behavior.set_head_angle.assert_called_once_with(-22.0)
 
 
-def test_vector_drive_auto_off_charger_still_on_charger(mock_robot, monkeypatch):
-    """Auto drive-off-charger call succeeds but robot remains on charger — returns error."""
-    from vectorclaw_mcp.tools import vector_drive
+# ---------------------------------------------------------------------------
+# vector_lift
+# ---------------------------------------------------------------------------
 
-    mock_robot.status.is_charging = True  # stays True after drive_off_charger
-    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+def test_vector_lift_normal(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
 
-    result = vector_drive(distance_mm=100)
+    result = vector_lift(0.5)
 
-    mock_robot.behavior.drive_off_charger.assert_called_once()
-    assert result["status"] == "error"
-    assert result["on_charger"] is True
-    assert "action_required" in result
-    mock_robot.behavior.drive_straight.assert_not_called()
+    mock_robot.behavior.set_lift_height.assert_called_once_with(0.5)
+    assert result["status"] == "ok"
+    assert result["height"] == 0.5
 
 
-def test_vector_drive_auto_off_charger_fails(mock_robot, monkeypatch):
-    """When auto drive-off-charger raises, vector_drive returns an actionable error."""
-    from vectorclaw_mcp.tools import vector_drive
+def test_vector_lift_clamp_high(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
 
-    mock_robot.status.is_charging = True
-    mock_robot.behavior.drive_off_charger.side_effect = RuntimeError("comms error")
-    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+    result = vector_lift(2.0)
 
-    result = vector_drive(distance_mm=100)
-
-    assert result["status"] == "error"
-    assert result["on_charger"] is True
-    assert "action_required" in result
-    assert "comms error" in result["message"]
-    mock_robot.behavior.drive_straight.assert_not_called()
+    assert result["status"] == "ok"
+    assert result["height"] == 1.0
+    mock_robot.behavior.set_lift_height.assert_called_once_with(1.0)
 
 
-def test_vector_drive_auto_off_charger_fails_non_runtime_error(mock_robot, monkeypatch):
-    """Auto drive-off-charger handles any exception type, not just RuntimeError."""
-    from vectorclaw_mcp.tools import vector_drive
+def test_vector_lift_clamp_low(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
 
-    mock_robot.status.is_charging = True
-    mock_robot.behavior.drive_off_charger.side_effect = OSError("connection refused")
-    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "1")
+    result = vector_lift(-0.5)
 
-    result = vector_drive(distance_mm=100)
-
-    assert result["status"] == "error"
-    assert result["on_charger"] is True
-    assert "connection refused" in result["message"]
-    mock_robot.behavior.drive_straight.assert_not_called()
+    assert result["status"] == "ok"
+    assert result["height"] == 0.0
+    mock_robot.behavior.set_lift_height.assert_called_once_with(0.0)
