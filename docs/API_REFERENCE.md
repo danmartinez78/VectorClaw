@@ -93,9 +93,61 @@ Return robot status.
 **Input:** none
 
 **Output fields:**
-- `battery_level`
-- `is_charging`
-- `is_carrying_block`
+- `battery_level` — integer charge level reported by the SDK
+- `battery_voltage` — float voltage reading
+- `is_charging` — bool
+- `is_carrying_block` — bool
+- `is_on_charger_platform` — bool
+- `is_cliff_detected` — bool
+- `is_moving` — bool
+- `firmware_version` — string OS version from the robot, or `null` when unavailable
+
+---
+
+<!-- PENDING REGISTRY: tools below are implemented but not yet registered in tool_registry.py -->
+
+### `vector_charger_status` *(pending registry)*
+Return charger and battery state.
+
+**Input:** none
+
+**Output fields:**
+- `is_charging` — bool
+- `is_on_charger_platform` — bool
+- `battery_level` — integer
+- `battery_voltage` — float
+- `suggested_charger_sec` — float seconds remaining on charger suggested by SDK
+
+---
+
+### `vector_touch_status` *(pending registry)*
+Return touch sensor reading.
+
+**Input:** none
+
+**Output fields (success):**
+- `is_being_touched` — bool
+- `raw_touch_value` — integer raw capacitive sensor value
+
+**Error case:** when the sensor reading is unavailable the tool returns
+`{"status": "error", "message": "Touch sensor reading unavailable"}`.
+
+---
+
+### `vector_proximity_status` *(pending registry)*
+Return proximity sensor reading.
+
+**Input:** none
+
+**Output fields (success):**
+- `distance_mm` — float distance to nearest detected object in mm
+- `found_object` — bool whether an object was detected
+- `is_lift_in_fov` — bool whether the lift occludes the sensor
+- `signal_quality` — float signal quality in range 0.0–1.0
+- `unobstructed` — bool whether the sensor path is clear
+
+**Error case:** when the sensor reading is unavailable the tool returns
+`{"status": "error", "message": "Proximity sensor reading unavailable"}`.
 
 ---
 

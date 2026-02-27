@@ -91,9 +91,59 @@ def vector_cube(action: str) -> dict:
 def vector_status() -> dict:
     robot = _robot()
     battery = robot.get_battery_state()
+    try:
+        version_state = robot.get_version_state()
+        firmware_version = version_state.os_version
+    except Exception:
+        firmware_version = None
     return {
         "status": "ok",
         "battery_level": battery.battery_level,
+        "battery_voltage": battery.battery_voltage,
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
+        "is_on_charger_platform": robot.status.is_on_charger_platform,
+        "is_cliff_detected": robot.status.is_cliff_detected,
+        "is_moving": robot.status.is_moving,
+        "firmware_version": firmware_version,
+    }
+
+
+def vector_charger_status() -> dict:
+    robot = _robot()
+    battery = robot.get_battery_state()
+    return {
+        "status": "ok",
+        "is_charging": robot.status.is_charging,
+        "is_on_charger_platform": robot.status.is_on_charger_platform,
+        "battery_level": battery.battery_level,
+        "battery_voltage": battery.battery_voltage,
+        "suggested_charger_sec": battery.suggested_charger_sec,
+    }
+
+
+def vector_touch_status() -> dict:
+    robot = _robot()
+    reading = robot.touch.last_sensor_reading
+    if reading is None:
+        return {"status": "error", "message": "Touch sensor reading unavailable"}
+    return {
+        "status": "ok",
+        "is_being_touched": reading.is_being_touched,
+        "raw_touch_value": reading.raw_touch_value,
+    }
+
+
+def vector_proximity_status() -> dict:
+    robot = _robot()
+    reading = robot.proximity.last_sensor_reading
+    if reading is None:
+        return {"status": "error", "message": "Proximity sensor reading unavailable"}
+    return {
+        "status": "ok",
+        "distance_mm": reading.distance.distance_mm,
+        "found_object": reading.found_object,
+        "is_lift_in_fov": reading.is_lift_in_fov,
+        "signal_quality": reading.signal_quality,
+        "unobstructed": reading.unobstructed,
     }
