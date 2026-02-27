@@ -97,3 +97,35 @@ def vector_status() -> dict:
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
     }
+
+
+def vector_scan() -> dict:
+    robot = _robot()
+    robot.behavior.look_around_in_place()
+    return {"status": "ok"}
+
+
+def vector_find_faces() -> dict:
+    robot = _robot()
+    robot.behavior.find_faces()
+    return {"status": "ok"}
+
+
+def vector_list_visible_faces() -> dict:
+    robot = _robot()
+    faces = [
+        {"face_id": face.face_id, "name": face.name if face.name else None}
+        for face in robot.world.visible_faces
+    ]
+    return {"status": "ok", "faces": faces}
+
+
+def vector_list_visible_objects() -> dict:
+    import itertools
+
+    robot = _robot()
+    objects = [
+        {"object_id": obj.object_id, "object_type": str(obj.object_type)}
+        for obj in itertools.chain(robot.world.visible_objects, robot.world.visible_custom_objects)
+    ]
+    return {"status": "ok", "objects": objects}

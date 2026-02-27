@@ -14,8 +14,12 @@ from .tools_perception import (
     vector_animate,
     vector_cube,
     vector_face,
+    vector_find_faces,
+    vector_list_visible_faces,
+    vector_list_visible_objects,
     vector_look,
     vector_pose,
+    vector_scan,
     vector_status,
 )
 from .tools_speech import vector_say
@@ -32,4 +36,8 @@ __all__ = [
     "vector_status",
     "vector_head",
     "vector_lift",
+    "vector_scan",
+    "vector_find_faces",
+    "vector_list_visible_faces",
+    "vector_list_visible_objects",
 ]

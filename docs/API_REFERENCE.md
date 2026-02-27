@@ -172,3 +172,75 @@ Recommended sequence:
 4. `vector_drive` turn (e.g., 90°)
 
 This avoids confusion with ambient idle behavior.
+
+---
+
+## Perception Discovery Helpers *(pending registry — draft)*
+
+> **Note:** The tools below are implemented in `tools_perception.py` but are not yet wired into the central tool registry or server. They are available as importable Python functions and will be registered in a follow-up issue.
+
+### `vector_scan`
+Look around in place to survey the environment.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```
+
+---
+
+### `vector_find_faces`
+Actively search for faces in the current environment.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```
+
+---
+
+### `vector_list_visible_faces`
+Return a list of faces currently visible to Vector.
+
+**Input:** none
+
+**Output fields:**
+- `faces` — array of face objects, each with:
+  - `face_id` (integer)
+  - `name` (string or null if unrecognised)
+
+**Example response (faces detected):**
+```json
+{"status": "ok", "faces": [{"face_id": 1, "name": "Alice"}, {"face_id": 2, "name": null}]}
+```
+
+**Example response (no faces):**
+```json
+{"status": "ok", "faces": []}
+```
+
+---
+
+### `vector_list_visible_objects`
+Return a list of objects (standard and custom) currently visible to Vector.
+
+**Input:** none
+
+**Output fields:**
+- `objects` — array of object entries (both `world.visible_objects` and `world.visible_custom_objects`), each with:
+  - `object_id` (integer)
+  - `object_type` (string)
+
+**Example response (objects detected):**
+```json
+{"status": "ok", "objects": [{"object_id": 10, "object_type": "LightCube"}]}
+```
+
+**Example response (no objects):**
+```json
+{"status": "ok", "objects": []}
+```
