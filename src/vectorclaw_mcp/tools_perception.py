@@ -97,3 +97,46 @@ def vector_status() -> dict:
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
     }
+
+
+def vector_capture_image() -> dict:
+    """Capture a single image from the camera using camera.capture_single_image."""
+    robot = _robot()
+    try:
+        image = robot.camera.capture_single_image()
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+    if image is None:
+        return {"status": "error", "message": "No image returned by camera"}
+
+    try:
+        with io.BytesIO() as buf:
+            image.raw_image.save(buf, format="JPEG")
+            encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception as exc:
+        return {"status": "error", "message": f"Failed to encode image: {exc}"}
+
+    return {"status": "ok", "image_base64": encoded, "content_type": "image/jpeg"}
+
+
+def vector_face_detection() -> dict:
+    """Return a summary of currently visible faces (no raw image data)."""
+    robot = _robot()
+    try:
+        faces = list(robot.world.visible_faces)
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+    detections = [{"face_id": f.face_id, "expression": str(f.expression)} for f in faces]
+    return {"status": "ok", "face_count": len(detections), "faces": detections}
+
+
+def vector_vision_reset() -> dict:
+    """Disable all vision modes via vision.disable_all_vision_modes."""
+    robot = _robot()
+    try:
+        robot.vision.disable_all_vision_modes()
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+    return {"status": "ok"}

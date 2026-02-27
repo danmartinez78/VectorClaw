@@ -162,6 +162,52 @@ Set Vector's lift/arm height.
 
 > Values outside 0.0–1.0 are silently clamped.  The response always reflects the actual applied height.
 
+---
+
+### `vector_capture_image` *(pending hardware validation)*
+Capture a single camera frame via `camera.capture_single_image`.
+
+**Input:** none
+
+**Output:**
+- `image_base64` (JPEG payload)
+- `content_type` (`image/jpeg`)
+
+**Error response example:**
+```json
+{"status": "error", "message": "camera failure"}
+```
+
+---
+
+### `vector_face_detection` *(pending hardware validation)*
+Return a summary of currently visible faces (no raw image data).
+
+**Input:** none
+
+**Output fields:**
+- `face_count` (integer)
+- `faces` (array of `{face_id, expression}` objects)
+
+**Example response:**
+```json
+{"status": "ok", "face_count": 1, "faces": [{"face_id": 1, "expression": "happy"}]}
+```
+
+---
+
+### `vector_vision_reset` *(pending hardware validation)*
+Disable all active vision modes via `vision.disable_all_vision_modes`.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```
+
+---
+
 ## Proven Test Pattern
 For motion validation, use a one-command-at-a-time protocol with human confirmation between steps.
 
