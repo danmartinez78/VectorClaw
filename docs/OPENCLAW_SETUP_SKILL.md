@@ -122,7 +122,7 @@ On failure the report includes a `"remediation"` field with exact fix steps.
 | `config_validation` | `VECTOR_SERIAL` is present |
 | `write_config` | Config file is writable at the OpenClaw path |
 | `sdk_import` | `import anki_vector` succeeds |
-| `sdk_install` | (Only runs when SDK is absent) — `pip install wirepod_vector_sdk` |
+| `sdk_install` | (Only runs when SDK is absent) — installs from pinned upstream commit |
 | `connectivity` | Robot responds to a live connection attempt |
 | `smoke_test` | Status read + harmless head-move both return success |
 
@@ -135,7 +135,7 @@ On failure the report includes a `"remediation"` field with exact fix steps.
 | `python_version` | Python < 3.10 | Install Python 3.11: https://python.org/downloads |
 | `config_validation` | No serial number supplied | Find serial in Vector app → Settings → My Vector → Serial Number |
 | `write_config` | Permission denied on `~/.openclaw/` | `mkdir -p ~/.openclaw/workspace/config` then re-run |
-| `sdk_import` | wirepod_vector_sdk not installed | `pip install wirepod_vector_sdk` |
+| `sdk_import` | wirepod_vector_sdk not installed | `pip install git+https://github.com/kercre123/wirepod-vector-python-sdk.git@065fc197d592d76a164d64dcf0a768183ab37855` |
 | `connectivity` | Wire-Pod not running or wrong IP | Start Wire-Pod; verify `VECTOR_HOST` if set; see [SETUP.md](SETUP.md) |
 | `smoke_test` | Robot not responding to commands | Check physical robot state; repeat connectivity check |
 

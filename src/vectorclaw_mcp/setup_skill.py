@@ -24,11 +24,11 @@ OPENCLAW_CONFIG_PATH: Path = (
     Path.home() / ".openclaw" / "workspace" / "config" / "mcporter.json"
 )
 
-WIREPOD_SDK_PYPI_NAME = "wirepod_vector_sdk"
-WIREPOD_SDK_FIX_CMD = (
-    "pip install git+https://github.com/kercre123/wirepod-vector-python-sdk.git"
+WIREPOD_SDK_PINNED_URL = (
+    "git+https://github.com/kercre123/wirepod-vector-python-sdk.git"
     "@065fc197d592d76a164d64dcf0a768183ab37855"
 )
+WIREPOD_SDK_FIX_CMD = f"pip install {WIREPOD_SDK_PINNED_URL}"
 
 
 # ---------------------------------------------------------------------------
@@ -94,10 +94,10 @@ def validate_sdk() -> dict[str, Any]:
 
 
 def install_sdk() -> dict[str, Any]:
-    """Install ``wirepod_vector_sdk`` via pip and return a check result."""
+    """Install the Vector SDK from the pinned upstream commit via pip."""
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", WIREPOD_SDK_PYPI_NAME],
+            [sys.executable, "-m", "pip", "install", WIREPOD_SDK_PINNED_URL],
             capture_output=True,
             text=True,
             timeout=120,
