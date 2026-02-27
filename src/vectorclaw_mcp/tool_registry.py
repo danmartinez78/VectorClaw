@@ -6,12 +6,67 @@ from typing import Any
 
 from mcp.types import Tool
 
+from . import setup_skill as _setup_skill
 from . import tools as _tools
 from . import tools_motion as _tools_motion
 from . import tools_perception as _tools_perception
 
 
 TOOLS: list[Tool] = [
+    Tool(
+        name="vector_setup",
+        description=(
+            "Run the VectorClaw setup wizard: validate Python compatibility, "
+            "install the Vector SDK if missing, write OpenClaw config, "
+            "check robot connectivity, and run smoke tests. "
+            "Returns a structured PASS/FAIL report with actionable remediation steps. "
+            "Call this tool first when setting up VectorClaw for a new user."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "serial": {
+                    "type": "string",
+                    "description": (
+                        "Robot serial number (required if VECTOR_SERIAL env var not set). "
+                        "Find it in the Vector app under Settings → My Vector → Serial Number."
+                    ),
+                },
+                "host": {
+                    "type": "string",
+                    "description": (
+                        "Robot IP address (optional). "
+                        "Only needed when auto-discovery via Wire-Pod does not work."
+                    ),
+                },
+                "write_config": {
+                    "type": "boolean",
+                    "description": (
+                        "Write VECTOR_SERIAL/VECTOR_HOST to "
+                        "~/.openclaw/workspace/config/mcporter.json (default: true)."
+                    ),
+                },
+                "install_sdk": {
+                    "type": "boolean",
+                    "description": (
+                        "Attempt to install wirepod_vector_sdk when the SDK is absent "
+                        "(default: true)."
+                    ),
+                },
+                "run_connectivity": {
+                    "type": "boolean",
+                    "description": "Run a live connectivity check against the robot (default: true).",
+                },
+                "run_smoke": {
+                    "type": "boolean",
+                    "description": (
+                        "Run a status read and harmless head-move as a final smoke test "
+                        "(default: true)."
+                    ),
+                },
+            },
+        },
+    ),
     Tool(
         name="vector_say",
         description="Make the Anki Vector robot speak text aloud.",
@@ -221,6 +276,14 @@ TOOLS: list[Tool] = [
 
 def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
     return {
+        "vector_setup": lambda: _setup_skill.run_setup(
+            serial=arguments.get("serial"),
+            host=arguments.get("host"),
+            write_config=arguments.get("write_config", True),
+            install_sdk_if_missing=arguments.get("install_sdk", True),
+            run_connectivity=arguments.get("run_connectivity", True),
+            run_smoke=arguments.get("run_smoke", True),
+        ),
         "vector_say": lambda: _tools.vector_say(arguments["text"]),
         "vector_animate": lambda: _tools.vector_animate(arguments["animation_name"]),
         "vector_drive": lambda: _tools.vector_drive(

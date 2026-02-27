@@ -22,6 +22,7 @@ legacy = [
 
 [project.scripts]
 vectorclaw-mcp = "vectorclaw_mcp.server:main"
+vectorclaw-setup = "vectorclaw_mcp.setup_skill:main"
 
 [project.urls]
 Homepage = "https://github.com/danmartinez78/VectorClaw"
