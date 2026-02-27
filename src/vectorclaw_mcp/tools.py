@@ -9,18 +9,61 @@ from __future__ import annotations
 
 import base64
 import io
+import os
 from typing import Optional
 
 from .robot import robot_manager
 
 
 # ---------------------------------------------------------------------------
-# Helper
+# Helpers
 # ---------------------------------------------------------------------------
 
 def _robot():
     """Return the active robot instance, connecting if necessary."""
     return robot_manager.connect()
+
+
+def _motion_precheck(robot) -> Optional[dict]:
+    """Check preconditions before a motion command.
+
+    If Vector is on the charger and ``VECTOR_AUTO_DRIVE_OFF_CHARGER`` is set to
+    a truthy value (``1``, ``true``, or ``yes``), this helper will attempt to
+    drive it off automatically.  Otherwise an actionable error dict is returned
+    so the caller can surface it to the operator.
+
+    Returns:
+        ``None`` when it is safe to proceed, or an error ``dict`` describing
+        the precondition failure.
+    """
+    if not robot.status.is_charging:
+        return None
+
+    if os.environ.get("VECTOR_AUTO_DRIVE_OFF_CHARGER", "").lower() in ("1", "true", "yes"):
+        try:
+            robot.behavior.drive_off_charger()
+        except Exception as exc:
+            return {
+                "status": "error",
+                "on_charger": True,
+                "action_required": "call vector_drive_off_charger first",
+                "message": f"Auto drive-off-charger failed: {exc}",
+            }
+        if robot.status.is_charging:
+            return {
+                "status": "error",
+                "on_charger": True,
+                "action_required": "call vector_drive_off_charger first",
+                "message": "Auto drive-off-charger completed but Vector is still on the charger",
+            }
+        return None
+
+    return {
+        "status": "error",
+        "on_charger": True,
+        "action_required": "call vector_drive_off_charger first",
+        "message": "Vector is on the charger; drive it off before sending motion commands",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +123,9 @@ def vector_drive(
     import anki_vector.util as util  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
 
     robot = _robot()
+    precheck = _motion_precheck(robot)
+    if precheck is not None:
+        return precheck
     if distance_mm is not None:
         robot.behavior.drive_straight(util.distance_mm(distance_mm), util.speed_mmps(speed))
     if angle_deg is not None:
