@@ -117,9 +117,11 @@ MIT — see [LICENSE](LICENSE).
 
 - [Setup Guide](docs/SETUP.md)
 - [API Reference](docs/API_REFERENCE.md)
-- [Vector SDK Reference](docs/VECTOR_SDK_REFERENCE.md)
+- [Wire-Pod SDK Surface Reference (Comprehensive)](docs/WIREPOD_SDK_SURFACE_REFERENCE.md)
+- [Wire-Pod SDK Implementation Guide](docs/WIREPOD_SDK_IMPLEMENTATION_GUIDE.md)
 - [Runtime Support](docs/RUNTIME_SUPPORT.md)
 - [**Hardware Test Playbook**](docs/HARDWARE_TEST_PLAYBOOK.md) — repeatable on-robot validation protocol + PR checklist
 - [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
-- [Functionality Matrix](docs/FUNCTIONALITY_MATRIX.md)
+- [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md)
 - [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md)
+- [Session Forensics Ledger (2026-02-26 to 2026-02-27)](docs/SESSION_FORENSICS_LEDGER_2026-02-26_to_2026-02-27.md)

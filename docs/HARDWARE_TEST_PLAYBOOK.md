@@ -2,7 +2,7 @@
 
 Repeatable, low-ambiguity on-robot validation protocol for VectorClaw.
 
-> **Quick reference:** See [API Reference](API_REFERENCE.md) for tool parameters and [Vector SDK Reference](VECTOR_SDK_REFERENCE.md) for implementation details.
+> **Quick reference:** See [API Reference](API_REFERENCE.md) for tool parameters and [Wire-Pod SDK Implementation Guide](WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) for implementation details.
 
 ---
 
