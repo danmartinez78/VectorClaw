@@ -34,7 +34,7 @@ Vector runs autonomous idle behaviors (head/eye movements, small adjustments, re
 5. **Minimize session length** — the longer the robot is on, the more idle behaviors accumulate; run tests in focused bursts.
 
 ### Charger State
-`vector_drive` and other motion tools return `SHOULDNT_DRIVE_ON_CHARGER` when the robot is on the charger. Always call `vector_drive_off_charger` as the first motion step and verify the robot physically moved off before continuing.
+`vector_drive` and other motion tools will return `{"status":"error","message": ...}` when the robot is on the charger, with an error message indicating that driving is not allowed while docked (some SDKs may include `SHOULDNT_DRIVE_ON_CHARGER` in this message). Always call `vector_drive_off_charger` as the first motion step and verify the robot physically moved off before continuing.
 
 ### Animation / Idle Overlap
 `vector_animate` responses can overlap with autonomous eye/head animations. Validate animation output only when the robot has been idle and stationary for at least 3 seconds prior.
@@ -90,15 +90,15 @@ Each step follows the pattern:
 | # | Command | Prerequisite | Parameters | Expected result |
 |---|---|---|---|---|
 | 4.1 | `vector_animate` | Robot stationary ≥ 3 s | `animation_name: "anim_greeting_happy_01"` | Visible animation plays |
-| 4.2 | `vector_face` | Valid 184×96 JPEG base64 test image | `image_base64: <test>`, `duration_sec: 2` | Face image displayed for 2 s |
+| 4.2 | `vector_face` | Valid Pillow-supported image (auto-resized to 144×108) | `image_base64: <test>`, `duration_sec: 2` | Face image displayed for 2 s |
 | 4.3 | `vector_cube` | Cube paired and visible to robot | `action: "dock"` | Robot docks with cube |
 
 ### Phase 5 — Error Handling
 
 | # | Scenario | How to trigger | Expected result |
 |---|---|---|---|
-| 5.1 | Drive while on charger | Skip Phase 1 and call `vector_drive` | Error response `SHOULDNT_DRIVE_ON_CHARGER` or equivalent |
-| 5.2 | Cube unavailable | Call `vector_cube` without cube paired | Error response with actionable message |
+| 5.1 | Drive while on charger | Skip Phase 1 and call `vector_drive` | `{"status":"error","message": ...}` indicating driving not allowed while docked |
+| 5.2 | Cube unavailable | Call `vector_cube` with `action: "dock"` while no cube is paired/visible | Error response with actionable message |
 
 ---
 
@@ -198,16 +198,16 @@ Docs-only PRs are exempt from hardware validation but must not change or remove 
 
 ## Quick-Reference Command Sequence
 
-Minimal smoke-test sequence (≈ 5 minutes):
+Minimal smoke-test sequence (≈ 5 minutes). Send each command as a JSON argument object to the MCP tool:
 
-```
-vector_status
-vector_pose
-vector_drive_off_charger   # verify off charger visually
-vector_status              # confirm is_charging: false
-vector_drive distance_mm=150 speed=50
-vector_drive distance_mm=-150 speed=50
-vector_drive angle_deg=90
-vector_say text="VectorClaw smoke test complete"
-vector_look
+```json
+{"tool": "vector_status"}
+{"tool": "vector_pose"}
+{"tool": "vector_drive_off_charger"}
+{"tool": "vector_status"}
+{"tool": "vector_drive",   "args": {"distance_mm": 150,  "speed": 50}}
+{"tool": "vector_drive",   "args": {"distance_mm": -150, "speed": 50}}
+{"tool": "vector_drive",   "args": {"angle_deg": 90}}
+{"tool": "vector_say",     "args": {"text": "VectorClaw smoke test complete"}}
+{"tool": "vector_look"}
 ```
