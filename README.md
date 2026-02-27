@@ -193,6 +193,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | Document | Description |
 |----------|-------------|
 | [Setup Guide](docs/SETUP.md) | Wire-Pod install, robot auth, WiFi, SDK config, troubleshooting |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common runtime failures, smoke baseline, and escalation path |
 | [Runtime Support](docs/RUNTIME_SUPPORT.md) | Supported Python versions and CI policy |
 
 ### 📡 API & SDK

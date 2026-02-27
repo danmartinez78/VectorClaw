@@ -1,7 +1,7 @@
 # Troubleshooting
 
 ## Quick Triage
-1. Confirm wire-pod service is running
+1. Confirm Wire-Pod service is running
 2. Confirm Vector serial/env values are set
 3. Run a lightweight tool first (`vector_status`)
 4. Check CI + local tests (`pytest tests/ -v`)
@@ -22,11 +22,11 @@
 ### 3) Robot won’t connect
 - **Check:**
   - `VECTOR_SERIAL` present
-  - network path to robot/wire-pod is valid
+  - network path to robot/Wire-Pod is valid
   - SDK import works in current Python env
 - **Action:** re-run setup flow and verify cert/runtime context
 
-### 4) Merge conflict fallout in perception tests
+### 4) Contributor-only: merge conflict fallout in perception tests
 - **Symptom:** CI fails unexpectedly after conflict resolution
 - **Cause:** stale conflict markers or broken assertions
 - **Action:**
@@ -39,10 +39,15 @@
 - `vector_drive_off_charger`
 - `vector_drive`
 - `vector_look`
+- `vector_pose`
 - `vector_head`
 - `vector_lift`
 
 ## Escalation
-- Capture exact command + output
-- Capture robot physical behavior
-- Link relevant issue in report
+Open or update an issue at:
+- https://github.com/danmartinez78/VectorClaw/issues
+
+Include:
+- exact command(s) and full output
+- robot physical behavior observed
+- links to relevant existing issues/threads
