@@ -527,3 +527,71 @@ def test_vector_drive_off_charger_error(mock_robot):
 
     assert result["status"] == "error"
     assert "charger comms error" in result["message"]
+
+
+# ---------------------------------------------------------------------------
+# vector_head
+# ---------------------------------------------------------------------------
+
+def test_vector_head_normal(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
+
+    result = vector_head(20.0)
+
+    mock_robot.behavior.set_head_angle.assert_called_once_with(20.0)
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == 20.0
+
+
+def test_vector_head_clamp_high(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
+
+    result = vector_head(90.0)
+
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == 45.0
+    mock_robot.behavior.set_head_angle.assert_called_once_with(45.0)
+
+
+def test_vector_head_clamp_low(mock_robot):
+    from vectorclaw_mcp.tools import vector_head
+
+    result = vector_head(-90.0)
+
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == -22.0
+    mock_robot.behavior.set_head_angle.assert_called_once_with(-22.0)
+
+
+# ---------------------------------------------------------------------------
+# vector_lift
+# ---------------------------------------------------------------------------
+
+def test_vector_lift_normal(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
+
+    result = vector_lift(0.5)
+
+    mock_robot.behavior.set_lift_height.assert_called_once_with(0.5)
+    assert result["status"] == "ok"
+    assert result["height"] == 0.5
+
+
+def test_vector_lift_clamp_high(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
+
+    result = vector_lift(2.0)
+
+    assert result["status"] == "ok"
+    assert result["height"] == 1.0
+    mock_robot.behavior.set_lift_height.assert_called_once_with(1.0)
+
+
+def test_vector_lift_clamp_low(mock_robot):
+    from vectorclaw_mcp.tools import vector_lift
+
+    result = vector_lift(-0.5)
+
+    assert result["status"] == "ok"
+    assert result["height"] == 0.0
+    mock_robot.behavior.set_lift_height.assert_called_once_with(0.0)

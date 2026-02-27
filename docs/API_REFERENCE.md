@@ -102,6 +102,46 @@ Play named animation.
 **Input:**
 - `animation_name` (string)
 
+---
+
+### `vector_head`
+Set Vector's head angle.
+
+**Input:**
+- `angle_deg` (number, required): desired angle in degrees; clamped to safe range **-22.0 – 45.0**
+
+**Example:**
+```json
+{"angle_deg": 20.0}
+```
+
+**Example response:**
+```json
+{"status": "ok", "angle_deg": 20.0}
+```
+
+> Values outside the safe range are silently clamped.  The response always reflects the actual applied angle.
+
+---
+
+### `vector_lift`
+Set Vector's lift/arm height.
+
+**Input:**
+- `height` (number, required): normalised lift height; clamped to **0.0** (lowest) – **1.0** (highest)
+
+**Example:**
+```json
+{"height": 0.75}
+```
+
+**Example response:**
+```json
+{"status": "ok", "height": 0.75}
+```
+
+> Values outside 0.0–1.0 are silently clamped.  The response always reflects the actual applied height.
+
 ## Proven Test Pattern
 For motion validation, use a one-command-at-a-time protocol with human confirmation between steps.
 

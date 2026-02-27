@@ -230,3 +230,55 @@ def vector_drive_off_charger() -> dict:
         return {"status": "ok"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+# Head angle safe range (degrees)
+_HEAD_ANGLE_MIN = -22.0
+_HEAD_ANGLE_MAX = 45.0
+
+# Lift height safe range (normalised 0.0–1.0)
+_LIFT_HEIGHT_MIN = 0.0
+_LIFT_HEIGHT_MAX = 1.0
+
+
+def vector_head(angle_deg: float) -> dict:
+    """Set Vector's head angle.
+
+    The requested angle is clamped to the safe hardware range
+    (``-22.0`` to ``45.0`` degrees) before being applied.
+
+    Args:
+        angle_deg: Desired head angle in degrees.  Values outside the safe
+            range are silently clamped.
+
+    Returns:
+        A dict with ``status`` and the ``angle_deg`` that was applied after
+        clamping.
+    """
+    import anki_vector.util as util  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
+
+    clamped = max(_HEAD_ANGLE_MIN, min(_HEAD_ANGLE_MAX, angle_deg))
+    robot = _robot()
+    robot.behavior.set_head_angle(util.degrees(clamped))
+    return {"status": "ok", "angle_deg": clamped}
+
+
+def vector_lift(height: float) -> dict:
+    """Set Vector's lift/arm height.
+
+    The requested height is clamped to the valid range (``0.0`` to ``1.0``)
+    before being applied.
+
+    Args:
+        height: Desired lift height as a normalised value where ``0.0`` is the
+            lowest position and ``1.0`` is the highest.  Values outside this
+            range are silently clamped.
+
+    Returns:
+        A dict with ``status`` and the ``height`` that was applied after
+        clamping.
+    """
+    clamped = max(_LIFT_HEIGHT_MIN, min(_LIFT_HEIGHT_MAX, height))
+    robot = _robot()
+    robot.behavior.set_lift_height(clamped)
+    return {"status": "ok", "height": clamped}

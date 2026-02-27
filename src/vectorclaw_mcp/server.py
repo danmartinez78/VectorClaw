@@ -135,6 +135,40 @@ _TOOLS: list[Tool] = [
         description="Get robot status (battery level, charging state, etc.).",
         inputSchema={"type": "object", "properties": {}},
     ),
+    Tool(
+        name="vector_head",
+        description=(
+            "Set Vector's head angle in degrees. "
+            "Input is clamped to the safe range (-22.0 to 45.0 degrees)."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "angle_deg": {
+                    "type": "number",
+                    "description": "Head angle in degrees (-22.0 to 45.0; clamped if out of range)",
+                },
+            },
+            "required": ["angle_deg"],
+        },
+    ),
+    Tool(
+        name="vector_lift",
+        description=(
+            "Set Vector's lift/arm height (0.0 = lowest, 1.0 = highest). "
+            "Input is clamped to the valid range 0.0–1.0."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "number",
+                    "description": "Lift height as a normalised value (0.0–1.0; clamped if out of range)",
+                },
+            },
+            "required": ["height"],
+        },
+    ),
 ]
 
 
@@ -170,6 +204,8 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         "vector_pose": _tools.vector_pose,
         "vector_cube": lambda: _tools.vector_cube(arguments["action"]),
         "vector_status": _tools.vector_status,
+        "vector_head": lambda: _tools.vector_head(arguments["angle_deg"]),
+        "vector_lift": lambda: _tools.vector_lift(arguments["height"]),
     }
 
     try:
