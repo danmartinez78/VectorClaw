@@ -140,3 +140,103 @@ def test_vector_status(mock_robot):
     assert "battery_level" in result
     assert "is_charging" in result
     assert "is_carrying_block" in result
+    assert "is_carrying_object" in result
+    assert "is_on_charger_platform" in result
+    assert "is_cliff_detected" in result
+    assert "is_picked_up" in result
+
+
+def test_vector_charger_status(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_charger_status
+
+    result = vector_charger_status()
+
+    assert result["status"] == "ok"
+    assert "is_charging" in result
+    assert "battery_level" in result
+    assert "is_on_charger_platform" in result
+
+
+def test_vector_charger_status_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_charger_status
+
+    mock_robot.get_battery_state.side_effect = RuntimeError("SDK failure")
+
+    result = vector_charger_status()
+
+    assert result["status"] == "error"
+    assert "SDK failure" in result["message"]
+
+
+def test_vector_touch_status(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_touch_status
+
+    mock_robot.touch.last_sensor_reading.is_being_touched = True
+    mock_robot.touch.last_sensor_reading.raw_touch_value = 42
+
+    result = vector_touch_status()
+
+    assert result["status"] == "ok"
+    assert result["is_being_touched"] is True
+    assert result["raw_touch_value"] == 42
+
+
+def test_vector_touch_status_not_touched(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_touch_status
+
+    result = vector_touch_status()
+
+    assert result["status"] == "ok"
+    assert result["is_being_touched"] is False
+
+
+def test_vector_touch_status_error(mock_robot):
+    from unittest.mock import PropertyMock
+    from vectorclaw_mcp.tools_perception import vector_touch_status
+
+    type(mock_robot.touch).last_sensor_reading = PropertyMock(
+        side_effect=RuntimeError("touch unavailable")
+    )
+
+    result = vector_touch_status()
+
+    assert result["status"] == "error"
+    assert "touch unavailable" in result["message"]
+
+
+def test_vector_proximity_status(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_proximity_status
+
+    mock_robot.proximity.last_sensor_reading.distance.distance_mm = 250.0
+    mock_robot.proximity.last_sensor_reading.found_object = True
+    mock_robot.proximity.last_sensor_reading.is_lift_in_fov = False
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "ok"
+    assert result["distance_mm"] == 250.0
+    assert result["found_object"] is True
+    assert result["is_lift_in_fov"] is False
+
+
+def test_vector_proximity_status_no_object(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_proximity_status
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "ok"
+    assert result["found_object"] is False
+
+
+def test_vector_proximity_status_error(mock_robot):
+    from unittest.mock import PropertyMock
+    from vectorclaw_mcp.tools_perception import vector_proximity_status
+
+    type(mock_robot.proximity).last_sensor_reading = PropertyMock(
+        side_effect=RuntimeError("proximity unavailable")
+    )
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "error"
+    assert "proximity unavailable" in result["message"]

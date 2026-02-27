@@ -96,6 +96,45 @@ Return robot status.
 - `battery_level`
 - `is_charging`
 - `is_carrying_block`
+- `is_carrying_object`
+- `is_on_charger_platform`
+- `is_cliff_detected`
+- `is_picked_up`
+
+---
+
+### `vector_charger_status` *(pending hardware validation)*
+Return charger and battery state.
+
+**Input:** none
+
+**Output fields:**
+- `is_charging`
+- `battery_level`
+- `is_on_charger_platform`
+
+---
+
+### `vector_touch_status` *(pending hardware validation)*
+Return touch-sensor reading from Vector's back capacitive sensor.
+
+**Input:** none
+
+**Output fields:**
+- `is_being_touched`
+- `raw_touch_value`
+
+---
+
+### `vector_proximity_status` *(pending hardware validation)*
+Return proximity sensor reading from Vector's front IR sensor.
+
+**Input:** none
+
+**Output fields:**
+- `distance_mm`
+- `found_object`
+- `is_lift_in_fov`
 
 ---
 
