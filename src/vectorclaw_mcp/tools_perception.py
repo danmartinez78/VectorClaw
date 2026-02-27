@@ -125,7 +125,7 @@ def vector_list_visible_objects() -> dict:
 
     robot = _robot()
     objects = [
-        {"object_id": obj.object_id, "object_type": str(obj.object_type)}
+        {"object_id": obj.object_id, "object_type": str(getattr(obj.object_type, "name", obj.object_type))}
         for obj in itertools.chain(robot.world.visible_objects, robot.world.visible_custom_objects)
     ]
     return {"status": "ok", "objects": objects}

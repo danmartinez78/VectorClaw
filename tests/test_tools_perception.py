@@ -143,7 +143,7 @@ def test_vector_status(mock_robot):
 
 
 def test_vector_scan(mock_robot):
-    from vectorclaw_mcp.tools_perception import vector_scan
+    from vectorclaw_mcp.tools import vector_scan
 
     result = vector_scan()
 
@@ -152,7 +152,7 @@ def test_vector_scan(mock_robot):
 
 
 def test_vector_find_faces(mock_robot):
-    from vectorclaw_mcp.tools_perception import vector_find_faces
+    from vectorclaw_mcp.tools import vector_find_faces
 
     result = vector_find_faces()
 
@@ -162,7 +162,7 @@ def test_vector_find_faces(mock_robot):
 
 def test_vector_list_visible_faces(mock_robot):
     from unittest.mock import MagicMock
-    from vectorclaw_mcp.tools_perception import vector_list_visible_faces
+    from vectorclaw_mcp.tools import vector_list_visible_faces
 
     face1 = MagicMock()
     face1.face_id = 1
@@ -181,7 +181,7 @@ def test_vector_list_visible_faces(mock_robot):
 
 
 def test_vector_list_visible_faces_empty(mock_robot):
-    from vectorclaw_mcp.tools_perception import vector_list_visible_faces
+    from vectorclaw_mcp.tools import vector_list_visible_faces
 
     mock_robot.world.visible_faces = []
 
@@ -193,7 +193,7 @@ def test_vector_list_visible_faces_empty(mock_robot):
 
 def test_vector_list_visible_objects(mock_robot):
     from unittest.mock import MagicMock
-    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+    from vectorclaw_mcp.tools import vector_list_visible_objects
 
     obj1 = MagicMock()
     obj1.object_id = 10
@@ -212,8 +212,28 @@ def test_vector_list_visible_objects(mock_robot):
     assert result["objects"][1] == {"object_id": 20, "object_type": "CustomBox"}
 
 
+def test_vector_list_visible_objects_enum_type(mock_robot):
+    from enum import Enum
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools import vector_list_visible_objects
+
+    class ObjectType(Enum):
+        LightCube = 1
+
+    obj1 = MagicMock()
+    obj1.object_id = 10
+    obj1.object_type = ObjectType.LightCube
+    mock_robot.world.visible_objects = [obj1]
+    mock_robot.world.visible_custom_objects = []
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "ok"
+    assert result["objects"][0] == {"object_id": 10, "object_type": "LightCube"}
+
+
 def test_vector_list_visible_objects_empty(mock_robot):
-    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+    from vectorclaw_mcp.tools import vector_list_visible_objects
 
     mock_robot.world.visible_objects = []
     mock_robot.world.visible_custom_objects = []
