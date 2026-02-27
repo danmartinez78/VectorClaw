@@ -81,14 +81,27 @@ def vector_drive_on_charger(timeout_sec: float = 10.0) -> dict:
     t.join(timeout=timeout_sec)
 
     if t.is_alive():
+        stop_error: Optional[str] = None
         try:
             robot.motors.stop_all_motors()
-        except Exception:  # pragma: no cover - defensive fallback
-            pass
+        except Exception as exc:  # pragma: no cover - defensive fallback
+            stop_error = str(exc)
+
+        if stop_error is None:
+            message = (
+                f"drive_on_charger timed out after {timeout_sec}s; motors stopped as fallback"
+            )
+        else:
+            message = (
+                f"drive_on_charger timed out after {timeout_sec}s; "
+                f"attempted motor stop failed: {stop_error}"
+            )
+
         return {
             "status": "error",
             "timed_out": True,
-            "message": f"drive_on_charger timed out after {timeout_sec}s; motors stopped as fallback",
+            "motors_stopped": stop_error is None,
+            "message": message,
         }
 
     return result[0] if result else {"status": "error", "message": "Thread completed without result"}
