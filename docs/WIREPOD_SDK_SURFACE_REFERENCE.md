@@ -2,6 +2,10 @@
 
 Purpose: implementation-ready reference for the full `wirepod_vector_sdk` API surface (`anki_vector` namespace).
 
+**This doc is:** the exhaustive, source-derived SDK capability catalog (what exists).
+**Use this when:** you need exact signatures, access paths, and method-level details before implementing MCP tools.
+**Do not use this for:** deciding product priority/order; see `WIREPOD_SDK_MCP_INTEGRATION_PRIORITIES.md`.
+
 _Generated from source on 2026-02-27T08:16:58_
 
 ## How to use this doc
