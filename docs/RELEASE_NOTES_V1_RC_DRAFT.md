@@ -1,12 +1,13 @@
 # VectorClaw v1.0.0-rc1 Release Notes (Draft)
 
 ## Highlights
-- Expanded MCP tool surface for perception, vision, motion safety, and sensors
+- Expanded implementation surface for perception, vision, motion safety, and sensors
+- MCP registration integration for new tools is tracked in issue #67
 - Test architecture split for parallel feature development (`tests/` modularized)
 - Runtime/tool registration architecture split for lower merge-conflict risk
 - Hardware smoke validation process standardized
 
-## New Capability Areas
+## New Capability Areas (implemented; MCP exposure pending #67)
 
 ### Perception Discovery
 - `vector_scan`
@@ -30,7 +31,7 @@
 - expanded `vector_status` payload
 
 ## Setup / Compatibility
-- Confirmed working against upstream Wire-Pod SDK (`wirepod_vector_sdk` 0.8.1)
+- Confirmed working against upstream Wire-Pod SDK (`wirepod_vector_sdk` 0.8.1) for baseline functionality
 - No custom SDK fork required for baseline functionality
 
 ## Known Issues
