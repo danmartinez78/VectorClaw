@@ -76,7 +76,7 @@ def vector_drive(
     if distance_mm is None and angle_deg is None:
         return {"status": "error", "message": "distance_mm or angle_deg is required"}
 
-    import anki_vector.util as util  # lazy import
+    import anki_vector.util as util  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
 
     robot = _robot()
     if distance_mm is not None:

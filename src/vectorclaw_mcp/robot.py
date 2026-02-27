@@ -31,6 +31,10 @@ class RobotManager:
     def connect(self) -> object:
         """Return an active :class:`anki_vector.Robot` instance.
 
+        The ``anki_vector`` module namespace is provided by installing
+        ``wirepod_vector_sdk`` (recommended) or the legacy ``anki_vector``
+        package — both expose the same ``anki_vector`` Python namespace.
+
         The robot serial number is read from the ``VECTOR_SERIAL`` environment
         variable.  An optional IP address may be supplied via ``VECTOR_HOST``.
 
@@ -56,7 +60,7 @@ class RobotManager:
             if self._robot is not None:
                 return self._robot
 
-            import anki_vector  # imported lazily so unit tests don't require the SDK
+            import anki_vector  # noqa: PLC0415 — installed via wirepod_vector_sdk (or legacy anki_vector)
 
             serial = os.environ.get("VECTOR_SERIAL")
             if not serial:
