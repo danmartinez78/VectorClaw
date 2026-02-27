@@ -164,6 +164,7 @@ def test_vector_scan_error(mock_robot):
 
     assert result["status"] == "error"
     assert "sdk error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 # ---------------------------------------------------------------------------
@@ -188,6 +189,7 @@ def test_vector_find_faces_error(mock_robot):
 
     assert result["status"] == "error"
     assert "face error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +211,10 @@ def test_vector_list_visible_faces_success(mock_robot):
     result = vector_list_visible_faces()
 
     assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "faces"}
+    assert len(result["faces"]) == 2
     assert result["faces"] == [{"face_id": 1, "name": "Alice"}, {"face_id": 2, "name": ""}]
+    assert all(set(face.keys()) == {"face_id", "name"} for face in result["faces"])
 
 
 def test_vector_list_visible_faces_empty(mock_robot):
@@ -220,6 +225,7 @@ def test_vector_list_visible_faces_empty(mock_robot):
     result = vector_list_visible_faces()
 
     assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "faces"}
     assert result["faces"] == []
 
 
@@ -238,6 +244,7 @@ def test_vector_list_visible_faces_error(mock_robot):
 
     assert result["status"] == "error"
     assert "vision error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 # ---------------------------------------------------------------------------
@@ -255,7 +262,9 @@ def test_vector_list_visible_objects_success(mock_robot):
     result = vector_list_visible_objects()
 
     assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "objects"}
     assert result["objects"] == [{"object_id": 42}]
+    assert set(result["objects"][0].keys()) == {"object_id"}
 
 
 def test_vector_list_visible_objects_empty(mock_robot):
@@ -266,6 +275,7 @@ def test_vector_list_visible_objects_empty(mock_robot):
     result = vector_list_visible_objects()
 
     assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "objects"}
     assert result["objects"] == []
 
 
@@ -283,6 +293,7 @@ def test_vector_list_visible_objects_error(mock_robot):
 
     assert result["status"] == "error"
     assert "object error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 def test_vector_charger_status(mock_robot):
