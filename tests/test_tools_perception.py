@@ -182,7 +182,7 @@ def test_vector_face_detection_no_faces(mock_robot):
 
     mock_robot.world.visible_faces = []
 
-    result = vector_face_detection()
+    result = vector_face_detection(scan_duration_sec=0)
 
     mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
     mock_robot.vision.disable_face_detection.assert_called_once()
@@ -203,7 +203,7 @@ def test_vector_face_detection_with_faces(mock_robot):
     face2.name = ""
     mock_robot.world.visible_faces = [face1, face2]
 
-    result = vector_face_detection()
+    result = vector_face_detection(scan_duration_sec=0)
 
     assert result["status"] == "ok"
     assert result["face_count"] == 2
@@ -216,9 +216,33 @@ def test_vector_face_detection_disables_after_detection(mock_robot):
 
     mock_robot.world.visible_faces = []
 
-    vector_face_detection()
+    vector_face_detection(scan_duration_sec=0)
 
     mock_robot.vision.disable_face_detection.assert_called_once()
+
+
+def test_vector_face_detection_enable_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    mock_robot.vision.enable_face_detection.side_effect = RuntimeError("communication error")
+
+    result = vector_face_detection(scan_duration_sec=0)
+
+    assert result["status"] == "error"
+    assert "enable face detection" in result["message"]
+
+
+def test_vector_face_detection_disable_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_face_detection
+
+    mock_robot.world.visible_faces = []
+    mock_robot.vision.disable_face_detection.side_effect = RuntimeError("communication error")
+
+    result = vector_face_detection(scan_duration_sec=0)
+
+    assert result["status"] == "error"
+    assert "disable face detection" in result["message"]
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
 
 
 def test_vector_vision_reset(mock_robot):
@@ -228,3 +252,15 @@ def test_vector_vision_reset(mock_robot):
 
     mock_robot.vision.disable_all_vision_modes.assert_called_once()
     assert result["status"] == "ok"
+
+
+def test_vector_vision_reset_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_vision_reset
+
+    mock_robot.vision.disable_all_vision_modes.side_effect = RuntimeError("vision system failure")
+
+    result = vector_vision_reset()
+
+    mock_robot.vision.disable_all_vision_modes.assert_called_once()
+    assert result["status"] == "error"
+    assert "reset vision modes" in result["message"]

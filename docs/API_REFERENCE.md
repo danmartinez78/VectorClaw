@@ -196,13 +196,16 @@ Capture a single camera image via `camera.capture_single_image`.
 ---
 
 ### `vector_face_detection`
-Enable face detection briefly, return a summarized list of visible faces, then disable detection.
+Enable face detection for a brief scan window, return a summarized list of visible faces, then disable detection.
 No persistent streaming or session state is introduced.
 
-**Input:** none
+**Input:**
+- `scan_duration_sec` (number, optional, default `1.0`): seconds to wait after enabling detection before sampling `visible_faces`. The Vector SDK's face detection is asynchronous — frames are processed in the background after calling `enable_face_detection`. A scan window of **1–2 seconds** is recommended for real hardware to give the robot time to detect faces. Pass `0` to sample immediately (useful in tests or when faces are already tracked).
+
+> **Note:** Even with a non-zero `scan_duration_sec`, faces that enter the camera view after the sample is taken will not be included. If no faces are visible during the scan window the response will contain an empty `faces` array — this is expected behaviour, not an error.
 
 **Output:**
-- `face_count` (integer): number of faces detected
+- `face_count` (integer): number of faces detected during the scan window
 - `faces` (array): each entry contains:
   - `face_id` (integer)
   - `name` (string or null): enrolled name if recognised, otherwise `null`
@@ -210,6 +213,11 @@ No persistent streaming or session state is introduced.
 **Example response:**
 ```json
 {"status": "ok", "face_count": 1, "faces": [{"face_id": 3, "name": "Alice"}]}
+```
+
+**Empty result (no faces visible):**
+```json
+{"status": "ok", "face_count": 0, "faces": []}
 ```
 
 ---

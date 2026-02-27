@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import io
+from typing import Optional
 
 from .robot import robot_manager
 from .tools_common import _robot
@@ -114,23 +115,40 @@ def vector_capture_image() -> dict:
     return {"status": "ok", "image_base64": encoded, "content_type": "image/jpeg"}
 
 
-def vector_face_detection() -> dict:
+def vector_face_detection(scan_duration_sec: float = 1.0) -> dict:
+    import time
+
     robot = _robot()
-    robot.vision.enable_face_detection(detect_faces=True)
     try:
+        robot.vision.enable_face_detection(detect_faces=True)
+    except Exception as exc:
+        return {"status": "error", "message": f"Failed to enable face detection: {exc}"}
+
+    disable_error: Optional[Exception] = None
+    try:
+        if scan_duration_sec > 0:
+            time.sleep(scan_duration_sec)
         faces = list(robot.world.visible_faces)
     finally:
-        robot.vision.disable_face_detection()
-    detections = []
-    for face in faces:
-        detections.append({
-            "face_id": face.face_id,
-            "name": face.name if face.name else None,
-        })
+        try:
+            robot.vision.disable_face_detection()
+        except Exception as exc:
+            disable_error = exc
+
+    if disable_error is not None:
+        return {"status": "error", "message": f"Failed to disable face detection: {disable_error}"}
+
+    detections = [
+        {"face_id": face.face_id, "name": face.name if face.name else None}
+        for face in faces
+    ]
     return {"status": "ok", "face_count": len(detections), "faces": detections}
 
 
 def vector_vision_reset() -> dict:
     robot = _robot()
-    robot.vision.disable_all_vision_modes()
+    try:
+        robot.vision.disable_all_vision_modes()
+    except Exception as exc:
+        return {"status": "error", "message": f"Failed to reset vision modes: {exc}"}
     return {"status": "ok"}
