@@ -58,11 +58,23 @@ Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
 
 ## Next sections to complete
 
-- Audio + Screen
 - Motors + low-level control
 - Animation
 - Photos + Faces + Sensors (touch/proximity/status)
 - Events/streaming patterns
+
+---
+
+
+## Section 3 — Audio + Screen
+
+| SDK Surface | Use Case | MCP Value | Risk | Shape | Proposed MCP Tool | Decision | Notes |
+|---|---|---:|---:|---|---|---|---|
+| `audio.set_master_volume` | Runtime volume control | Medium | Low | Direct | `vector_set_volume` | Now | Clamp to safe range; return prior/current value when possible. |
+| `audio.stream_wav_file` | Play pre-existing WAV assets | Medium | Medium | Direct | `vector_play_wav` | Later | Defer until asset pipeline exists (curated corpus and path-policy) + format/size/duration guardrails. |
+| `screen.set_screen_to_color` | Fast visual state signaling | Medium | Low | Direct | `vector_screen_color` | Now | Reliable, simple, good for status cues. |
+| `screen.set_screen_with_image_data` | Rich visual output on face display | High | Medium | Direct | `vector_face_image` | Now | Useful now because image-generation pipelines are readily available; enforce strict image validation. |
+| `vision.display_camera_feed_on_face` | Display camera feed on face | Low | Low | Direct | `vector_face_camera_feed` | Skip | Demo-oriented; low operational value for current milestones. |
 
 ---
 
