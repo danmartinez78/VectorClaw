@@ -26,6 +26,7 @@ def test_vector_look(mock_robot):
     assert result["status"] == "ok"
     assert "image_base64" in result
     assert result["content_type"] == "image/jpeg"
+    assert set(result.keys()) == {"status", "image_base64", "content_type"}
     decoded = base64.b64decode(result["image_base64"])
     assert len(decoded) > 0
 
@@ -160,6 +161,7 @@ def test_vector_capture_image_success(mock_robot):
     assert result["status"] == "ok"
     assert "image_base64" in result
     assert result["content_type"] == "image/jpeg"
+    assert set(result.keys()) == {"status", "image_base64", "content_type"}
     decoded = base64.b64decode(result["image_base64"])
     assert len(decoded) > 0
 
@@ -173,6 +175,7 @@ def test_vector_capture_image_returns_none(mock_robot):
 
     assert result["status"] == "error"
     assert "No image" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 def test_vector_capture_image_sdk_error(mock_robot):
@@ -184,6 +187,7 @@ def test_vector_capture_image_sdk_error(mock_robot):
 
     assert result["status"] == "error"
     assert "camera failure" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 def test_vector_capture_image_encode_error(mock_robot):
@@ -199,6 +203,7 @@ def test_vector_capture_image_encode_error(mock_robot):
     assert result["status"] == "error"
     assert "Failed to encode image" in result["message"]
     assert "disk full" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 # ── vector_face_detection ────────────────────────────────────────────────────
@@ -212,6 +217,7 @@ def test_vector_face_detection_no_faces(mock_robot):
 
     assert result["status"] == "ok"
     assert result["face_count"] == 0
+    assert set(result.keys()) == {"status", "face_count", "faces"}
     assert result["faces"] == []
 
 
@@ -234,6 +240,10 @@ def test_vector_face_detection_with_faces(mock_robot):
     assert len(result["faces"]) == 2
     assert result["faces"][0]["face_id"] == 1
     assert result["faces"][1]["face_id"] == 2
+    assert set(result.keys()) == {"status", "face_count", "faces"}
+    assert all(set(face.keys()) == {"face_id", "expression"} for face in result["faces"])
+    assert result["faces"][0]["expression"] == "happy"
+    assert result["faces"][1]["expression"] == "neutral"
 
 
 def test_vector_face_detection_sdk_error(mock_robot):
@@ -248,6 +258,7 @@ def test_vector_face_detection_sdk_error(mock_robot):
 
     assert result["status"] == "error"
     assert "vision error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 # ── vector_vision_reset ──────────────────────────────────────────────────────
@@ -258,6 +269,7 @@ def test_vector_vision_reset_success(mock_robot):
     result = vector_vision_reset()
 
     mock_robot.vision.disable_all_vision_modes.assert_called_once()
+    assert result == {"status": "ok"}
     assert result["status"] == "ok"
 
 
@@ -270,6 +282,7 @@ def test_vector_vision_reset_sdk_error(mock_robot):
 
     assert result["status"] == "error"
     assert "vision reset failed" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
 
 
 def test_vector_charger_status(mock_robot):
