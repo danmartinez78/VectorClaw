@@ -64,6 +64,8 @@ def vector_lift(height: float) -> dict:
 
 def vector_drive_on_charger(timeout_sec: float = 10.0) -> dict:
     """Experimental: drive Vector onto its charger with a timeout and motor-stop fallback."""
+    if timeout_sec < 0:
+        return {"status": "error", "message": "timeout_sec must be non-negative"}
     robot = _robot()
     result: list = []
 
