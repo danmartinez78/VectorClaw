@@ -270,7 +270,6 @@ def test_vector_vision_reset_sdk_error(mock_robot):
 
     assert result["status"] == "error"
     assert "vision reset failed" in result["message"]
-=======
     assert "is_carrying_object" in result
     assert "is_on_charger_platform" in result
     assert "is_cliff_detected" in result
