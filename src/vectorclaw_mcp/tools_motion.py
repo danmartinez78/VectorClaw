@@ -64,7 +64,8 @@ def vector_lift(height: float) -> dict:
 def vector_drive_on_charger() -> dict:
     """Best-effort attempt to drive Vector back onto its charger."""
     robot = _robot()
-    if robot.status.is_charging:
+    is_docked = getattr(robot.status, "is_on_charger_platform", False) or robot.status.is_charging
+    if is_docked:
         return {"status": "ok", "already_on_charger": True}
     try:
         robot.behavior.drive_on_charger()

@@ -96,6 +96,8 @@ Return robot status.
 - `battery_level`
 - `is_charging`
 - `is_carrying_block`
+- `is_cliff_detected`
+- `is_moving`
 
 ---
 
@@ -182,20 +184,6 @@ Immediately stop all of Vector's motors.
 **Input:** none
 
 > Idempotent and safe to call repeatedly.
-
----
-
-### `vector_status`
-Return robot status (expanded).
-
-**Input:** none
-
-**Output fields:**
-- `battery_level`
-- `is_charging`
-- `is_carrying_block`
-- `is_cliff_detected`
-- `is_moving`
 
 ---
 

@@ -153,6 +153,19 @@ def test_vector_drive_on_charger_already_docked(mock_robot):
     mock_robot.behavior.drive_on_charger.assert_not_called()
 
 
+def test_vector_drive_on_charger_already_docked_on_platform(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_on_charger
+
+    mock_robot.status.is_charging = False
+    mock_robot.status.is_on_charger_platform = True
+
+    result = vector_drive_on_charger()
+
+    assert result["status"] == "ok"
+    assert result["already_on_charger"] is True
+    mock_robot.behavior.drive_on_charger.assert_not_called()
+
+
 def test_vector_drive_on_charger_success(mock_robot):
     from vectorclaw_mcp.tools import vector_drive_on_charger
 
