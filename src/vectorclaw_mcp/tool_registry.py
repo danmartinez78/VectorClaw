@@ -6,7 +6,16 @@ from typing import Any
 
 from mcp.types import Tool
 
-from . import tools as _tools
+from .tools_motion import vector_drive, vector_drive_off_charger, vector_head, vector_lift
+from .tools_perception import (
+    vector_animate,
+    vector_cube,
+    vector_face,
+    vector_look,
+    vector_pose,
+    vector_status,
+)
+from .tools_speech import vector_say
 
 
 TOOLS: list[Tool] = [
@@ -148,22 +157,22 @@ TOOLS: list[Tool] = [
 
 def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
     return {
-        "vector_say": lambda: _tools.vector_say(arguments["text"]),
-        "vector_animate": lambda: _tools.vector_animate(arguments["animation_name"]),
-        "vector_drive": lambda: _tools.vector_drive(
+        "vector_say": lambda: vector_say(arguments["text"]),
+        "vector_animate": lambda: vector_animate(arguments["animation_name"]),
+        "vector_drive": lambda: vector_drive(
             speed=arguments.get("speed", 50),
             distance_mm=arguments.get("distance_mm"),
             angle_deg=arguments.get("angle_deg"),
         ),
-        "vector_drive_off_charger": _tools.vector_drive_off_charger,
-        "vector_look": _tools.vector_look,
-        "vector_face": lambda: _tools.vector_face(
+        "vector_drive_off_charger": vector_drive_off_charger,
+        "vector_look": vector_look,
+        "vector_face": lambda: vector_face(
             arguments["image_base64"],
             duration_sec=arguments.get("duration_sec", 5.0),
         ),
-        "vector_pose": _tools.vector_pose,
-        "vector_cube": lambda: _tools.vector_cube(arguments["action"]),
-        "vector_status": _tools.vector_status,
-        "vector_head": lambda: _tools.vector_head(arguments["angle_deg"]),
-        "vector_lift": lambda: _tools.vector_lift(arguments["height"]),
+        "vector_pose": vector_pose,
+        "vector_cube": lambda: vector_cube(arguments["action"]),
+        "vector_status": vector_status,
+        "vector_head": lambda: vector_head(arguments["angle_deg"]),
+        "vector_lift": lambda: vector_lift(arguments["height"]),
     }

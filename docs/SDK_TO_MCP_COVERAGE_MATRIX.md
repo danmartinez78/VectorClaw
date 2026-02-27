@@ -18,13 +18,13 @@ Status legend:
 | Face display | `vector_face` | ✅ | 🟡 | Needs canonical test images + constraints |
 | Cube actions | `vector_cube` | ✅ | 🟡 | No cube available in this run |
 | Animations | `vector_animate` | ✅ | 🟡 | Animation-list path needs follow-up |
+| Head motion | `vector_head` | ✅ | 🟡 | Angle clamped to -22.0–45.0°; hardware validation pending |
+| Lift/arm motion | `vector_lift` | ✅ | 🟡 | Height normalised 0.0–1.0; hardware validation pending |
 
 ## High-value SDK Features to Add Next
 
 | Feature | Proposed tool | Status | Rationale |
 |---|---|---:|---|
-| Head motion | `vector_head` (set angle) | ⚪ | Needed for explicit embodiment control |
-| Lift/arm motion | `vector_lift` (set height) | ⚪ | Requested and high visibility |
 | Charger state helper | `vector_ensure_off_charger` | ⚪ | Better UX before movement calls |
 | Motion presets | `vector_motion_preset` | ⚪ | Repeatable demos (square, spin, nod) |
 | Idle behavior mode | `vector_idle_mode` | ⚪ | Reduce validation ambiguity |
