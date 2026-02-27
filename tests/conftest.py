@@ -16,8 +16,9 @@ def _make_fake_sdk() -> types.ModuleType:
     util.degrees = lambda v: v
     util.speed_mmps = lambda v: v
     sdk.util = util
-    sys.modules.setdefault("anki_vector", sdk)
-    sys.modules.setdefault("anki_vector.util", util)
+    # Always override any existing anki_vector modules to keep tests deterministic
+    sys.modules["anki_vector"] = sdk
+    sys.modules["anki_vector.util"] = util
     return sdk
 
 
