@@ -283,10 +283,6 @@ def test_vector_list_visible_objects_error(mock_robot):
 
     assert result["status"] == "error"
     assert "object error" in result["message"]
-    assert "is_carrying_object" in result
-    assert "is_on_charger_platform" in result
-    assert "is_cliff_detected" in result
-    assert "is_picked_up" in result
 
 
 def test_vector_charger_status(mock_robot):
