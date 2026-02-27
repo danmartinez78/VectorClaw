@@ -100,6 +100,7 @@ Milestone-based development plan from alpha to public release.
 - [ ] Documentation complete and validated
 - [ ] mcporter config documented
 - [ ] Repo made public
+- [ ] Runtime support policy confirmed (see `docs/RUNTIME_SUPPORT.md`): Python 3.11 primary, CI green on 3.11
 
 **Version:** v1.0.0
 
