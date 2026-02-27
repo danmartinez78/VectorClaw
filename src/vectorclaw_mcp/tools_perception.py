@@ -128,7 +128,21 @@ def vector_face_detection() -> dict:
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
 
-    detections = [{"face_id": f.face_id, "expression": str(f.expression)} for f in faces]
+    def _normalize_expression(expr) -> str:
+        """Normalize face expression values across SDK implementations."""
+        # If this is an Enum (or Enum-like), prefer its name in lowercase.
+        name = getattr(expr, "name", None)
+        if isinstance(name, str):
+            return name.lower()
+        return str(expr)
+
+    detections = [
+        {
+            "face_id": f.face_id,
+            "expression": _normalize_expression(f.expression),
+        }
+        for f in faces
+    ]
     return {"status": "ok", "face_count": len(detections), "faces": detections}
 
 
