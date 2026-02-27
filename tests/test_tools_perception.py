@@ -224,8 +224,11 @@ def test_vector_face_detection_with_faces(mock_robot):
 def test_vector_face_detection_sdk_error(mock_robot):
     from vectorclaw_mcp.tools_perception import vector_face_detection
 
-    type(mock_robot.world).visible_faces = property(lambda self: (_ for _ in ()).throw(RuntimeError("vision error")))
+    class _ErrorIterable:
+        def __iter__(self):
+            raise RuntimeError("vision error")
 
+    mock_robot.world.visible_faces = _ErrorIterable()
     result = vector_face_detection()
 
     assert result["status"] == "error"
