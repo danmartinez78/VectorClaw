@@ -179,7 +179,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 
 ## Contributing
 
-1. 🌿 **Branch:** branch off `main`, use `<type>/<short-description>` naming (e.g. `fix/vector-face-payload`, `feat/vector-scan`)
+1. 🌿 **Branch:** branch off `dev`, use `<type>/<short-description>` naming (e.g. `fix/vector-face-payload`, `feat/vector-scan`)
 2. 🧪 **Tests:** add or update tests under `tests/`; all tests use the mocked SDK — no hardware required
 3. ✅ **CI:** Python 3.11 is required and must pass; Python 3.12 is experimental/informational — run `pytest tests/ -v` locally before opening a PR
 4. 🤖 **Hardware:** if your change touches a tool or connection layer, record a smoke-test run in [Hardware Smoke Log](docs/HARDWARE_SMOKE_LOG.md) following the [Hardware Test Playbook](docs/HARDWARE_TEST_PLAYBOOK.md)
