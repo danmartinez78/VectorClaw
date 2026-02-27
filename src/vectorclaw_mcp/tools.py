@@ -18,6 +18,7 @@ from .tools_perception import (
     vector_pose,
     vector_status,
 )
+from .tools_setup import vector_setup
 from .tools_speech import vector_say
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "vector_status",
     "vector_head",
     "vector_lift",
+    "vector_setup",
 ]

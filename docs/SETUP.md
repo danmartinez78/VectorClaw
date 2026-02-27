@@ -328,6 +328,63 @@ robot.disconnect()
 
 ---
 
+## One-Shot Setup with the `vector_setup` Skill
+
+VectorClaw ships a guided-setup MCP tool called **`vector_setup`** that does
+everything in one AI conversation turn: it validates your Python environment,
+confirms the SDK is installed, writes the OpenClaw `mcporter.json` config,
+checks robot connectivity, and runs a quick smoke test.  No manual steps
+required.
+
+### Using `vector_setup` in OpenClaw
+
+Once VectorClaw is installed (`pip install vectorclaw-mcp`) just ask your
+OpenClaw assistant:
+
+```
+You: "Set up VectorClaw for me. My robot serial is 009050ae and its IP is 192.168.1.42"
+```
+
+The assistant will call `vector_setup` and return output like:
+
+```
+✅ VectorClaw setup complete!  Serial='009050ae', Host='192.168.1.42'. All checks passed.
+
+Next steps:
+  1. Restart the OpenClaw gateway to pick up the new mcporter.json config.
+  2. Ask your assistant: 'What is Vector's battery level?' to verify end-to-end.
+  3. Explore available tools with 'What can Vector do?'
+```
+
+### Failure example with remediation
+
+If the robot is unreachable, the skill returns:
+
+```
+❌ VectorClaw setup encountered failures in: robot_connectivity. See stages for details.
+
+Remediation:
+  • Could not connect to robot (serial='009050ae', host='192.168.1.42'): Network unreachable.
+    Fix: ensure Vector is powered on, on the same WiFi network, and
+    Wire-Pod is running (sudo systemctl start wire-pod).
+```
+
+### What `vector_setup` checks (in order)
+
+| Stage | What it validates |
+|-------|-------------------|
+| `python_compatibility` | Python ≥ 3.10; warns on 3.12+ |
+| `sdk_availability` | `wirepod_vector_sdk` installed (or legacy fallback) |
+| `sdk_import` | `import anki_vector` succeeds |
+| `openclaw_config` | Writes `~/.openclaw/workspace/config/mcporter.json` |
+| `robot_connectivity` | Lightweight `get_battery_state()` call to the robot |
+| `smoke_test` | Status read + harmless `set_head_angle(0)` actuation |
+
+The tool returns a structured JSON result that includes per-stage results and
+actionable `next_steps` for every failure mode.
+
+---
+
 ## VectorClaw MCP Setup
 
 ### Install VectorClaw

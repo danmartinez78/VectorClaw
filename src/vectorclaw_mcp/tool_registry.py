@@ -7,9 +7,40 @@ from typing import Any
 from mcp.types import Tool
 
 from . import tools as _tools
+from .tools_setup import vector_setup as _vector_setup
 
 
 TOOLS: list[Tool] = [
+    Tool(
+        name="vector_setup",
+        description=(
+            "Guided VectorClaw setup skill. "
+            "Validates Python compatibility and SDK installation, writes the "
+            "OpenClaw mcporter.json config, checks robot connectivity, and runs "
+            "a post-install smoke test. Returns a plain-language pass/fail "
+            "summary with actionable remediation steps."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "serial": {
+                    "type": "string",
+                    "description": (
+                        "Robot serial number (required). "
+                        "Found on the sticker under Vector or in Wire-Pod 'Bot Settings'."
+                    ),
+                },
+                "host": {
+                    "type": "string",
+                    "description": (
+                        "Robot IP address (optional). "
+                        "If omitted the SDK will attempt auto-discovery via mDNS."
+                    ),
+                },
+            },
+            "required": ["serial"],
+        },
+    ),
     Tool(
         name="vector_say",
         description="Make the Anki Vector robot speak text aloud.",
@@ -148,6 +179,10 @@ TOOLS: list[Tool] = [
 
 def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
     return {
+        "vector_setup": lambda: _vector_setup(
+            arguments["serial"],
+            host=arguments.get("host"),
+        ),
         "vector_say": lambda: _tools.vector_say(arguments["text"]),
         "vector_animate": lambda: _tools.vector_animate(arguments["animation_name"]),
         "vector_drive": lambda: _tools.vector_drive(
