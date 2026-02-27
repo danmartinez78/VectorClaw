@@ -191,14 +191,17 @@ def test_vector_touch_status_not_touched(mock_robot):
 
 
 def test_vector_touch_status_error(mock_robot):
-    from unittest.mock import PropertyMock
+    from unittest.mock import PropertyMock, patch
     from vectorclaw_mcp.tools_perception import vector_touch_status
 
-    type(mock_robot.touch).last_sensor_reading = PropertyMock(
-        side_effect=RuntimeError("touch unavailable")
-    )
-
-    result = vector_touch_status()
+    with patch.object(
+        type(mock_robot.touch),
+        "last_sensor_reading",
+        new_callable=PropertyMock,
+        side_effect=RuntimeError("touch unavailable"),
+        create=True,
+    ):
+        result = vector_touch_status()
 
     assert result["status"] == "error"
     assert "touch unavailable" in result["message"]
@@ -229,14 +232,17 @@ def test_vector_proximity_status_no_object(mock_robot):
 
 
 def test_vector_proximity_status_error(mock_robot):
-    from unittest.mock import PropertyMock
+    from unittest.mock import PropertyMock, patch
     from vectorclaw_mcp.tools_perception import vector_proximity_status
 
-    type(mock_robot.proximity).last_sensor_reading = PropertyMock(
-        side_effect=RuntimeError("proximity unavailable")
-    )
-
-    result = vector_proximity_status()
+    with patch.object(
+        type(mock_robot.proximity),
+        "last_sensor_reading",
+        new_callable=PropertyMock,
+        side_effect=RuntimeError("proximity unavailable"),
+        create=True,
+    ):
+        result = vector_proximity_status()
 
     assert result["status"] == "error"
     assert "proximity unavailable" in result["message"]
