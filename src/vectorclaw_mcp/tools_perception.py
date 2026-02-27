@@ -103,6 +103,42 @@ def vector_status() -> dict:
     }
 
 
+def vector_scan() -> dict:
+    try:
+        robot = _robot()
+        robot.behavior.look_around_in_place()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_find_faces() -> dict:
+    try:
+        robot = _robot()
+        robot.behavior.find_faces()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_faces() -> dict:
+    try:
+        robot = _robot()
+        faces = [{"face_id": f.face_id, "name": f.name} for f in robot.world.visible_faces]
+        return {"status": "ok", "faces": faces}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_objects() -> dict:
+    try:
+        robot = _robot()
+        objects = [{"object_id": o.object_id} for o in robot.world.visible_objects]
+        return {"status": "ok", "objects": objects}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
 def vector_capture_image() -> dict:
     """Capture a single image from the camera using camera.capture_single_image."""
     robot = _robot()
@@ -158,6 +194,7 @@ def vector_vision_reset() -> dict:
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
     return {"status": "ok"}
+
 def vector_charger_status() -> dict:
     robot = _robot()
     try:

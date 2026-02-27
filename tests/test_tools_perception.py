@@ -143,6 +143,105 @@ def test_vector_status(mock_robot):
     assert "is_carrying_block" in result
 
 
+# ---------------------------------------------------------------------------
+# vector_scan
+# ---------------------------------------------------------------------------
+
+def test_vector_scan_success(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_scan
+
+    result = vector_scan()
+
+    mock_robot.behavior.look_around_in_place.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_scan_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_scan
+
+    mock_robot.behavior.look_around_in_place.side_effect = RuntimeError("sdk error")
+
+    result = vector_scan()
+
+    assert result["status"] == "error"
+    assert "sdk error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+# ---------------------------------------------------------------------------
+# vector_find_faces
+# ---------------------------------------------------------------------------
+
+def test_vector_find_faces_success(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_find_faces
+
+    result = vector_find_faces()
+
+    mock_robot.behavior.find_faces.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_find_faces_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_find_faces
+
+    mock_robot.behavior.find_faces.side_effect = RuntimeError("face error")
+
+    result = vector_find_faces()
+
+    assert result["status"] == "error"
+    assert "face error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+# ---------------------------------------------------------------------------
+# vector_list_visible_faces
+# ---------------------------------------------------------------------------
+
+def test_vector_list_visible_faces_success(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_list_visible_faces
+
+    face1 = MagicMock()
+    face1.face_id = 1
+    face1.name = "Alice"
+    face2 = MagicMock()
+    face2.face_id = 2
+    face2.name = ""
+    mock_robot.world.visible_faces = [face1, face2]
+
+    result = vector_list_visible_faces()
+
+    assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "faces"}
+    assert len(result["faces"]) == 2
+    assert result["faces"] == [{"face_id": 1, "name": "Alice"}, {"face_id": 2, "name": ""}]
+    assert all(set(face.keys()) == {"face_id", "name"} for face in result["faces"])
+
+
+def test_vector_list_visible_faces_empty(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_list_visible_faces
+
+    mock_robot.world.visible_faces = []
+
+    result = vector_list_visible_faces()
+
+    assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "faces"}
+    assert result["faces"] == []
+
+
+def test_vector_list_visible_faces_error(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_list_visible_faces
+
+    class _RaisingWorld:
+        @property
+        def visible_faces(self):
+            raise RuntimeError("vision error")
+
+    mock_robot.world = _RaisingWorld()
+
+    result = vector_list_visible_faces()
 # ── vector_capture_image ─────────────────────────────────────────────────────
 
 def test_vector_capture_image_success(mock_robot):
@@ -261,6 +360,52 @@ def test_vector_face_detection_sdk_error(mock_robot):
     assert set(result.keys()) == {"status", "message"}
 
 
+# ---------------------------------------------------------------------------
+# vector_list_visible_objects
+# ---------------------------------------------------------------------------
+
+def test_vector_list_visible_objects_success(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+
+    obj1 = MagicMock()
+    obj1.object_id = 42
+    mock_robot.world.visible_objects = [obj1]
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "objects"}
+    assert result["objects"] == [{"object_id": 42}]
+    assert set(result["objects"][0].keys()) == {"object_id"}
+
+
+def test_vector_list_visible_objects_empty(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+
+    mock_robot.world.visible_objects = []
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "ok"
+    assert set(result.keys()) == {"status", "objects"}
+    assert result["objects"] == []
+
+
+def test_vector_list_visible_objects_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+
+    class _RaisingWorld:
+        @property
+        def visible_objects(self):
+            raise RuntimeError("object error")
+
+    mock_robot.world = _RaisingWorld()
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "error"
+    assert "object error" in result["message"]
 # ── vector_vision_reset ──────────────────────────────────────────────────────
 
 def test_vector_vision_reset_success(mock_robot):
