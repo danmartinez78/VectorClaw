@@ -96,6 +96,10 @@ def vector_status() -> dict:
         "battery_level": battery.battery_level,
         "is_charging": robot.status.is_charging,
         "is_carrying_block": robot.status.is_carrying_block,
+        "is_carrying_object": robot.status.is_carrying_object,
+        "is_on_charger_platform": robot.status.is_on_charger_platform,
+        "is_cliff_detected": robot.status.is_cliff_detected,
+        "is_picked_up": robot.status.is_picked_up,
     }
 
 
@@ -104,6 +108,17 @@ def vector_scan() -> dict:
         robot = _robot()
         robot.behavior.look_around_in_place()
         return {"status": "ok"}
+=======
+def vector_charger_status() -> dict:
+    robot = _robot()
+    try:
+        battery = robot.get_battery_state()
+        return {
+            "status": "ok",
+            "is_charging": robot.status.is_charging,
+            "battery_level": battery.battery_level,
+            "is_on_charger_platform": robot.status.is_on_charger_platform,
+        }
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
 
@@ -113,6 +128,16 @@ def vector_find_faces() -> dict:
         robot = _robot()
         robot.behavior.find_faces()
         return {"status": "ok"}
+=======
+def vector_touch_status() -> dict:
+    robot = _robot()
+    try:
+        touch = robot.touch.last_sensor_reading
+        return {
+            "status": "ok",
+            "is_being_touched": touch.is_being_touched,
+            "raw_touch_value": touch.raw_touch_value,
+        }
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
 
@@ -137,5 +162,16 @@ def vector_list_visible_objects() -> dict:
             for o in robot.world.visible_objects
         ]
         return {"status": "ok", "objects": objects}
+=======
+def vector_proximity_status() -> dict:
+    robot = _robot()
+    try:
+        prox = robot.proximity.last_sensor_reading
+        return {
+            "status": "ok",
+            "distance_mm": prox.distance.distance_mm,
+            "found_object": prox.found_object,
+            "is_lift_in_fov": prox.is_lift_in_fov,
+        }
     except Exception as exc:
         return {"status": "error", "message": str(exc)}

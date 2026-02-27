@@ -96,6 +96,45 @@ Return robot status.
 - `battery_level`
 - `is_charging`
 - `is_carrying_block`
+- `is_carrying_object`
+- `is_on_charger_platform`
+- `is_cliff_detected`
+- `is_picked_up`
+
+---
+
+### `vector_charger_status` *(pending hardware validation)*
+Return charger and battery state.
+
+**Input:** none
+
+**Output fields:**
+- `is_charging`
+- `battery_level`
+- `is_on_charger_platform`
+
+---
+
+### `vector_touch_status` *(pending hardware validation)*
+Return touch-sensor reading from Vector's back capacitive sensor.
+
+**Input:** none
+
+**Output fields:**
+- `is_being_touched`
+- `raw_touch_value`
+
+---
+
+### `vector_proximity_status` *(pending hardware validation)*
+Return proximity sensor reading from Vector's front IR sensor.
+
+**Input:** none
+
+**Output fields:**
+- `distance_mm`
+- `found_object`
+- `is_lift_in_fov`
 
 ---
 
@@ -172,3 +211,56 @@ Recommended sequence:
 4. `vector_drive` turn (e.g., 90°)
 
 This avoids confusion with ambient idle behavior.
+
+---
+
+### `vector_drive_on_charger` *(experimental — pending MCP registration)*
+
+Drive Vector back onto its charger. Includes a configurable timeout; if the
+maneuver does not complete in time a motor stop is attempted as a best-effort
+fallback (the stop itself may fail, which is reflected in the response).
+
+> **Status:** module-only lane — not yet registered in the MCP tool registry.
+
+**Input:**
+- `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback; must be `>= 0`
+
+**Example response (success):**
+```json
+{"status": "ok"}
+```
+
+**Example response (timeout — motors stopped successfully):**
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "motors_stopped": true,
+  "message": "drive_on_charger timed out after 10.0s; motors stopped as fallback"
+}
+```
+
+**Example response (timeout — motor stop also failed):**
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "motors_stopped": false,
+  "message": "drive_on_charger timed out after 10.0s; attempted motor stop failed: <error>"
+}
+```
+
+---
+
+### `vector_emergency_stop` *(pending MCP registration)*
+
+Immediately stop all Vector motors using `motors.stop_all_motors`.
+
+> **Status:** module-only lane — not yet registered in the MCP tool registry.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status": "ok"}
+```
