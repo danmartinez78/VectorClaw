@@ -20,6 +20,9 @@ Deliver a foolproof OpenClaw skill that guides users from zero setup to a valida
    - Prompt for `VECTOR_SERIAL` (required)
    - Prompt for `VECTOR_HOST` (optional)
    - Confirm values before write
+   - Persist values into OpenClaw config at `~/.openclaw/workspace/config/mcporter.json` (server env block), setting:
+     - `VECTOR_SERIAL` (required)
+     - `VECTOR_HOST` (optional, omit when empty)
 
 3. **SDK Setup**
    - Install `wirepod_vector_sdk` from upstream
@@ -45,7 +48,7 @@ Deliver a foolproof OpenClaw skill that guides users from zero setup to a valida
 | Failure | Detection | User Action |
 |---|---|---|
 | Missing serial | empty `VECTOR_SERIAL` | provide serial from Vector settings/cert |
-| SDK import fails | `ImportError` | run provided install command |
+| SDK import fails | `ImportError` | install SDK via `pip install git+https://github.com/kercre123/wirepod-vector-python-sdk.git@065fc197d592d76a164d64dcf0a768183ab37855` in active Python env |
 | Robot unreachable | connection timeout | verify Wire-Pod, IP/network, cert context |
 | MCP misconfiguration | startup error | print exact env/config path and fix snippet |
 
