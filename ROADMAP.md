@@ -28,7 +28,7 @@ Milestone-based development plan from alpha to public release.
 **Exit Criteria:**
 - [ ] Wire-Pod running (platform of choice)
 - [ ] Vector robot configured (firmware, WiFi, SDK auth)
-- [ ] All 8 tools tested and working:
+- [ ] All 12 tools tested and working:
   - [ ] `vector_say` — TTS
   - [ ] `vector_animate` — Animations
   - [ ] `vector_drive` — Movement

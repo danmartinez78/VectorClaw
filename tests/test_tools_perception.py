@@ -224,11 +224,15 @@ def test_vector_list_visible_faces_empty(mock_robot):
 
 
 def test_vector_list_visible_faces_error(mock_robot):
+    from unittest.mock import MagicMock
     from vectorclaw_mcp.tools_perception import vector_list_visible_faces
 
-    type(mock_robot.world).visible_faces = property(
-        lambda self: (_ for _ in ()).throw(RuntimeError("vision error"))
-    )
+    class _RaisingWorld:
+        @property
+        def visible_faces(self):
+            raise RuntimeError("vision error")
+
+    mock_robot.world = _RaisingWorld()
 
     result = vector_list_visible_faces()
 
@@ -268,9 +272,12 @@ def test_vector_list_visible_objects_empty(mock_robot):
 def test_vector_list_visible_objects_error(mock_robot):
     from vectorclaw_mcp.tools_perception import vector_list_visible_objects
 
-    type(mock_robot.world).visible_objects = property(
-        lambda self: (_ for _ in ()).throw(RuntimeError("object error"))
-    )
+    class _RaisingWorld:
+        @property
+        def visible_objects(self):
+            raise RuntimeError("object error")
+
+    mock_robot.world = _RaisingWorld()
 
     result = vector_list_visible_objects()
 
