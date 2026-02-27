@@ -173,13 +173,17 @@ def test_vector_drive_on_charger_timeout(mock_robot):
 
     mock_robot.behavior.drive_on_charger.side_effect = _blocking
 
-    result = vector_drive_on_charger(timeout_sec=0.05)
-    ready.set()  # unblock the background thread so it can exit cleanly
+    try:
+        result = vector_drive_on_charger(timeout_sec=0.05)
 
-    assert result["status"] == "error"
-    assert result.get("timed_out") is True
-    assert "timed" in result["message"]
-    mock_robot.motors.stop_all_motors.assert_called_once()
+        assert result["status"] == "error"
+        assert result.get("timed_out") is True
+        assert "timed" in result["message"]
+        mock_robot.motors.stop_all_motors.assert_called_once()
+    finally:
+        # Always unblock the background thread so it can exit cleanly,
+        # even if the test fails or raises before the assertions complete.
+        ready.set()
 
 
 def test_vector_emergency_stop_success(mock_robot):
