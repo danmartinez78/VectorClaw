@@ -94,6 +94,7 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 | `vector_say` | Make the robot speak text aloud |
 | `vector_animate` | Play a named animation |
 | `vector_drive` | Drive straight and/or turn in place |
+| `vector_drive_off_charger` | Drive the robot off its charger |
 | `vector_look` | Capture an image from the front camera |
 | `vector_face` | Display a custom image on the face screen |
 | `vector_pose` | Get current position and orientation |

@@ -84,7 +84,7 @@ def vector_drive(speed: int = 50,
     if angle_deg is not None:
         robot.behavior.turn_in_place(util.degrees(angle_deg))
 
-    return {"status": "ok", "distance_mm": distance_mm, "angle_deg": angle_deg}
+    return {"status": "ok", "distance_mm": distance_mm, "speed": speed, "angle_deg": angle_deg}
 
 
 def vector_look() -> dict:
