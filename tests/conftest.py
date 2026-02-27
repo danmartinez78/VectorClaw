@@ -38,6 +38,7 @@ def _make_robot() -> MagicMock:
     battery.battery_level = 2
     robot.get_battery_state.return_value = battery
     robot.status.is_charging = False
+    robot.status.is_carrying_block = False
     robot.status.is_carrying_object = False
 
     from PIL import Image as PILImage
