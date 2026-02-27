@@ -93,9 +93,61 @@ Return robot status.
 **Input:** none
 
 **Output fields:**
-- `battery_level`
-- `is_charging`
-- `is_carrying_block`
+- `battery_level` — integer charge level reported by the SDK
+- `battery_voltage` — float voltage reading
+- `is_charging` — bool
+- `is_carrying_block` — bool
+- `is_on_charger_platform` — bool
+- `is_cliff_detected` — bool
+- `is_moving` — bool
+- `firmware_version` — string OS version from the robot, or `null` when unavailable
+
+---
+
+<!-- PENDING REGISTRY: tools below are implemented but not yet registered in tool_registry.py -->
+
+### `vector_charger_status` *(pending registry)*
+Return charger and battery state.
+
+**Input:** none
+
+**Output fields:**
+- `is_charging` — bool
+- `is_on_charger_platform` — bool
+- `battery_level` — integer
+- `battery_voltage` — float
+- `suggested_charger_sec` — float seconds remaining on charger suggested by SDK
+
+---
+
+### `vector_touch_status` *(pending registry)*
+Return touch sensor reading.
+
+**Input:** none
+
+**Output fields (success):**
+- `is_being_touched` — bool
+- `raw_touch_value` — integer raw capacitive sensor value
+
+**Error case:** when the sensor reading is unavailable the tool returns
+`{"status": "error", "message": "Touch sensor reading unavailable"}`.
+
+---
+
+### `vector_proximity_status` *(pending registry)*
+Return proximity sensor reading.
+
+**Input:** none
+
+**Output fields (success):**
+- `distance_mm` — float distance to nearest detected object in mm
+- `found_object` — bool whether an object was detected
+- `is_lift_in_fov` — bool whether the lift occludes the sensor
+- `signal_quality` — float signal quality in range 0.0–1.0
+- `unobstructed` — bool whether the sensor path is clear
+
+**Error case:** when the sensor reading is unavailable the tool returns
+`{"status": "error", "message": "Proximity sensor reading unavailable"}`.
 
 ---
 
@@ -222,6 +274,48 @@ No persistent streaming or session state is introduced.
 
 ---
 
+## Motion Safety Helpers *(pending registry)*
+
+> **Status:** experimental / module-only lane.  These tools are implemented in
+> `vectorclaw_mcp/tools_motion.py` but are not yet registered in the MCP tool
+> registry.
+
+### `vector_drive_on_charger`
+
+Best-effort helper to drive Vector onto its charger.
+
+**Input:**
+- `timeout_sec` (number, optional, default `30.0`): wall-clock seconds to wait for
+  `drive_on_charger()` to complete before returning a timeout error. The underlying
+  drive action may continue running in the background after this timeout; motors are
+  stopped as a best-effort precaution.
+
+**Behavior:**
+- If Vector is already on the charger, returns `{"status": "ok", "already_on_charger": true}`.
+- On successful drive onto the charger, returns `{"status": "ok"}`.
+- On timeout, SDK exception, or still-off-charger condition, returns an actionable
+  error payload:
+
+```json
+{
+  "status": "error",
+  "timed_out": true,
+  "action_required": "check charger placement and retry vector_drive_on_charger",
+  "message": "drive_on_charger did not complete within 30.0s"
+}
+```
+
+```json
+{
+  "status": "error",
+  "still_off_charger": true,
+  "action_required": "manually place Vector on charger and retry",
+  "message": "drive_on_charger completed but Vector is still off the charger"
+}
+```
+
+---
+
 ### `vector_vision_reset`
 Disable all active vision modes via `vision.disable_all_vision_modes`.
 
@@ -231,3 +325,17 @@ Disable all active vision modes via `vision.disable_all_vision_modes`.
 ```json
 {"status": "ok"}
 ```
+
+---
+
+### `vector_emergency_stop`
+
+Immediately stop all Vector motors.
+
+**Input:** none
+
+**Behavior:**
+- Calls `robot.motors.stop_all_motors()` unconditionally.
+- Safe to call repeatedly (idempotent).
+- Returns `{"status": "ok"}` on success, or `{"status": "error", "message": …}` if
+  the SDK call raises.

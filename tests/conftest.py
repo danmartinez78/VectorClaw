@@ -36,10 +36,32 @@ def _make_robot() -> MagicMock:
 
     battery = MagicMock()
     battery.battery_level = 2
+    battery.battery_voltage = 3.8
+    battery.suggested_charger_sec = 0.0
     robot.get_battery_state.return_value = battery
     robot.status.is_charging = False
     robot.status.is_carrying_block = False
     robot.status.is_carrying_object = False
+    robot.status.is_on_charger_platform = False
+    robot.status.is_cliff_detected = False
+    robot.status.is_moving = False
+
+    version_state = MagicMock()
+    version_state.os_version = "1.7.0.3175"
+    robot.get_version_state.return_value = version_state
+
+    touch_reading = MagicMock()
+    touch_reading.is_being_touched = False
+    touch_reading.raw_touch_value = 0
+    robot.touch.last_sensor_reading = touch_reading
+
+    proximity_reading = MagicMock()
+    proximity_reading.distance.distance_mm = 100.0
+    proximity_reading.found_object = False
+    proximity_reading.is_lift_in_fov = False
+    proximity_reading.signal_quality = 1.0
+    proximity_reading.unobstructed = True
+    robot.proximity.last_sensor_reading = proximity_reading
 
     from PIL import Image as PILImage
 

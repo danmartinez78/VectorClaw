@@ -264,3 +264,91 @@ def test_vector_vision_reset_error(mock_robot):
     mock_robot.vision.disable_all_vision_modes.assert_called_once()
     assert result["status"] == "error"
     assert "reset vision modes" in result["message"]
+
+
+def test_vector_status_expanded_fields(mock_robot):
+    from vectorclaw_mcp.tools import vector_status
+
+    result = vector_status()
+
+    assert result["status"] == "ok"
+    assert result["battery_level"] == 2
+    assert result["battery_voltage"] == 3.8
+    assert result["is_charging"] is False
+    assert result["is_carrying_block"] is False
+    assert result["is_on_charger_platform"] is False
+    assert result["is_cliff_detected"] is False
+    assert result["is_moving"] is False
+    assert result["firmware_version"] == "1.7.0.3175"
+
+
+def test_vector_status_firmware_version_unavailable(mock_robot):
+    from vectorclaw_mcp.tools import vector_status
+
+    mock_robot.get_version_state.side_effect = Exception("unavailable")
+
+    result = vector_status()
+
+    assert result["status"] == "ok"
+    assert result["firmware_version"] is None
+
+
+def test_vector_charger_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_charger_status
+
+    result = vector_charger_status()
+
+    assert result["status"] == "ok"
+    assert result["is_charging"] is False
+    assert result["is_on_charger_platform"] is False
+    assert result["battery_level"] == 2
+    assert result["battery_voltage"] == 3.8
+    assert "suggested_charger_sec" in result
+
+
+def test_vector_touch_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_touch_status
+
+    mock_robot.touch.last_sensor_reading.is_being_touched = True
+    mock_robot.touch.last_sensor_reading.raw_touch_value = 42
+
+    result = vector_touch_status()
+
+    assert result["status"] == "ok"
+    assert result["is_being_touched"] is True
+    assert result["raw_touch_value"] == 42
+
+
+def test_vector_touch_status_unavailable(mock_robot):
+    from vectorclaw_mcp.tools import vector_touch_status
+
+    mock_robot.touch.last_sensor_reading = None
+
+    result = vector_touch_status()
+
+    assert result["status"] == "error"
+    assert "unavailable" in result["message"].lower()
+
+
+def test_vector_proximity_status(mock_robot):
+    from vectorclaw_mcp.tools import vector_proximity_status
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "ok"
+    assert result["distance_mm"] == 100.0
+    assert result["found_object"] is False
+    assert result["is_lift_in_fov"] is False
+    assert result["signal_quality"] == 1.0
+    assert result["unobstructed"] is True
+
+
+def test_vector_proximity_status_unavailable(mock_robot):
+    from vectorclaw_mcp.tools import vector_proximity_status
+
+    mock_robot.proximity.last_sensor_reading = None
+
+    result = vector_proximity_status()
+
+    assert result["status"] == "error"
+    assert "unavailable" in result["message"].lower()
