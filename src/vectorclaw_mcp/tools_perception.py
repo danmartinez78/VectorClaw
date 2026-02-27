@@ -158,7 +158,6 @@ def vector_vision_reset() -> dict:
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
     return {"status": "ok"}
-=======
 def vector_charger_status() -> dict:
     robot = _robot()
     try:
