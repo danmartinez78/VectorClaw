@@ -119,6 +119,7 @@ MIT — see [LICENSE](LICENSE).
 - [API Reference](docs/API_REFERENCE.md)
 - [Vector SDK Reference](docs/VECTOR_SDK_REFERENCE.md)
 - [Runtime Support](docs/RUNTIME_SUPPORT.md)
+- [**Hardware Test Playbook**](docs/HARDWARE_TEST_PLAYBOOK.md) — repeatable on-robot validation protocol + PR checklist
 - [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
 - [Functionality Matrix](docs/FUNCTIONALITY_MATRIX.md)
 - [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md)
