@@ -22,6 +22,7 @@ from mcp.types import (
 )
 
 from . import tools as _tools
+from .compat import check_runtime_compatibility
 from .robot import robot_manager
 
 logger = logging.getLogger(__name__)
@@ -190,6 +191,7 @@ async def _run() -> None:
 
 def main() -> None:
     """Synchronous entry point (used by the console script)."""
+    check_runtime_compatibility()
     try:
         asyncio.run(_run())
     finally:
