@@ -94,6 +94,7 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 | `vector_say` | Make the robot speak text aloud |
 | `vector_animate` | Play a named animation |
 | `vector_drive` | Drive straight and/or turn in place |
+| `vector_drive_off_charger` | Drive the robot off its charger |
 | `vector_look` | Capture an image from the front camera |
 | `vector_face` | Display a custom image on the face screen |
 | `vector_pose` | Get current position and orientation |
@@ -110,3 +111,14 @@ Add the following to your `mcporter.json` (or equivalent MCP client config).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## Documentation
+
+- [Setup Guide](docs/SETUP.md)
+- [API Reference](docs/API_REFERENCE.md)
+- [Vector SDK Reference](docs/VECTOR_SDK_REFERENCE.md)
+- [Runtime Support](docs/RUNTIME_SUPPORT.md)
+- [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md)
+- [Functionality Matrix](docs/FUNCTIONALITY_MATRIX.md)
+- [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md)

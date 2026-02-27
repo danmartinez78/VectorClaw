@@ -71,12 +71,21 @@ _TOOLS: list[Tool] = [
                     "type": "number",
                     "description": "Distance in millimetres (positive = forward)",
                 },
+                "speed": {
+                    "type": "number",
+                    "description": "Drive speed in mm/s (default: 50)",
+                },
                 "angle_deg": {
                     "type": "number",
                     "description": "Turn angle in degrees (positive = left)",
                 },
             },
         },
+    ),
+    Tool(
+        name="vector_drive_off_charger",
+        description="Drive the robot off its charger.",
+        inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="vector_look",
@@ -148,9 +157,11 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         "vector_say": lambda: _tools.vector_say(arguments["text"]),
         "vector_animate": lambda: _tools.vector_animate(arguments["animation_name"]),
         "vector_drive": lambda: _tools.vector_drive(
+            speed=arguments.get("speed", 50),
             distance_mm=arguments.get("distance_mm"),
             angle_deg=arguments.get("angle_deg"),
         ),
+        "vector_drive_off_charger": _tools.vector_drive_off_charger,
         "vector_look": _tools.vector_look,
         "vector_face": lambda: _tools.vector_face(
             arguments["image_base64"],

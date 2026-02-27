@@ -27,6 +27,7 @@ def _make_fake_sdk() -> types.ModuleType:
     util = types.ModuleType("anki_vector.util")
     util.distance_mm = lambda v: v
     util.degrees = lambda v: v
+    util.speed_mmps = lambda v: v
     sdk.util = util
     sys.modules.setdefault("anki_vector", sdk)
     sys.modules.setdefault("anki_vector.util", util)
@@ -127,7 +128,7 @@ def test_vector_drive_straight(mock_robot):
 
     result = vector_drive(distance_mm=200)
 
-    mock_robot.behavior.drive_straight.assert_called_once_with(200)
+    mock_robot.behavior.drive_straight.assert_called_once_with(200, 50)
     mock_robot.behavior.turn_in_place.assert_not_called()
     assert result["status"] == "ok"
     assert result["distance_mm"] == 200
@@ -248,7 +249,7 @@ def test_vector_status(mock_robot):
     assert result["status"] == "ok"
     assert "battery_level" in result
     assert "is_charging" in result
-    assert "is_carrying_object" in result
+    assert "is_carrying_block" in result
 
 
 # ---------------------------------------------------------------------------
@@ -496,3 +497,33 @@ def test_call_tool_exception_becomes_error(mock_robot, monkeypatch):
 
     assert data["status"] == "error"
     assert "division by zero" in data["message"]
+
+
+def test_vector_drive_with_custom_speed(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive
+
+    result = vector_drive(distance_mm=200, speed=100)
+
+    mock_robot.behavior.drive_straight.assert_called_once_with(200, 100)
+    assert result["status"] == "ok"
+    assert result["speed"] == 100
+
+
+def test_vector_drive_off_charger_success(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_off_charger
+
+    result = vector_drive_off_charger()
+
+    mock_robot.behavior.drive_off_charger.assert_called_once()
+    assert result == {"status": "ok"}
+
+
+def test_vector_drive_off_charger_error(mock_robot):
+    from vectorclaw_mcp.tools import vector_drive_off_charger
+
+    mock_robot.behavior.drive_off_charger.side_effect = RuntimeError("charger comms error")
+
+    result = vector_drive_off_charger()
+
+    assert result["status"] == "error"
+    assert "charger comms error" in result["message"]
