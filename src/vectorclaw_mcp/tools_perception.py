@@ -108,7 +108,37 @@ def vector_scan() -> dict:
         robot = _robot()
         robot.behavior.look_around_in_place()
         return {"status": "ok"}
-=======
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_find_faces() -> dict:
+    try:
+        robot = _robot()
+        robot.behavior.find_faces()
+        return {"status": "ok"}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_faces() -> dict:
+    try:
+        robot = _robot()
+        faces = [{"face_id": f.face_id, "name": f.name} for f in robot.world.visible_faces]
+        return {"status": "ok", "faces": faces}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
+def vector_list_visible_objects() -> dict:
+    try:
+        robot = _robot()
+        objects = [{"object_id": o.object_id} for o in robot.world.visible_objects]
+        return {"status": "ok", "objects": objects}
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
 def vector_charger_status() -> dict:
     robot = _robot()
     try:
@@ -123,12 +153,6 @@ def vector_charger_status() -> dict:
         return {"status": "error", "message": str(exc)}
 
 
-def vector_find_faces() -> dict:
-    try:
-        robot = _robot()
-        robot.behavior.find_faces()
-        return {"status": "ok"}
-=======
 def vector_touch_status() -> dict:
     robot = _robot()
     try:
@@ -142,27 +166,6 @@ def vector_touch_status() -> dict:
         return {"status": "error", "message": str(exc)}
 
 
-def vector_list_visible_faces() -> dict:
-    try:
-        robot = _robot()
-        faces = [
-            {"face_id": f.face_id, "name": f.name}
-            for f in robot.world.visible_faces
-        ]
-        return {"status": "ok", "faces": faces}
-    except Exception as exc:
-        return {"status": "error", "message": str(exc)}
-
-
-def vector_list_visible_objects() -> dict:
-    try:
-        robot = _robot()
-        objects = [
-            {"object_id": o.object_id}
-            for o in robot.world.visible_objects
-        ]
-        return {"status": "ok", "objects": objects}
-=======
 def vector_proximity_status() -> dict:
     robot = _robot()
     try:
