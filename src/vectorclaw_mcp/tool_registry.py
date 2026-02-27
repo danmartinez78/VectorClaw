@@ -7,6 +7,8 @@ from typing import Any
 from mcp.types import Tool
 
 from . import tools as _tools
+from . import tools_motion as _tools_motion
+from . import tools_perception as _tools_perception
 
 
 TOOLS: list[Tool] = [
@@ -59,6 +61,27 @@ TOOLS: list[Tool] = [
     Tool(
         name="vector_drive_off_charger",
         description="Drive the robot off its charger.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_drive_on_charger",
+        description=(
+            "Drive Vector back onto its charger with a configurable timeout. "
+            "Attempts a motor stop as a best-effort fallback if the maneuver times out."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "timeout_sec": {
+                    "type": "number",
+                    "description": "Seconds to wait before triggering motor-stop fallback (default: 10.0, must be >= 0)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_emergency_stop",
+        description="Immediately stop all Vector motors.",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
@@ -143,6 +166,56 @@ TOOLS: list[Tool] = [
             "required": ["height"],
         },
     ),
+    Tool(
+        name="vector_scan",
+        description="Make Vector look around in place to scan the environment.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_find_faces",
+        description="Make Vector actively search for faces in the environment.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_list_visible_faces",
+        description="Return the list of faces currently visible to Vector.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_list_visible_objects",
+        description="Return the list of objects currently visible to Vector.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_capture_image",
+        description="Capture a single camera frame via camera.capture_single_image.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_face_detection",
+        description="Return a summary of currently visible faces (no raw image data).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_vision_reset",
+        description="Disable all active vision modes via vision.disable_all_vision_modes.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_charger_status",
+        description="Return charger and battery state.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_touch_status",
+        description="Return touch-sensor reading from Vector's back capacitive sensor.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="vector_proximity_status",
+        description="Return proximity sensor reading from Vector's front IR sensor.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
 ]
 
 
@@ -156,6 +229,10 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
             angle_deg=arguments.get("angle_deg"),
         ),
         "vector_drive_off_charger": _tools.vector_drive_off_charger,
+        "vector_drive_on_charger": lambda: _tools_motion.vector_drive_on_charger(
+            timeout_sec=arguments.get("timeout_sec", 10.0),
+        ),
+        "vector_emergency_stop": _tools_motion.vector_emergency_stop,
         "vector_look": _tools.vector_look,
         "vector_face": lambda: _tools.vector_face(
             arguments["image_base64"],
@@ -166,4 +243,14 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
         "vector_status": _tools.vector_status,
         "vector_head": lambda: _tools.vector_head(arguments["angle_deg"]),
         "vector_lift": lambda: _tools.vector_lift(arguments["height"]),
+        "vector_scan": _tools_perception.vector_scan,
+        "vector_find_faces": _tools_perception.vector_find_faces,
+        "vector_list_visible_faces": _tools_perception.vector_list_visible_faces,
+        "vector_list_visible_objects": _tools_perception.vector_list_visible_objects,
+        "vector_capture_image": _tools_perception.vector_capture_image,
+        "vector_face_detection": _tools_perception.vector_face_detection,
+        "vector_vision_reset": _tools_perception.vector_vision_reset,
+        "vector_charger_status": _tools_perception.vector_charger_status,
+        "vector_touch_status": _tools_perception.vector_touch_status,
+        "vector_proximity_status": _tools_perception.vector_proximity_status,
     }

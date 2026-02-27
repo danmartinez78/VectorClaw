@@ -103,7 +103,7 @@ Return robot status.
 
 ---
 
-### `vector_charger_status` *(pending hardware validation)*
+### `vector_charger_status`
 Return charger and battery state.
 
 **Input:** none
@@ -115,7 +115,7 @@ Return charger and battery state.
 
 ---
 
-### `vector_touch_status` *(pending hardware validation)*
+### `vector_touch_status`
 Return touch-sensor reading from Vector's back capacitive sensor.
 
 **Input:** none
@@ -126,7 +126,7 @@ Return touch-sensor reading from Vector's back capacitive sensor.
 
 ---
 
-### `vector_proximity_status` *(pending hardware validation)*
+### `vector_proximity_status`
 Return proximity sensor reading from Vector's front IR sensor.
 
 **Input:** none
@@ -203,7 +203,7 @@ Set Vector's lift/arm height.
 
 ---
 
-### `vector_capture_image` *(pending hardware validation)*
+### `vector_capture_image`
 Capture a single camera frame via `camera.capture_single_image`.
 
 **Input:** none
@@ -219,7 +219,7 @@ Capture a single camera frame via `camera.capture_single_image`.
 
 ---
 
-### `vector_face_detection` *(pending hardware validation)*
+### `vector_face_detection`
 Return a summary of currently visible faces (no raw image data).
 
 **Input:** none
@@ -235,7 +235,7 @@ Return a summary of currently visible faces (no raw image data).
 
 ---
 
-### `vector_vision_reset` *(pending hardware validation)*
+### `vector_vision_reset`
 Disable all active vision modes via `vision.disable_all_vision_modes`.
 
 **Input:** none
@@ -260,13 +260,65 @@ This avoids confusion with ambient idle behavior.
 
 ---
 
-### `vector_drive_on_charger` *(experimental — pending MCP registration)*
+### `vector_scan`
+Make Vector look around in place to scan the environment.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status":"ok"}
+```
+
+---
+
+### `vector_find_faces`
+Make Vector actively search for faces in the environment.
+
+**Input:** none
+
+**Example response:**
+```json
+{"status":"ok"}
+```
+
+---
+
+### `vector_list_visible_faces`
+Return the list of faces currently visible to Vector.
+
+**Input:** none
+
+**Output fields:**
+- `faces` (array of `{face_id, name}` objects)
+
+**Example response:**
+```json
+{"status": "ok", "faces": [{"face_id": 1, "name": "Alice"}]}
+```
+
+---
+
+### `vector_list_visible_objects`
+Return the list of objects currently visible to Vector.
+
+**Input:** none
+
+**Output fields:**
+- `objects` (array of `{object_id}` objects)
+
+**Example response:**
+```json
+{"status": "ok", "objects": [{"object_id": 42}]}
+```
+
+---
+
+### `vector_drive_on_charger`
 
 Drive Vector back onto its charger. Includes a configurable timeout; if the
 maneuver does not complete in time a motor stop is attempted as a best-effort
 fallback (the stop itself may fail, which is reflected in the response).
-
-> **Status:** module-only lane — not yet registered in the MCP tool registry.
 
 **Input:**
 - `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback; must be `>= 0`
@@ -298,11 +350,9 @@ fallback (the stop itself may fail, which is reflected in the response).
 
 ---
 
-### `vector_emergency_stop` *(pending MCP registration)*
+### `vector_emergency_stop`
 
 Immediately stop all Vector motors using `motors.stop_all_motors`.
-
-> **Status:** module-only lane — not yet registered in the MCP tool registry.
 
 **Input:** none
 
@@ -310,3 +360,23 @@ Immediately stop all Vector motors using `motors.stop_all_motors`.
 ```json
 {"status": "ok"}
 ```
+
+---
+
+## Hardware Smoke Checklist (newly registered tools)
+
+Use the following checklist when validating newly registered tools on hardware.
+Execute one command at a time and wait for explicit confirmation before proceeding.
+
+- [ ] `vector_scan` — Vector looks around in place; confirm head/body movement
+- [ ] `vector_find_faces` — Vector searches for faces; confirm behavior activation
+- [ ] `vector_list_visible_faces` — Returns `faces` array (may be empty if no faces present)
+- [ ] `vector_list_visible_objects` — Returns `objects` array (may be empty if no objects present)
+- [ ] `vector_drive_on_charger` — Vector drives back onto charger; confirm docking
+- [ ] `vector_emergency_stop` — All motors stop immediately; confirm silence
+- [ ] `vector_capture_image` — Returns valid JPEG base64 payload
+- [ ] `vector_face_detection` — Returns `face_count` and `faces` array
+- [ ] `vector_vision_reset` — All vision modes disabled; confirm no active vision LED
+- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger_platform`
+- [ ] `vector_touch_status` — Returns `is_being_touched`, `raw_touch_value`; verify by touching/not touching sensor
+- [ ] `vector_proximity_status` — Returns `distance_mm`, `found_object`, `is_lift_in_fov`; verify by placing/removing object
