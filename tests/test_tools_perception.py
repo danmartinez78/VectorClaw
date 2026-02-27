@@ -186,6 +186,21 @@ def test_vector_capture_image_sdk_error(mock_robot):
     assert "camera failure" in result["message"]
 
 
+def test_vector_capture_image_encode_error(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_capture_image
+
+    img_wrapper = MagicMock()
+    img_wrapper.raw_image.save.side_effect = OSError("disk full")
+    mock_robot.camera.capture_single_image.return_value = img_wrapper
+
+    result = vector_capture_image()
+
+    assert result["status"] == "error"
+    assert "Failed to encode image" in result["message"]
+    assert "disk full" in result["message"]
+
+
 # ── vector_face_detection ────────────────────────────────────────────────────
 
 def test_vector_face_detection_no_faces(mock_robot):
