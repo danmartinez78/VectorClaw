@@ -144,7 +144,7 @@ Display a custom image on face.
 The image is converted to rgb565 format via `anki_vector.screen.convert_image_to_screen_data()` before being sent to the robot's screen.
 
 **Input:**
-- `image_base64` (required): Base64-encoded image (any format supported by PIL). Resized to 144×108 pixels.
+- `image_base64` (required): Base64-encoded image (any format supported by PIL). Resized to match the robot's screen dimensions via `anki_vector.screen.dimensions()` (typically 184×96 pixels, for a 35328-byte rgb565 buffer).
 - `duration_sec` (optional): How long to display the image (0.1–60.0 seconds, default 5.0).
 
 ---

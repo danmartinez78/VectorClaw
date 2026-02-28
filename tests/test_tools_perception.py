@@ -63,11 +63,13 @@ def test_vector_face(mock_robot):
 
     result = vector_face(encoded)
 
+    screen_w, screen_h = screen_mod.dimensions.return_value
     screen_mod.convert_image_to_screen_data.assert_called_once()
     called_img = screen_mod.convert_image_to_screen_data.call_args[0][0]
-    assert called_img.size == (144, 108)
+    assert called_img.size == (screen_w, screen_h)
     assert called_img.mode == "RGB"
     rgb565_data = screen_mod.convert_image_to_screen_data.return_value
+    assert len(rgb565_data) == screen_w * screen_h * 2
     mock_robot.screen.set_screen_with_image_data.assert_called_once_with(
         rgb565_data, duration_sec=5.0
     )

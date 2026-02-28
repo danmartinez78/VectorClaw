@@ -18,7 +18,8 @@ def _make_fake_sdk() -> types.ModuleType:
     sdk.util = util
 
     screen = types.ModuleType("anki_vector.screen")
-    screen.convert_image_to_screen_data = MagicMock(return_value=b"\x00" * (144 * 108 * 2))
+    screen.dimensions = MagicMock(return_value=(184, 96))
+    screen.convert_image_to_screen_data = MagicMock(return_value=b"\x00" * (184 * 96 * 2))
     sdk.screen = screen
 
     # Always override any existing anki_vector modules to keep tests deterministic
@@ -72,6 +73,7 @@ def reset_robot_manager():
     from vectorclaw_mcp.robot import robot_manager
 
     robot_manager.reset()
+    _fake_sdk.screen.dimensions.reset_mock()
     _fake_sdk.screen.convert_image_to_screen_data.reset_mock()
     yield
     robot_manager.reset()

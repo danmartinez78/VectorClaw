@@ -39,11 +39,11 @@ def vector_face(image_base64: str, duration_sec: float = 5.0) -> dict:
     try:
         image_bytes = base64.b64decode(image_base64)
         with io.BytesIO(image_bytes) as src_buf:
-            img = Image.open(src_buf).convert("RGB").resize((144, 108))
+            import anki_vector.screen as _screen_mod
+            screen_w, screen_h = _screen_mod.dimensions()
+            img = Image.open(src_buf).convert("RGB").resize((screen_w, screen_h))
     except Exception as exc:
         return {"status": "error", "message": f"Invalid image data: {exc}"}
-
-    import anki_vector.screen as _screen_mod
 
     screen_data = _screen_mod.convert_image_to_screen_data(img)
     robot = _robot()
