@@ -222,8 +222,12 @@ Capture a single camera frame via `camera.capture_single_image`.
 ### `vector_face_detection`
 Return a summary of currently visible faces (no raw image data).
 
-> **Vision modes:** Face detection and expression estimation are enabled automatically at
-> connection time. No manual enablement is required.
+> **Vision modes:** Face detection and expression estimation are enabled automatically on a
+> best-effort basis at connection time. No manual enablement call is required, but if
+> enablement fails the connection may still succeed and this tool may return empty results
+> until you reconnect. Calling `vector_vision_reset` can also disable these vision modes
+> for the remainder of the session; after a reset, you may need to reconnect to restore
+> vision-based results and should likewise expect empty outputs until vision is re-enabled.
 
 **Input:** none
 
