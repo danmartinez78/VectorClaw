@@ -4,7 +4,7 @@ Purpose: running record of real-world hardware smoke tests (fast confidence chec
 
 Use alongside:
 - `HARDWARE_TEST_PLAYBOOK.md` (full protocol)
-- `API_REFERENCE.md` (tool contract)
+- `MCP_API_REFERENCE.md` (tool contract)
 
 ---
 
@@ -21,7 +21,7 @@ Use alongside:
 ### Commands + Outcomes
 
 > Log only commands executed in this run. Do not mirror a fixed tool catalog here.
-> Source of truth for currently exposed tools: `docs/API_REFERENCE.md`.
+> Source of truth for currently exposed tools: `docs/MCP_API_REFERENCE.md`.
 
 | Command | Tool result | Physical verification | Notes |
 |---|---|---|---|

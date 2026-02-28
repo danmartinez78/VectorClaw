@@ -194,7 +194,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 > Call `vector_drive_off_charger` first, or set `VECTOR_AUTO_DRIVE_OFF_CHARGER=1` for automatic undocking.
 > → [Tool Docking Prerequisites](docs/TOOL_DOCKING_PREREQUISITES.md) for the full matrix.
 
-→ **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** for full parameter details and response schemas.
+→ **[docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md)** for full parameter details and response schemas.
 
 ---
 
@@ -221,8 +221,8 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 ### 📡 API & SDK
 | Document | Description |
 |----------|-------------|
-| [API Reference](docs/API_REFERENCE.md) | MCP tool signatures, parameters, response schemas |
-| [Wire-Pod SDK Surface Reference](docs/WIREPOD_SDK_SURFACE_REFERENCE.md) | Full SDK capability catalog |
+| [API Reference](docs/MCP_API_REFERENCE.md) | MCP tool signatures, parameters, response schemas |
+| [Wire-Pod SDK Surface Reference](docs/VECTOR_SDK_REFERENCE.md) | Full SDK capability catalog |
 | [Wire-Pod SDK Implementation Guide](docs/WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) | Implementation patterns and SDK usage notes |
 | [Wire-Pod SDK → MCP Integration Priorities](docs/WIREPOD_SDK_MCP_INTEGRATION_PRIORITIES.md) | Now/Later/Skip decision table for future tools |
 | [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md) | Current mapping of SDK calls to MCP tools |

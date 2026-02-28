@@ -177,4 +177,4 @@ vectorclaw-setup
 
 - [SETUP.md](SETUP.md) — Full Wire-Pod + SDK installation guide
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — Deep-dive failure diagnosis
-- [API_REFERENCE.md](API_REFERENCE.md) — All available MCP tools
+- [MCP_API_REFERENCE.md](MCP_API_REFERENCE.md) — All available MCP tools

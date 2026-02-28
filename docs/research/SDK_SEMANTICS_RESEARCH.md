@@ -444,6 +444,6 @@ Type: Property methods
 
 ## Output Plan
 
-1. Update `docs/API_REFERENCE.md` with semantic clarifications
+1. Update `docs/MCP_API_REFERENCE.md` with semantic clarifications
 2. Consider adding `docs/SDK_SEMANTICS.md` for deeper explanations
 3. Close issue #115 when documentation is complete
