@@ -142,38 +142,39 @@ Use alongside:
 
 | Command | Tool result | Physical verification | Notes |
 |---|---|---|---|
-| `vector_status` | `ok` | PASS | Connected cleanly; on charger reported true |
-| `vector_pose` | `ok` | PASS | Near-zero pose while stationary on charger |
+| `vector_status` | `ok` | PASS | Connected cleanly; on/off-charger states observed across run |
+| `vector_pose` | `ok` | PASS/PARTIAL | Happy-flow pose usable; delocalization diagnostics limited by current output fields |
+| `vector_drive_off_charger` | `ok` | PASS | Repeatedly confirmed |
+| `vector_say` | `ok` | PASS | Speech confirmed by operator |
+| `vector_lift` | `ok` | PASS | Lift motion confirmed |
+| `vector_touch_status` (no touch) | `ok` | PASS | `is_being_touched=false`, raw value stable |
+| `vector_touch_status` (touching) | `ok` | PASS | `is_being_touched=true`, raw value increased |
+| `vector_charger_status` (off charger) | `ok` | PASS | Negative case validated (`is_on_charger=false`) |
+| `vector_look` | `ok` | PASS | Image verified; feed/latest-image path confirmed |
+| `vector_capture_image` | `ok` | PASS | Image verified; one-shot capture path confirmed |
+| `vector_scan` | `ok` | PARTIAL | Executes; physical behavior context-dependent on charger/motion state |
+| `vector_find_faces` | `ok` | PARTIAL | Behavior executes; no face detections surfaced |
+| `vector_list_visible_faces` | `ok` | FAIL | Empty list under favorable conditions |
+| `vector_face_detection` | `ok` | FAIL | `face_count=0` under favorable conditions |
+| `vector_list_visible_objects` | `ok` | FAIL | Empty list with nearby cube |
+| `vector_vision_reset` | `ok` | PASS | Returned cleanly |
 | `vector_proximity_status` (far) | `ok` | PASS | `distance_mm=180`, `signal_quality=0.0317`, `found_object=false`, `unobstructed=false` |
 | `vector_proximity_status` (mid) | `ok` | PASS | `distance_mm=92`, `signal_quality=0.4383`, `found_object=false`, `unobstructed=false` |
 | `vector_proximity_status` (close) | `ok` | PASS | `distance_mm=42`, `signal_quality=6.1456`, `found_object=false` |
 | `vector_proximity_status` (mid, larger cardboard) | `ok` | PASS | `distance_mm=97`, `signal_quality=1.4551`, `found_object=false` |
 | `vector_proximity_status` (close, cardboard touching) | `ok` | PASS | `distance_mm=48`, `signal_quality=11.6966`, `found_object=false` |
 | `vector_proximity_status` (no object) | `ok` | PASS | `distance_mm=244`, `signal_quality=0.0060`, `unobstructed=true`, `found_object=false` |
+| `vector_head` | **FAIL** | N/A | Runtime type error: `Unsupported type for comparison expected Angle` |
+| `vector_drive_on_charger` | **FAIL** | FAIL/PARTIAL | Timed out (`timed_out=true`, `motors_stopped=true`) |
+| `vector_emergency_stop` | `ok` | PARTIAL | Stop returns `ok`; practical interrupt validation limited by sync motion call path |
 
 ### Anomalies / Follow-ups
 - `found_object` never flipped true despite near-field and high signal-quality returns.
 - `signal_quality` exceeded 1.0 by large margin (up to ~11.7); prior 0.0–1.0 assumption is incorrect for this setup.
-- `unobstructed` did behave as expected in clear-path test.
-- Operator observation: LightCube lit during some proximity trials (possible state interaction worth separate check, but not required for raw ToF reading path).
-
-### Additional one-by-one reruns (same continuous run)
-
-### Commands + Outcomes
-
-| Command | Tool result | Physical verification | Notes |
-|---|---|---|---|
-| `vector_say` | `ok` | PASS | Speech confirmed by operator |
-| `vector_lift` | `ok` | PASS | Lift motion confirmed |
-| `vector_touch_status` (no touch) | `ok` | PASS | `is_being_touched=false`, raw value stable |
-| `vector_touch_status` (touching) | `ok` | PASS | `is_being_touched=true`, raw value increased |
-| `vector_charger_status` (off charger) | `ok` | PASS | Negative case validated (`is_on_charger=false`) |
-| `vector_head` | **FAIL** | N/A | Runtime type error: `Unsupported type for comparison expected Angle` |
-| `vector_drive_on_charger` | **FAIL** | FAIL/PARTIAL | Timed out (`timed_out=true`, `motors_stopped=true`) |
-| `vector_emergency_stop` | `ok` | PARTIAL | Stop command returns `ok`; physical interruption validation is limited by sync motion call path |
-
-### Anomalies / Follow-ups
+- `unobstructed` behaved as expected in clear-path test.
+- Operator observation: LightCube lit during some proximity trials.
 - `vector_head` currently non-functional due to Angle comparison bug.
 - `vector_drive_on_charger` remains unreliable/timeout-prone in this run.
 - Perception tools still return empty detections under favorable human/cube conditions.
-- **Emergency-stop usability caveat:** current tool path is synchronous for motion, which weakens true mid-command interrupt semantics. Async motion/control path should be added to roadmap before treating emergency stop as robust operational control.
+- Runtime observation seen during perception attempts: `Event callback exception: object_id`.
+- **Emergency-stop usability caveat:** current tool path is synchronous for motion, weakening true mid-command interrupt semantics; async motion/control path should be roadmap follow-up.
