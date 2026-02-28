@@ -23,6 +23,33 @@ from .tool_registry import TOOLS, build_dispatch
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Suppress non-fatal SDK noise
+# ---------------------------------------------------------------------------
+
+
+class _SuppressUnknownEventType(logging.Filter):
+    """Drop 'Unknown Event type' warnings emitted by the Vector SDK.
+
+    Wire-Pod may send gRPC event type IDs that are absent from the SDK's
+    protobuf definitions.  The SDK catches the resulting TypeError and logs
+    it as a WARNING on every event loop iteration.  These warnings are
+    non-fatal and clutter the logs, so we filter them out here.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Standard logging convention: True = allow, False = suppress.
+        # Only suppress the specific non-fatal WARNING noise from the SDK.
+        return not (
+            record.levelno == logging.WARNING
+            and "Unknown Event type" in record.getMessage()
+        )
+
+
+logging.getLogger("anki_vector.events.EventHandler").addFilter(
+    _SuppressUnknownEventType()
+)
+
 app = Server("vectorclaw-mcp")
 
 # ---------------------------------------------------------------------------
