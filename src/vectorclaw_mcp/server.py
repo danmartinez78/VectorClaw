@@ -13,6 +13,26 @@ import asyncio
 import logging
 from typing import Any
 
+# ---------------------------------------------------------------------------
+# SDK noise suppression
+# ---------------------------------------------------------------------------
+# The Wire-Pod SDK emits "Unknown Event type" warnings whenever Wire-Pod sends
+# a gRPC event whose type is not present in the SDK's protobuf definitions.
+# This is a known SDK/Wire-Pod version-mismatch behaviour (not a bug in our
+# code) and is non-fatal.  We suppress it here to keep MCP server logs clean.
+# See: anki_vector/events.py EventHandler._handle_event_stream()
+
+class _SuppressUnknownEventType(logging.Filter):
+    """Drop the non-fatal 'Unknown Event type' warning emitted by the SDK."""
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
+        return "Unknown Event type" not in record.getMessage()
+
+
+logging.getLogger("anki_vector.events.EventHandler").addFilter(
+    _SuppressUnknownEventType()
+)
+
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool

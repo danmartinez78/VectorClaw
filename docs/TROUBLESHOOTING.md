@@ -10,8 +10,15 @@
 
 ### 1) `Unknown Event type` warnings in logs
 - **Symptom:** repeated `events.EventHandler WARNING Unknown Event type`
-- **Impact:** currently non-fatal in observed runs
-- **Action:** continue if tools are functioning; track in issue #39 for cleanup
+- **Root cause:** SDK behaviour, not a VectorClaw bug.  Wire-Pod emits gRPC
+  event types whose numeric IDs are not present in the SDK's protobuf
+  definitions (`anki_vector/events.py::_handle_event_stream`).  When
+  `WhichOneof('event_type')` returns `None` for such an event, the SDK catches
+  the resulting `TypeError` and logs this warning.
+- **Impact:** non-fatal — all tool calls complete normally.
+- **Resolution:** VectorClaw installs a `logging.Filter` on the
+  `anki_vector.events.EventHandler` logger at server startup that silences
+  this specific message.  No further action is required.
 
 ### 2) `vector_face` fails with expected byte-length error
 - **Symptom:** `set_screen_with_image_data expected 35328 bytes`
