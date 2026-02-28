@@ -128,9 +128,9 @@ Use alongside:
 
 ---
 
-## 2026-02-28 — Proximity empirical deep dive (release validation)
+## 2026-02-28 — Comprehensive hardware smoke + empirical validation
 
-- **Date/Time (local):** 2026-02-28 14:25–14:40 CST
+- **Date/Time (local):** 2026-02-28 14:25–15:44 CST
 - **Operator:** Dan + Tachi (MCP command execution + physical verification)
 - **Robot serial:** `00a1546c`
 - **Branch / Commit:** `dev` (post-doc merge state)
@@ -157,17 +157,7 @@ Use alongside:
 - `unobstructed` did behave as expected in clear-path test.
 - Operator observation: LightCube lit during some proximity trials (possible state interaction worth separate check, but not required for raw ToF reading path).
 
----
-
-## 2026-02-28 — Final smoke wrap (single-step reruns)
-
-- **Date/Time (local):** 2026-02-28 15:10–15:25 CST
-- **Operator:** Dan + Tachi (strict one-command-at-a-time with explicit human confirmation)
-- **Robot serial:** `00a1546c`
-- **Branch / Commit:** `dev`
-- **Wire-Pod status:** active/running
-- **SDK env:** `VECTOR_SERIAL=00a1546c`, Python `.venv/bin/python`
-- **Result:** **PARTIAL** (core basics work; head/perception/charger-return limitations remain)
+### Additional one-by-one reruns (same continuous run)
 
 ### Commands + Outcomes
 
