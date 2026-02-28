@@ -82,8 +82,8 @@ Return current pose.
 **Input:** none
 
 **Output fields:**
-- `x`, `y`, `z`
-- `angle_deg`
+- `x`, `y`, `z` — position coordinates in millimetres, SDK-derived from `robot.pose.position` (`Position.x/y/z`)
+- `angle_deg` — heading angle in degrees
 
 ---
 
@@ -132,9 +132,9 @@ Return proximity sensor reading from Vector's front IR sensor.
 **Input:** none
 
 **Output fields:**
-- `distance_mm`
-- `found_object`
-- `is_lift_in_fov`
+- `distance_mm` — measured distance to the nearest object in millimetres
+- `found_object` — `true` when the sensor detected an object within its valid operating range (not a general "distance changed" flag)
+- `is_lift_in_fov` — `true` when Vector's lift is within the sensor's field of view
 
 ---
 
