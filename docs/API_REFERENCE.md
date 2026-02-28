@@ -97,7 +97,7 @@ Return robot status.
 - `is_charging`
 - `is_carrying_block`
 - `is_carrying_object`
-- `is_on_charger_platform`
+- `is_on_charger`
 - `is_cliff_detected`
 - `is_picked_up`
 
@@ -111,7 +111,7 @@ Return charger and battery state.
 **Output fields:**
 - `is_charging`
 - `battery_level`
-- `is_on_charger_platform`
+- `is_on_charger`
 
 ---
 
@@ -222,6 +222,13 @@ Capture a single camera frame via `camera.capture_single_image`.
 ### `vector_face_detection`
 Return a summary of currently visible faces (no raw image data).
 
+> **Vision modes:** Face detection and expression estimation are enabled automatically on a
+> best-effort basis at connection time. No manual enablement call is required, but if
+> enablement fails the connection may still succeed and this tool may return empty results
+> until you reconnect. Calling `vector_vision_reset` can also disable these vision modes
+> for the remainder of the session; after a reset, you may need to reconnect to restore
+> vision-based results and should likewise expect empty outputs until vision is re-enabled.
+
 **Input:** none
 
 **Output fields:**
@@ -287,6 +294,10 @@ Make Vector actively search for faces in the environment.
 ### `vector_list_visible_faces`
 Return the list of faces currently visible to Vector.
 
+> **Vision modes:** Face detection is enabled automatically at connection time via
+> `vision.enable_face_detection(estimate_expression=True)`. No manual enablement is
+> required before calling this tool.
+
 **Input:** none
 
 **Output fields:**
@@ -301,6 +312,10 @@ Return the list of faces currently visible to Vector.
 
 ### `vector_list_visible_objects`
 Return the list of objects currently visible to Vector.
+
+> **Vision modes:** Object detection is enabled automatically at connection time via
+> `vision.enable_custom_object_detection()`. No manual enablement is required before
+> calling this tool.
 
 **Input:** none
 
