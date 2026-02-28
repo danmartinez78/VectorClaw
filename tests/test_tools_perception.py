@@ -145,7 +145,7 @@ def test_vector_status(mock_robot):
     assert "is_picked_up" in result
     assert "is_carrying_object" not in result
     assert "is_on_charger_platform" not in result
-    assert "is_cliff_detected" not in result
+    assert "is_cliff_detected" in result
 
 
 # ---------------------------------------------------------------------------
