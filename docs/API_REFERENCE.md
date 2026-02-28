@@ -348,6 +348,8 @@ fallback (the stop itself may fail, which is reflected in the response).
 }
 ```
 
+**Known issue (#88):** This tool may return `ok` without completing the charger docking behavior. Observed: cube illumination without charger approach. Tool should not be relied upon for autonomous docking until issue is resolved. See `docs/investigations/ISSUE_88_DRIVE_ON_CHARGER.md` for details and operator guidance.
+
 ---
 
 ### `vector_emergency_stop`
