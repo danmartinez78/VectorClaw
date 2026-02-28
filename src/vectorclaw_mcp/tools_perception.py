@@ -98,6 +98,7 @@ def vector_status() -> dict:
         "is_charging": st.is_charging,
         "is_carrying_block": st.is_carrying_block,
         "is_on_charger": st.is_on_charger,
+        "is_cliff_detected": st.is_cliff_detected,
         "is_picked_up": st.is_picked_up,
     }
 
