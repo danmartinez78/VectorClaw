@@ -240,7 +240,7 @@ TOOLS: list[Tool] = [
         name="vector_list_visible_objects",
         description=(
             "Return the list of objects currently visible to Vector. "
-            "Enables custom object detection (robot.vision.enable_custom_object_detection) "
+            "Enables custom object detection (robot.vision.enable_custom_object_detection()) "
             "before querying so that all object types (LightCube, Charger, CustomObject) "
             "can be observed. Each entry includes object_id and object_type. "
             "For reliable results, call vector_scan first to let Vector look around."
