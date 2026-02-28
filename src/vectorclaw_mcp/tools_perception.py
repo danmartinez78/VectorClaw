@@ -133,7 +133,11 @@ def vector_list_visible_faces() -> dict:
 def vector_list_visible_objects() -> dict:
     try:
         robot = _robot()
-        objects = [{"object_id": o.object_id} for o in robot.world.visible_objects]
+        robot.vision.enable_custom_object_detection()
+        objects = [
+            {"object_id": o.object_id, "object_type": o.descriptive_name}
+            for o in robot.world.visible_objects
+        ]
         return {"status": "ok", "objects": objects}
     except Exception as exc:
         return {"status": "error", "message": str(exc)}

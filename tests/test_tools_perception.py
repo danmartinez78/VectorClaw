@@ -375,14 +375,16 @@ def test_vector_list_visible_objects_success(mock_robot):
 
     obj1 = MagicMock()
     obj1.object_id = 42
+    obj1.descriptive_name = "LightCube"
     mock_robot.world.visible_objects = [obj1]
 
     result = vector_list_visible_objects()
 
+    mock_robot.vision.enable_custom_object_detection.assert_called_once()
     assert result["status"] == "ok"
     assert set(result.keys()) == {"status", "objects"}
-    assert result["objects"] == [{"object_id": 42}]
-    assert set(result["objects"][0].keys()) == {"object_id"}
+    assert result["objects"] == [{"object_id": 42, "object_type": "LightCube"}]
+    assert set(result["objects"][0].keys()) == {"object_id", "object_type"}
 
 
 def test_vector_list_visible_objects_empty(mock_robot):
@@ -392,6 +394,7 @@ def test_vector_list_visible_objects_empty(mock_robot):
 
     result = vector_list_visible_objects()
 
+    mock_robot.vision.enable_custom_object_detection.assert_called_once()
     assert result["status"] == "ok"
     assert set(result.keys()) == {"status", "objects"}
     assert result["objects"] == []
