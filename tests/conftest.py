@@ -41,6 +41,7 @@ def _make_robot() -> MagicMock:
     robot.status.is_carrying_block = False
     robot.status.is_on_charger = False
     robot.status.is_picked_up = False
+    robot.status.is_cliff_detected = False
 
     robot.touch.last_sensor_reading.is_being_touched = False
     robot.touch.last_sensor_reading.raw_touch_value = 0
