@@ -96,10 +96,10 @@ Return robot status.
 - `battery_level`
 - `is_charging`
 - `is_carrying_block`
-- `is_carrying_object`
-- `is_on_charger_platform`
-- `is_cliff_detected`
+- `is_on_charger`
 - `is_picked_up`
+
+**Known issue (#90):** Previous versions returned `is_carrying_object`, `is_on_charger_platform`, and `is_cliff_detected` which are not valid SDK properties. These have been removed. See `docs/investigations/ISSUE_90_STATUS_TOOLS_CONTRACT.md` for the authoritative SDK contract.
 
 ---
 
@@ -111,7 +111,9 @@ Return charger and battery state.
 **Output fields:**
 - `is_charging`
 - `battery_level`
-- `is_on_charger_platform`
+- `is_on_charger`
+
+**Known issue (#90):** Previous versions returned `is_on_charger_platform` which is not a valid SDK property. Changed to `is_on_charger`.
 
 ---
 
@@ -377,6 +379,6 @@ Execute one command at a time and wait for explicit confirmation before proceedi
 - [ ] `vector_capture_image` — Returns valid JPEG base64 payload
 - [ ] `vector_face_detection` — Returns `face_count` and `faces` array
 - [ ] `vector_vision_reset` — All vision modes disabled; confirm no active vision LED
-- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger_platform`
+- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger`
 - [ ] `vector_touch_status` — Returns `is_being_touched`, `raw_touch_value`; verify by touching/not touching sensor
 - [ ] `vector_proximity_status` — Returns `distance_mm`, `found_object`, `is_lift_in_fov`; verify by placing/removing object
