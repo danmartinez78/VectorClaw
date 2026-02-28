@@ -10,8 +10,13 @@
 
 ### 1) `Unknown Event type` warnings in logs
 - **Symptom:** repeated `events.EventHandler WARNING Unknown Event type`
-- **Impact:** currently non-fatal in observed runs
-- **Action:** continue if tools are functioning; track in issue #39 for cleanup
+- **Impact:** currently non-fatal in observed MCP/hardware runs (tools still return `status: ok`)
+- **Primary tracking:** issue #86 (observability investigation)
+- **Related context:** issue #39 (historical warning thread)
+- **Action now:**
+  1. Verify tool behavior first (don’t fail solely on this warning)
+  2. Capture the command + full warning snippet for issue comments
+  3. Treat as blocking only if accompanied by tool failures, disconnect loops, or missing behavior
 
 ### 2) `vector_face` fails with expected byte-length error
 - **Symptom:** `set_screen_with_image_data expected 35328 bytes`

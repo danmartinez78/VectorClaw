@@ -56,7 +56,7 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 
 **Known open issues:**
 - `vector_face` — payload-format bug ([#41](https://github.com/danmartinez78/VectorClaw/issues/41)), fix in progress
-- Non-fatal SDK `Unknown Event type` warning ([#39](https://github.com/danmartinez78/VectorClaw/issues/39)) — non-blocking
+- Non-fatal SDK `Unknown Event type` warning ([#86](https://github.com/danmartinez78/VectorClaw/issues/86), context in [#39](https://github.com/danmartinez78/VectorClaw/issues/39)) — non-blocking
 
 → [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.
 
