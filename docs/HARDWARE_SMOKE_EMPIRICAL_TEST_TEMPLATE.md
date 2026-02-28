@@ -109,8 +109,8 @@
 
 Based on empirical results:
 
-- [ ] Update API_REFERENCE.md with pose reference frame clarification
-- [ ] Update API_REFERENCE.md with proximity operating range
+- [ ] Update MCP_API_REFERENCE.md with pose reference frame clarification
+- [ ] Update MCP_API_REFERENCE.md with proximity operating range
 - [ ] Update SDK_SEMANTICS_RESEARCH.md with empirical findings
 - [ ] Create any needed bug fix issues
 

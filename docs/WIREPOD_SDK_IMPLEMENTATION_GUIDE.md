@@ -4,7 +4,7 @@ Purpose: implementation-focused reference for building MCP tools on top of the P
 
 **This doc is:** a curated practical playbook (how to use high-value SDK components effectively).
 **Use this when:** writing or reviewing MCP tool implementations and needing pragmatic guidance/caveats.
-**Do not use this for:** full API coverage audits; see `WIREPOD_SDK_SURFACE_REFERENCE.md`.
+**Do not use this for:** full API coverage audits; see `VECTOR_SDK_REFERENCE.md`.
 
 > This document is **not** the full upstream API documentation. It is a practical, curated guide for VectorClaw contributors.
 >
@@ -112,5 +112,5 @@ robot.connect()
 ## Scope rule
 
 If a capability exists upstream but is not exposed in MCP, treat this as **possible but not promised** until it appears in:
-- `API_REFERENCE.md` (implemented MCP contract), and
+- `MCP_API_REFERENCE.md` (implemented MCP contract), and
 - `SDK_TO_MCP_COVERAGE_MATRIX.md` (coverage status and rationale).

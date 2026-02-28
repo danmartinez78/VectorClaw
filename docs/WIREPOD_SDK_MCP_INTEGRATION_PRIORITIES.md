@@ -4,9 +4,9 @@ Purpose: convert the full SDK surface into an actionable MCP roadmap.
 
 **This doc is:** decision and prioritization layer (Now/Later/Skip + rationale).
 **Use this when:** planning implementation batches, scoping PRs, and sequencing Copilot work.
-**Do not use this for:** authoritative signatures/method details; see `WIREPOD_SDK_SURFACE_REFERENCE.md`.
+**Do not use this for:** authoritative signatures/method details; see `VECTOR_SDK_REFERENCE.md`.
 
-Source catalog: `WIREPOD_SDK_SURFACE_REFERENCE.md`
+Source catalog: `VECTOR_SDK_REFERENCE.md`
 
 ## Decision rubric
 

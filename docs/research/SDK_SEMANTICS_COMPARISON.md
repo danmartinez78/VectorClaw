@@ -3,7 +3,7 @@
 **Date:** 2026-02-28
 **Sources:**
 - Our research: `docs/research/SDK_SEMANTICS_RESEARCH.md`
-- Copilot doc: `docs/API_REFERENCE_COPILOT_GENERATED.md` (upstream dev branch)
+- Copilot doc: `docs/VECTOR_SDK_REFERENCE.md` (upstream dev branch)
 
 ---
 
@@ -127,7 +127,7 @@ Add to Copilot's doc:
 - Proximity usable range: 30-1200mm (max useful ~300mm)
 - Proximity FOV: 25°
 
-### 3. Update Our API_REFERENCE.md
+### 3. Update Our MCP_API_REFERENCE.md
 - Add `signal_quality` 0.0-1.0 range
 - Add `pose.is_comparable()` method reference
 - Add expression enum values
@@ -149,7 +149,7 @@ Still need empirical testing:
 
 1. **Merge Copilot's doc into our repo** — it's already on dev branch
 2. **Update our research doc** with findings from Copilot's doc
-3. **Update API_REFERENCE.md** with resolved questions
+3. **Update MCP_API_REFERENCE.md** with resolved questions
 4. **Reduce empirical test plan** — fewer unknowns now
 
 ---

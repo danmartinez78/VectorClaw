@@ -32,7 +32,7 @@ python -c "import anki_vector; print('anki_vector import ok')"
 ```
 
 ## 5) Run baseline smoke
-Run these via your MCP client/OpenClaw integration (see `docs/API_REFERENCE.md` for tool contracts):
+Run these via your MCP client/OpenClaw integration (see `docs/MCP_API_REFERENCE.md` for tool contracts):
 1. `vector_status`
 2. `vector_say`
 3. `vector_drive_off_charger`

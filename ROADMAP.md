@@ -80,13 +80,32 @@ Milestone-based development plan from alpha to public release.
 
 ## Milestone 4: Release Candidate
 
-**Goal:** Final polish
+**Goal:** Final polish + release readiness gates
 
 **Exit Criteria:**
 - [ ] All feedback addressed
 - [ ] Documentation finalized (README, SETUP, TROUBLESHOOTING)
 - [ ] CHANGELOG.md created
 - [ ] 1-2 days stable period
+
+### Mandatory release gates (v1.0.0)
+
+#### A) User install readiness
+- [ ] Fresh-environment install walkthrough validated end-to-end
+- [ ] Setup docs verified against actual current flow (no stale steps)
+- [ ] Troubleshooting covers top real-world failure modes
+
+#### B) ClawHub skill readiness
+- [ ] Skill metadata reviewed for clarity and accuracy
+- [ ] Capability scope is least-privilege and explicit
+- [ ] No hidden side-effects in default behavior
+- [ ] Release notes clearly define supported vs known-limited capabilities
+
+#### C) Final security audit
+- [ ] Credential handling/log output reviewed (no secret leakage)
+- [ ] Input validation and motion safety limits re-verified
+- [ ] Dependency and supply-chain sanity check completed
+- [ ] SECURITY.md and public security posture notes updated
 
 **Version:** v1.0.0-rc1
 
