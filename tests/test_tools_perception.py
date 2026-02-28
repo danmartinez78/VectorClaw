@@ -141,6 +141,11 @@ def test_vector_status(mock_robot):
     assert "battery_level" in result
     assert "is_charging" in result
     assert "is_carrying_block" in result
+    assert "is_on_charger" in result
+    assert "is_picked_up" in result
+    assert "is_carrying_object" not in result
+    assert "is_on_charger_platform" not in result
+    assert "is_cliff_detected" in result
 
 
 # ---------------------------------------------------------------------------

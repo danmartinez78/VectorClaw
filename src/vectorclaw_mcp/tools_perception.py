@@ -97,10 +97,9 @@ def vector_status() -> dict:
         "battery_level": battery.battery_level,
         "is_charging": st.is_charging,
         "is_carrying_block": st.is_carrying_block,
-        "is_carrying_object": getattr(st, "is_carrying_object", None),
         "is_on_charger": st.is_on_charger,
-        "is_cliff_detected": getattr(st, "is_cliff_detected", None),
-        "is_picked_up": getattr(st, "is_picked_up", None),
+        "is_cliff_detected": st.is_cliff_detected,
+        "is_picked_up": st.is_picked_up,
     }
 
 
