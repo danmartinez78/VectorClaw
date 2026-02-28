@@ -76,3 +76,52 @@ Use alongside:
 - `vector_face` hardware bug tracked in issue #41
 - Behavioral note: occasional aggressive post-command lift settle (“slammed arm down”) observed once; not blocking but worth tracking in behavior tuning.
 - Camera optics note: slight possible barrel/radial distortion observed; ROS2 calibration follow-up tracked in issue #40.
+
+---
+
+## 2026-02-27 — Post-integration MCP-path expanded smoke (#67 integrated)
+
+- **Date/Time (local):** 2026-02-27 evening CST (session recovered from reset artifact)
+- **Operator:** Dan + Tachi (MCP command-by-command + human physical verification)
+- **Robot serial:** `00a1546c`
+- **Branch / Commit:** `dev` (included hotfix commit `bcee0db` during run)
+- **Wire-Pod status:** active/running
+- **SDK env:** `PYTHONPATH=src`, `VECTOR_SERIAL=00a1546c`, python from `/home/daniel/.venv/vectorclaw-test/bin/python`
+- **Result:** **PARTIAL** (majority pass; status-schema and charger-path issues identified)
+
+### Commands + Outcomes
+
+| Command | Tool result | Physical verification | Notes |
+|---|---|---|---|
+| `vector_status` | FAIL → PASS | N/A | Initial runtime attr error (`is_carrying_object` missing); hotfixed during run to avoid crash |
+| `vector_say` | `ok` | PASS | Audible speech confirmed |
+| `vector_drive_off_charger` | `ok` | PASS | Undock behavior confirmed |
+| `vector_drive` | `ok` | PASS | Forward motion confirmed |
+| `vector_look` | `ok` | PASS | Valid non-empty JPEG payload; saved and reviewed |
+| `vector_head` | `ok` | PASS | Head actuation confirmed |
+| `vector_lift` | `ok` | PASS | Lift actuation confirmed |
+| `vector_scan` | `ok` | PASS | Head/yaw scan behavior observed |
+| `vector_find_faces` | `ok` | PASS-ish | Behavior similar to scan, with larger one-direction yaw sweep |
+| `vector_list_visible_faces` | `ok` | PARTIAL | Functional path; often empty results |
+| `vector_list_visible_objects` | `ok` | PARTIAL | Functional path; empty list despite nearby cube in some trials |
+| `vector_drive_on_charger` | `ok` tool-side | FAIL/PARTIAL | Cube-light behavior observed; no clear charger-approach on command |
+| `vector_emergency_stop` | `ok` | PASS | Stop path responded correctly |
+| `vector_capture_image` | `ok` | PASS | Valid non-empty JPEG payload |
+| `vector_face_detection` | `ok` | PARTIAL | Often `faces: []` even in favorable conditions |
+| `vector_vision_reset` | `ok` | PASS | Returned `All vision modes disabled` |
+| `vector_charger_status` | FAIL | N/A | Runtime attr error (`is_on_charger_platform` missing) |
+| `vector_touch_status` | `ok` | PASS | Touch state toggled false→true with contact |
+| `vector_proximity_status` | `ok` | PASS (with note) | Distance changed clearly (e.g., ~279→45mm); `found_object` remained false |
+
+### Anomalies / Follow-ups
+- Runtime schema variance in status tools:
+  - `vector_status` attr mismatch observed and patched during smoke (`bcee0db`)
+  - `vector_charger_status` still fails on assumed `is_on_charger_platform`
+- Perception semantics/reliability investigations opened:
+  - #87 (`vector_list_visible_objects` semantics)
+  - #89 (broader perception visibility reliability)
+  - #91 (SDK object-detection semantics: proximity vs classification)
+- Charger return path investigation opened:
+  - #88 (`vector_drive_on_charger` behavior mismatch)
+  - Additional observation: robot later autonomously returned to charger on low battery (capability exists; tool-path semantics likely mismatched)
+- Event-noise observability issue tracked in #86 (`Unknown Event type` warnings)
