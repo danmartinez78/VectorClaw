@@ -20,28 +20,14 @@ Use alongside:
 
 ### Commands + Outcomes
 
+> Log only commands executed in this run. Do not mirror a fixed tool catalog here.
+> Source of truth for currently exposed tools: `docs/API_REFERENCE.md`.
+
 | Command | Tool result | Physical verification | Notes |
 |---|---|---|---|
-| `vector_status` |  |  |  |
-| `vector_say` |  |  |  |
-| `vector_drive_off_charger` |  |  |  |
-| `vector_drive` |  |  |  |
-| `vector_look` |  |  |  |
-| `vector_face` |  |  |  |
-| `vector_head` |  |  |  |
-| `vector_lift` |  |  |  |
-| `vector_scan` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_find_faces` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_list_visible_faces` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_list_visible_objects` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_drive_on_charger` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_emergency_stop` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_capture_image` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_face_detection` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_vision_reset` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_charger_status` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_touch_status` |  |  | Pending MCP registration (#67) — skip until integrated |
-| `vector_proximity_status` |  |  | Pending MCP registration (#67) — skip until integrated |
+| `<tool_name>(<args>)` |  |  |  |
+|  |  |  |  |
+|  |  |  |  |
 
 ### Anomalies / Follow-ups
 - 
