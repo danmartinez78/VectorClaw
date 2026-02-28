@@ -5,7 +5,7 @@
 [![CI](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha%20v0.1.0-orange.svg)](ROADMAP.md)
+[![Status: RC Prep](https://img.shields.io/badge/status-rc%20prep-blue.svg)](ROADMAP.md)
 
 **Give your AI assistant a body.**
 
@@ -42,7 +42,7 @@ All communication is **local-only** — no cloud dependency at runtime (Wire-Pod
 
 ## Current Status
 
-> **Alpha — v0.1.0** · Real-hardware smoke tested 2026-02-27
+> **Release candidate prep** · Real-hardware smoke tested 2026-02-27
 
 All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 
