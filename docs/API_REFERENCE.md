@@ -77,13 +77,22 @@ Capture a camera image.
 ---
 
 ### `vector_pose`
+### `vector_pose`
 Return current pose.
 
 **Input:** none
 
 **Output fields:**
-- `x`, `y`, `z` — position coordinates in millimeters, SDK-derived from `robot.pose.position` (`Position.x/y/z`)
-- `angle_deg` — heading angle in degrees
+- `x`, `y`, `z` — Position coordinates in millimeters
+- `angle_deg` — Heading angle in degrees
+
+**Reference frame semantics:**
+- Robot body frame origin: Point on ground between Vector's front wheels
+- X: forward, Y: left, Z: up
+- World frame origin: Established at initialization (may reset on delocalization)
+- **Warning:** Poses with different `origin_id` values cannot be compared. Picking up the robot may invalidate pose comparisons.
+
+**SDK source:** `anki_vector/util.py` - `class Pose`
 
 ---
 
@@ -127,16 +136,31 @@ Return touch-sensor reading from Vector's back capacitive sensor.
 ---
 
 ### `vector_proximity_status`
-Return proximity sensor reading from Vector's front IR sensor.
+Return proximity sensor reading from Vector's time-of-flight sensor.
 
 **Input:** none
 
 **Output fields:**
-- `distance_mm` — measured distance to the nearest object in millimeters
-- `signal_quality` — quality of the detected object (float as reported by the SDK)
-- `unobstructed` — `true` when the sensor has confirmed nothing detected up to its max range
-- `found_object` — `true` when the sensor detected an object within its valid operating range (not a general "distance changed" flag)
-- `is_lift_in_fov` — `true` when Vector's lift is within the sensor's field of view
+- `distance_mm` — Measured distance to nearest object in millimeters
+- `signal_quality` — Quality of the detected object (float as reported by SDK)
+- `unobstructed` — True when sensor confirmed nothing detected up to max range
+- `found_object` — True when sensor detected object in valid operating range
+- `is_lift_in_fov` — True when Vector's lift is blocking the sensor
+
+**Sensor specs:**
+- Type: Time-of-flight distance sensor
+- Usable range: 30mm to 1200mm (max useful ~300mm)
+- Field of view: 25 degrees
+- Location: Between front wheels, facing forward
+
+**Field semantics:**
+- `found_object`: Sensor detected object in valid operating range (not just "distance changed")
+- `unobstructed`: Sensor confirmed no object up to max range (~1200mm)
+- `signal_quality`: Likelihood that reported distance is a solid surface
+- `is_lift_in_fov`: When true, distance readings may not be useful for object detection
+- Updates with every RobotState broadcast
+
+**SDK source:** `anki_vector/proximity.py`
 
 ---
 
@@ -160,10 +184,20 @@ Cube interactions.
 ---
 
 ### `vector_animate`
-Play named animation.
+Play animation by name or trigger.
 
 **Input:**
-- `animation_name` (string)
+- `animation_name` (string) — Specific animation name or trigger name
+
+**Prerequisite:** Vector must be off the charger.
+
+**Trigger vs Name:**
+- **Triggers** (recommended): Robot picks from a group of animations based on mood/random weighting. More stable across OS versions.
+- **Names**: Play exact specific animation. May be renamed/removed in OS updates.
+
+**Animation tracks:** Head, lift, treads, face, audio, backpack lights
+
+**SDK source:** `anki_vector/animation.py`
 
 ---
 
@@ -215,6 +249,12 @@ Capture a single camera frame via `camera.capture_single_image`.
 **Output:**
 - `image_base64` (JPEG payload)
 - `content_type` (`image/jpeg`)
+
+**Camera specs:**
+- Resolution: 1280 x 720
+- Field of view: 90° (horizontal) x 50° (vertical)
+
+**SDK source:** `anki_vector/camera.py`
 
 **Error response example:**
 ```json
@@ -312,6 +352,13 @@ Return the list of faces currently visible to Vector.
 {"status": "ok", "faces": [{"face_id": 1, "name": "Alice"}]}
 ```
 
+**Visibility semantics:**
+- Faces remain visible for 0.8 seconds after last observation
+- `name` is empty if face not enrolled (enrollment is optional, for naming only)
+- Enrollment persists across SDK sessions
+
+**SDK source:** `anki_vector/faces.py`, `anki_vector/world.py`
+
 ---
 
 ### `vector_list_visible_objects`
@@ -330,6 +377,14 @@ Return the list of objects currently visible to Vector.
 ```json
 {"status": "ok", "objects": [{"object_id": 42}]}
 ```
+
+**Visibility semantics:**
+- Objects remain visible for 0.8 seconds after last observation
+- Object types: LightCube, Charger, CustomObject
+- LightCube requires `connect_cube()` call at connection time (handled automatically)
+- Objects recognized via visual markers
+
+**SDK source:** `anki_vector/objects.py`, `anki_vector/world.py`
 
 ---
 
