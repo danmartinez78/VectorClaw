@@ -233,6 +233,8 @@ Return a summary of currently visible faces (no raw image data).
 {"status": "ok", "face_count": 1, "faces": [{"face_id": 1, "expression": "happy"}]}
 ```
 
+**Reliability note (#89):** Face detection requires vision mode enablement. Empty results are expected if perception has not been activated. Workaround: call `vector_find_faces()` first, wait 2-3 seconds, then query. See `docs/investigations/ISSUE_89_PERCEPTION_VISIBILITY.md` for details.
+
 ---
 
 ### `vector_vision_reset`
@@ -297,6 +299,8 @@ Return the list of faces currently visible to Vector.
 {"status": "ok", "faces": [{"face_id": 1, "name": "Alice"}]}
 ```
 
+**Reliability note (#89):** Face detection requires vision mode enablement. Empty results are expected if perception has not been activated. Workaround: call `vector_find_faces()` first, wait 2-3 seconds, then query. See `docs/investigations/ISSUE_89_PERCEPTION_VISIBILITY.md` for details.
+
 ---
 
 ### `vector_list_visible_objects`
@@ -311,6 +315,8 @@ Return the list of objects currently visible to Vector.
 ```json
 {"status": "ok", "objects": [{"object_id": 42}]}
 ```
+
+**Reliability note (#89):** Object visibility depends on robot's internal tracking state. Empty results may occur if robot hasn't recently scanned the environment. Workaround: call `vector_scan()` first, wait 2-3 seconds, then query. See `docs/investigations/ISSUE_89_PERCEPTION_VISIBILITY.md` for details.
 
 ---
 
