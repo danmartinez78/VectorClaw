@@ -39,7 +39,11 @@ class _SuppressUnknownEventType(logging.Filter):
 
     def filter(self, record: logging.LogRecord) -> bool:
         # Standard logging convention: True = allow, False = suppress.
-        return "Unknown Event type" not in record.getMessage()
+        # Only suppress the specific non-fatal WARNING noise from the SDK.
+        return not (
+            record.levelno == logging.WARNING
+            and "Unknown Event type" in record.getMessage()
+        )
 
 
 logging.getLogger("anki_vector.events.EventHandler").addFilter(
