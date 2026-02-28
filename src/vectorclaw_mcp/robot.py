@@ -91,10 +91,16 @@ class RobotManager:
                     robot.connect()
                     try:
                         robot.vision.enable_face_detection(estimate_expression=True)
+                    except Exception:
+                        logger.warning(
+                            "Face detection enablement failed; face detection may be unavailable.",
+                            exc_info=True,
+                        )
+                    try:
                         robot.vision.enable_custom_object_detection()
                     except Exception:
                         logger.warning(
-                            "Vision mode enablement failed; face/object detection may be unavailable.",
+                            "Custom object detection enablement failed; object detection may be unavailable.",
                             exc_info=True,
                         )
                     self._robot = robot
