@@ -113,6 +113,16 @@ def test_vector_cube_valid_actions(mock_robot, action):
     assert result["action"] == action
 
 
+def test_vector_cube_pickup_uses_sdk_method(mock_robot):
+    """Verify that the 'pickup' action uses the correct SDK method name: pickup_object."""
+    from vectorclaw_mcp.tools import vector_cube
+
+    result = vector_cube("pickup")
+
+    mock_robot.behavior.pickup_object.assert_called_once_with(mock_robot.world.connected_light_cube)
+    assert result["status"] == "ok"
+
+
 def test_vector_cube_invalid_action(mock_robot):
     from vectorclaw_mcp.tools import vector_cube
 
