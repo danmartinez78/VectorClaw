@@ -132,9 +132,11 @@ Return proximity sensor reading from Vector's front IR sensor.
 **Input:** none
 
 **Output fields:**
-- `distance_mm`
-- `found_object`
-- `is_lift_in_fov`
+- `distance_mm` — Raw distance to nearest surface
+- `found_object` — Engine-level object detection flag (may be false even when distance changes)
+- `is_lift_in_fov` — True if lift is blocking the sensor
+
+**Semantics note (#91):** `found_object` is an engine-level classification that depends on signal quality and internal thresholds. It may remain `false` even when `distance_mm` changes. This is independent from `vector_list_visible_objects` (camera-based object tracking). See `docs/investigations/ISSUE_91_PROXIMITY_SEMANTICS.md` for details.
 
 ---
 
