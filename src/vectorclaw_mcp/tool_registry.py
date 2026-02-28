@@ -122,6 +122,9 @@ TOOLS: list[Tool] = [
         name="vector_drive_on_charger",
         description=(
             "Drive Vector back onto its charger with a configurable timeout. "
+            "Returns immediately (already_on_charger: true) if Vector is already docked. "
+            "Requires the charger to be in Vector's recent world model; use vector_scan first "
+            "if the charger may not have been recently observed. "
             "Attempts a motor stop as a best-effort fallback if the maneuver times out."
         ),
         inputSchema={

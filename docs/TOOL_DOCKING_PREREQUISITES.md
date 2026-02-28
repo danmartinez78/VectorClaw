@@ -8,6 +8,7 @@ Purpose: quick operator reference for which tool behaviors require undocked stat
 |---|---|---|---|
 | `vector_drive` | **Yes** | Returns actionable error (`on_charger`, `action_required`) or attempts auto-undock if `VECTOR_AUTO_DRIVE_OFF_CHARGER` enabled | `tools_motion.vector_drive` + `_motion_precheck` |
 | `vector_drive_off_charger` | No | Intended command to undock; should succeed when docked | `tools_motion.vector_drive_off_charger` |
+| `vector_drive_on_charger` | **Yes** (must be undocked) | Returns `{status: ok, already_on_charger: true}` immediately; SDK call skipped to avoid undefined behaviour (cube activation) | `tools_motion.vector_drive_on_charger` |
 | `vector_say` | No | Works while docked | hardware smoke 2026-02-27 |
 | `vector_status` | No | Works while docked | hardware smoke 2026-02-27 |
 | `vector_pose` | No | Works while docked | implementation (no motion precheck) |

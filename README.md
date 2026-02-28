@@ -181,6 +181,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | `vector_animate` | 🎭 Expression | Play a named animation |
 | `vector_drive_off_charger` | 🏎️ Motion | Drive the robot off its charger |
 | `vector_drive` | 🏎️ Motion | Drive straight and/or turn in place |
+| `vector_drive_on_charger` | 🏎️ Motion | Drive Vector back onto its charger |
 | `vector_look` | 👀 Perception | Capture an image from the front camera |
 | `vector_face` | 🖼️ Display | Display a custom image on the face screen |
 | `vector_head` | 🦾 Actuation | Set head angle (clamped −22° – 45°) |
