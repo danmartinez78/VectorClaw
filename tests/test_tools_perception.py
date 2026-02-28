@@ -52,6 +52,7 @@ def test_vector_look_initialises_camera_feed_once(mock_robot):
 
 
 def test_vector_face(mock_robot):
+    import anki_vector.screen as screen_mod
     from PIL import Image as PILImage
     from vectorclaw_mcp.tools import vector_face
 
@@ -62,7 +63,14 @@ def test_vector_face(mock_robot):
 
     result = vector_face(encoded)
 
-    mock_robot.screen.set_screen_with_image_data.assert_called_once()
+    screen_mod.convert_image_to_screen_data.assert_called_once()
+    called_img = screen_mod.convert_image_to_screen_data.call_args[0][0]
+    assert called_img.size == (144, 108)
+    assert called_img.mode == "RGB"
+    rgb565_data = screen_mod.convert_image_to_screen_data.return_value
+    mock_robot.screen.set_screen_with_image_data.assert_called_once_with(
+        rgb565_data, duration_sec=5.0
+    )
     assert result["status"] == "ok"
 
 
