@@ -25,23 +25,46 @@ def test_unknown_event_type_warning_is_suppressed():
     logging.Filter on the anki_vector.events.EventHandler logger to suppress
     the message so it doesn't pollute MCP server output.
     """
-    # Importing server ensures the filter is installed.
-    import vectorclaw_mcp.server  # noqa: F401
+    from vectorclaw_mcp import server
 
-    sdk_logger = logging.getLogger("anki_vector.events.EventHandler")
+    for logger_name in ("anki_vector.events.EventHandler", "events.EventHandler"):
+        sdk_logger = logging.getLogger(logger_name)
 
-    # Build a dummy LogRecord that mimics what the SDK emits.
-    record = logging.LogRecord(
-        name="anki_vector.events.EventHandler",
-        level=logging.WARNING,
-        pathname="",
-        lineno=0,
-        msg="Unknown Event type",
-        args=(),
-        exc_info=None,
-    )
+        # Verify our specific filter type is registered on the logger.
+        suppression_filters = [
+            f for f in sdk_logger.filters
+            if isinstance(f, server._SuppressUnknownEventType)
+        ]
+        assert suppression_filters, (
+            f"Expected a _SuppressUnknownEventType filter on logger {logger_name!r}"
+        )
 
-    # At least one installed filter must reject (return False for) the record.
-    assert any(not f.filter(record) for f in sdk_logger.filters), (
-        "Expected a filter to suppress the 'Unknown Event type' record"
-    )
+        filt = suppression_filters[0]
+
+        # The matching SDK warning must be rejected (filter returns False).
+        matching = logging.LogRecord(
+            name=logger_name,
+            level=logging.WARNING,
+            pathname="",
+            lineno=0,
+            msg="Unknown Event type",
+            args=(),
+            exc_info=None,
+        )
+        assert not filt.filter(matching), (
+            "Filter should suppress 'Unknown Event type' records"
+        )
+
+        # An unrelated warning must pass through (filter returns True).
+        unrelated = logging.LogRecord(
+            name=logger_name,
+            level=logging.WARNING,
+            pathname="",
+            lineno=0,
+            msg="Connection lost",
+            args=(),
+            exc_info=None,
+        )
+        assert filt.filter(unrelated), (
+            "Filter must not suppress unrelated warning messages"
+        )
