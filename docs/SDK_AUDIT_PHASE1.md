@@ -3,7 +3,7 @@
 **Audit date:** 2026-02-28  
 **Auditor:** Copilot  
 **Reference:** `docs/WIREPOD_SDK_SURFACE_REFERENCE.md`  
-**Scope:** All tools registered in `src/vectorclaw_mcp/tool_registry.py`
+**Scope:** All SDK-facing robot control tools registered in `src/vectorclaw_mcp/tool_registry.py`, excluding setup/management utilities such as `vector_setup`
 
 ---
 
