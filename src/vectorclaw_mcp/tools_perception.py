@@ -91,15 +91,16 @@ def vector_cube(action: str) -> dict:
 def vector_status() -> dict:
     robot = _robot()
     battery = robot.get_battery_state()
+    st = robot.status
     return {
         "status": "ok",
         "battery_level": battery.battery_level,
-        "is_charging": robot.status.is_charging,
-        "is_carrying_block": robot.status.is_carrying_block,
-        "is_carrying_object": robot.status.is_carrying_object,
-        "is_on_charger_platform": robot.status.is_on_charger_platform,
-        "is_cliff_detected": robot.status.is_cliff_detected,
-        "is_picked_up": robot.status.is_picked_up,
+        "is_charging": st.is_charging,
+        "is_carrying_block": st.is_carrying_block,
+        "is_carrying_object": getattr(st, "is_carrying_object", None),
+        "is_on_charger_platform": getattr(st, "is_on_charger_platform", None),
+        "is_cliff_detected": getattr(st, "is_cliff_detected", None),
+        "is_picked_up": getattr(st, "is_picked_up", None),
     }
 
 
