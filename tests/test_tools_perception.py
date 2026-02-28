@@ -400,6 +400,22 @@ def test_vector_list_visible_objects_empty(mock_robot):
     assert result["objects"] == []
 
 
+def test_vector_list_visible_objects_detection_enable_fails(mock_robot):
+    from unittest.mock import MagicMock
+    from vectorclaw_mcp.tools_perception import vector_list_visible_objects
+
+    mock_robot.vision.enable_custom_object_detection.side_effect = RuntimeError("vision unavailable")
+    obj1 = MagicMock()
+    obj1.object_id = 7
+    obj1.descriptive_name = "Charger"
+    mock_robot.world.visible_objects = [obj1]
+
+    result = vector_list_visible_objects()
+
+    assert result["status"] == "ok"
+    assert result["objects"] == [{"object_id": 7, "object_type": "Charger"}]
+
+
 def test_vector_list_visible_objects_error(mock_robot):
     from vectorclaw_mcp.tools_perception import vector_list_visible_objects
 
