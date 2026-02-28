@@ -106,8 +106,27 @@ robot.connect()
 ## Known compatibility notes
 
 1. `wirepod_vector_sdk` installs under the `anki_vector` namespace.
-2. Modern Python compatibility may require SDK fork patches (see `SDK_PATCH_NOTES.md`).
+2. Runtime object fields may differ from source assumptions (validate on hardware/runtime, not docs alone).
 3. Charger preconditions should be handled explicitly for movement reliability.
+
+## Stable external status contract (VectorClaw guidance)
+
+For `vector_status` and `vector_charger_status`, implement a stable external payload contract and document nullable keys explicitly.
+
+Recommended contract keys:
+- `status`
+- `battery_level`
+- `is_charging`
+- `is_carrying_block`
+- `is_carrying_object` *(nullable if runtime field absent)*
+- `is_on_charger_platform` *(nullable if runtime field absent)*
+- `is_cliff_detected` *(nullable if runtime field absent)*
+- `is_picked_up` *(nullable if runtime field absent)*
+
+Implementation rule:
+- Use authoritative runtime-verified fields first.
+- Do not assume parity with source-derived names.
+- If a field is unavailable in runtime, return explicit `null` (or defined default) instead of throwing.
 
 ## Scope rule
 

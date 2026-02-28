@@ -13,6 +13,35 @@ _Generated from source on 2026-02-27T08:16:58_
 - **Signature** is source-derived and shows arguments/defaults/type hints when present.
 - **Description/Args/Returns** are extracted from SDK docstrings when available.
 
+## Runtime-observed schema notes (hardware smoke, 2026-02-27)
+
+Source-derived SDK surfaces are necessary but not sufficient: runtime objects can differ from assumed attributes.
+
+### RobotStatus (runtime-observed)
+
+| Field | Runtime observation | Notes |
+|---|---|---|
+| `is_charging` | Present | Safe to use directly |
+| `is_carrying_block` | Present | Safe to use directly |
+| `is_cliff_detected` | Present | Observed in status payload |
+| `is_picked_up` | Present | Observed true when robot held |
+| `is_carrying_object` | Missing in tested runtime | Prior assumption caused `vector_status` failure before hotfix |
+| `is_on_charger_platform` | Missing in tested runtime | Causes `vector_charger_status` failure in current implementation |
+
+### Perception query payload reliability
+
+| Surface | Runtime observation | Notes |
+|---|---|---|
+| Face query results | Often empty (`faces: []`) even in favorable conditions | See issue #89 |
+| Visible object query results | Often empty despite nearby cube in some trials | See issue #87 |
+| Proximity fields | Distance updates reliably; `found_object` may remain false | Investigate semantics in #91 |
+
+### Contract guidance
+
+- Treat this document as **source capability inventory**.
+- For implementation safety, always cross-check with runtime-observed schema and hardware smoke logs.
+- VectorClaw must expose a stable external contract even when runtime fields vary (explicit null/default semantics in MCP layer).
+
 ## Robot component access map (common MCP entry points)
 - `robot.behavior.<method>(...)` → behavior actions (speech, drive, pose-goal, charger, cube interactions)
 - `robot.world.<method>(...)` → world/cube/faces/object visibility and charger object access
