@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+from unittest.mock import sentinel
+
 
 def test_vector_say(mock_robot):
     from vectorclaw_mcp.tools import vector_say
@@ -133,6 +136,18 @@ def test_vector_head_at_max_bound(mock_robot):
     assert result["status"] == "ok"
     assert result["angle_deg"] == MAX_HEAD_ANGLE
     mock_robot.behavior.set_head_angle.assert_called_once_with(MAX_HEAD_ANGLE)
+
+
+def test_vector_head_passes_angle_type(mock_robot, monkeypatch):
+    """set_head_angle must receive a util.Angle object, not a raw float."""
+    util_mod = sys.modules["anki_vector.util"]
+    monkeypatch.setattr(util_mod, "degrees", lambda v: sentinel.angle_obj)
+
+    from vectorclaw_mcp.tools import vector_head
+
+    vector_head(20.0)
+
+    mock_robot.behavior.set_head_angle.assert_called_once_with(sentinel.angle_obj)
 
 
 def test_vector_lift_normal(mock_robot):
