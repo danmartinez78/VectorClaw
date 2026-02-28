@@ -17,6 +17,11 @@ def _make_fake_sdk() -> types.ModuleType:
     util.speed_mmps = lambda v: v
     sdk.util = util
 
+    behavior = types.ModuleType("anki_vector.behavior")
+    behavior.MIN_HEAD_ANGLE = -22.0
+    behavior.MAX_HEAD_ANGLE = 45.0
+    sdk.behavior = behavior
+
     screen = types.ModuleType("anki_vector.screen")
     screen.dimensions = MagicMock(return_value=(184, 96))
     screen.convert_image_to_screen_data = MagicMock(return_value=b"\x00" * (184 * 96 * 2))
@@ -25,6 +30,7 @@ def _make_fake_sdk() -> types.ModuleType:
     # Always override any existing anki_vector modules to keep tests deterministic
     sys.modules["anki_vector"] = sdk
     sys.modules["anki_vector.util"] = util
+    sys.modules["anki_vector.behavior"] = behavior
     sys.modules["anki_vector.screen"] = screen
     return sdk
 
