@@ -229,6 +229,8 @@ def vector_proximity_status() -> dict:
         return {
             "status": "ok",
             "distance_mm": prox.distance.distance_mm,
+            "signal_quality": prox.signal_quality,
+            "unobstructed": prox.unobstructed,
             "found_object": prox.found_object,
             "is_lift_in_fov": prox.is_lift_in_fov,
         }

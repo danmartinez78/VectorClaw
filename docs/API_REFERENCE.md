@@ -96,7 +96,6 @@ Return robot status.
 - `battery_level`
 - `is_charging`
 - `is_carrying_block`
-- `is_carrying_object`
 - `is_on_charger`
 - `is_cliff_detected`
 - `is_picked_up`
@@ -127,14 +126,21 @@ Return touch-sensor reading from Vector's back capacitive sensor.
 ---
 
 ### `vector_proximity_status`
-Return proximity sensor reading from Vector's front IR sensor.
+Return proximity sensor reading from Vector's front time-of-flight (IR) sensor.
 
 **Input:** none
 
 **Output fields:**
-- `distance_mm`
-- `found_object`
-- `is_lift_in_fov`
+- `distance_mm` — distance in millimetres between the sensor and the nearest detected object
+- `signal_quality` — float in the range 0–1 indicating the reliability/confidence of the measurement (higher is better)
+- `unobstructed` — `true` when the sensor has confirmed nothing is detected up to its maximum operating range (i.e. the path ahead is clear)
+- `found_object` — `true` when the sensor has detected an object **within its valid operating range**; this reflects the current sensor reading, not a change in distance
+- `is_lift_in_fov` — `true` when Vector's lift arm is in the sensor's field of view and may be causing spurious readings
+
+> **SDK semantics note:** `found_object` indicates that an object is present in range at the time of the reading.
+> It does **not** track whether distance has changed between readings.
+> Use `unobstructed` to confirm a clear path ahead.
+> Readings where `is_lift_in_fov` is `true` should be treated with caution.
 
 ---
 
@@ -392,6 +398,6 @@ Execute one command at a time and wait for explicit confirmation before proceedi
 - [ ] `vector_capture_image` — Returns valid JPEG base64 payload
 - [ ] `vector_face_detection` — Returns `face_count` and `faces` array
 - [ ] `vector_vision_reset` — All vision modes disabled; confirm no active vision LED
-- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger_platform`
+- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger`
 - [ ] `vector_touch_status` — Returns `is_being_touched`, `raw_touch_value`; verify by touching/not touching sensor
-- [ ] `vector_proximity_status` — Returns `distance_mm`, `found_object`, `is_lift_in_fov`; verify by placing/removing object
+- [ ] `vector_proximity_status` — Returns `distance_mm`, `signal_quality`, `unobstructed`, `found_object`, `is_lift_in_fov`; verify by placing/removing object
