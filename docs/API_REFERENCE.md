@@ -154,9 +154,9 @@ Return proximity sensor reading from Vector's time-of-flight sensor.
 - Location: Between front wheels, facing forward
 
 **Field semantics:**
-- `found_object`: Sensor detected object in valid operating range (not just "distance changed")
-- `unobstructed`: Sensor confirmed no object up to max range (~1200mm)
-- `signal_quality`: Likelihood that reported distance is a solid surface (**0.0 poor to 1.0 strong**)
+- `found_object`: Firmware-provided boolean from robot state. **Empirically unreliable in current setup** (remained `false` across far/mid/close/object-touching tests while `distance_mm` and `signal_quality` changed correctly).
+- `unobstructed`: Sensor confirmed no object up to max range (~1200mm); empirically flipped `true` when path was clear.
+- `signal_quality`: Likelihood-like metric from firmware. **Do not assume 0.0–1.0 bounds**; empirical readings exceeded 1.0 (observed up to ~11.7).
 - `is_lift_in_fov`: When true, distance readings may not be useful for object detection
 - Updates with every RobotState broadcast
 

@@ -126,6 +126,10 @@ Milestone-based development plan from alpha to public release.
 ## Future Considerations (v1.x)
 
 **Near-term enhancements:**
+- Async motion control primitives (non-blocking drive + interruptable stop semantics)
+- Vision pipeline optimization (optional in-memory look→analyze path, with audit snapshot mode)
+- Pose metadata expansion in `vector_pose` (`origin_id`, `is_picked_up`, optional `localized_to_object_id`)
+- Perception reliability hardening (face/object visibility behavior, cube-connect workflow)
 - Audio recording from microphones
 - Object detection via camera
 - Multiple robot support
