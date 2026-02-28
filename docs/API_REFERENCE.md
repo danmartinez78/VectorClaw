@@ -133,6 +133,8 @@ Return proximity sensor reading from Vector's front IR sensor.
 
 **Output fields:**
 - `distance_mm` — measured distance to the nearest object in millimeters
+- `signal_quality` — quality of the detected object (float, 0.0–1.0)
+- `unobstructed` — `true` when the sensor has confirmed nothing detected up to its max range
 - `found_object` — `true` when the sensor detected an object within its valid operating range (not a general "distance changed" flag)
 - `is_lift_in_fov` — `true` when Vector's lift is within the sensor's field of view
 

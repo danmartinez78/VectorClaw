@@ -60,6 +60,8 @@ def _make_robot() -> MagicMock:
     robot.touch.last_sensor_reading.raw_touch_value = 0
 
     robot.proximity.last_sensor_reading.distance.distance_mm = 100.0
+    robot.proximity.last_sensor_reading.signal_quality = 0.0
+    robot.proximity.last_sensor_reading.unobstructed = True
     robot.proximity.last_sensor_reading.found_object = False
     robot.proximity.last_sensor_reading.is_lift_in_fov = False
 

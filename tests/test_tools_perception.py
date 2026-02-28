@@ -520,6 +520,8 @@ def test_vector_proximity_status(mock_robot):
     from vectorclaw_mcp.tools_perception import vector_proximity_status
 
     mock_robot.proximity.last_sensor_reading.distance.distance_mm = 250.0
+    mock_robot.proximity.last_sensor_reading.signal_quality = 0.85
+    mock_robot.proximity.last_sensor_reading.unobstructed = False
     mock_robot.proximity.last_sensor_reading.found_object = True
     mock_robot.proximity.last_sensor_reading.is_lift_in_fov = False
 
@@ -527,6 +529,8 @@ def test_vector_proximity_status(mock_robot):
 
     assert result["status"] == "ok"
     assert result["distance_mm"] == 250.0
+    assert result["signal_quality"] == 0.85
+    assert result["unobstructed"] is False
     assert result["found_object"] is True
     assert result["is_lift_in_fov"] is False
 
@@ -538,6 +542,8 @@ def test_vector_proximity_status_no_object(mock_robot):
 
     assert result["status"] == "ok"
     assert result["found_object"] is False
+    assert "signal_quality" in result
+    assert "unobstructed" in result
 
 
 def test_vector_proximity_status_error(mock_robot):
