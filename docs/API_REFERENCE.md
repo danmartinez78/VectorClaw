@@ -335,12 +335,28 @@ Drive Vector back onto its charger. Includes a configurable timeout; if the
 maneuver does not complete in time a motor stop is attempted as a best-effort
 fallback (the stop itself may fail, which is reflected in the response).
 
+If Vector is already on the charger the SDK call is skipped and a success
+response with `already_on_charger: true` is returned immediately.  Invoking
+`drive_on_charger` while already docked can produce undefined behaviour
+(observed on hardware: cube-activation animations instead of a charger-approach
+sequence).
+
+> ⚠️ **Reliability note:** Reliable docking requires the charger to be within
+> the robot's recently-observed world model.  If Vector has not seen the charger
+> recently the command may time out without the robot approaching it.  Use
+> `vector_scan` first to give Vector a chance to locate the charger.
+
 **Input:**
 - `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback; must be `>= 0`
 
 **Example response (success):**
 ```json
 {"status": "ok"}
+```
+
+**Example response (already on charger):**
+```json
+{"status": "ok", "already_on_charger": true}
 ```
 
 **Example response (timeout — motors stopped successfully):**
@@ -392,6 +408,6 @@ Execute one command at a time and wait for explicit confirmation before proceedi
 - [ ] `vector_capture_image` — Returns valid JPEG base64 payload
 - [ ] `vector_face_detection` — Returns `face_count` and `faces` array
 - [ ] `vector_vision_reset` — All vision modes disabled; confirm no active vision LED
-- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger_platform`
+- [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger`
 - [ ] `vector_touch_status` — Returns `is_being_touched`, `raw_touch_value`; verify by touching/not touching sensor
 - [ ] `vector_proximity_status` — Returns `distance_mm`, `found_object`, `is_lift_in_fov`; verify by placing/removing object

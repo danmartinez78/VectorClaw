@@ -63,10 +63,24 @@ def vector_lift(height: float) -> dict:
 
 
 def vector_drive_on_charger(timeout_sec: float = 10.0) -> dict:
-    """Experimental: drive Vector onto its charger with a timeout and motor-stop fallback."""
+    """Drive Vector back onto its charger with a timeout and motor-stop fallback.
+
+    If Vector is already on the charger (``robot.status.is_on_charger`` is True),
+    returns immediately without calling the SDK.  Calling ``drive_on_charger``
+    while already docked can produce undefined behaviour (observed: cube-activation
+    animations instead of a charger-approach sequence).
+
+    Known limitation: reliable docking requires the charger to be within the robot's
+    recently-observed world model.  If Vector has not seen the charger recently the
+    SDK command may time out without approaching it.
+    """
     if timeout_sec < 0:
         return {"status": "error", "message": "timeout_sec must be non-negative"}
     robot = _robot()
+
+    if robot.status.is_on_charger:
+        return {"status": "ok", "already_on_charger": True}
+
     result: list = []
 
     def _attempt() -> None:
