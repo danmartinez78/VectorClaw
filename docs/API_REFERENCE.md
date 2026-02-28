@@ -82,7 +82,7 @@ Return current pose.
 **Input:** none
 
 **Output fields:**
-- `x`, `y`, `z` — position coordinates in millimetres, SDK-derived from `robot.pose.position` (`Position.x/y/z`)
+- `x`, `y`, `z` — position coordinates in millimeters, SDK-derived from `robot.pose.position` (`Position.x/y/z`)
 - `angle_deg` — heading angle in degrees
 
 ---
