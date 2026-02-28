@@ -103,6 +103,13 @@ class RobotManager:
                             "Custom object detection enablement failed; object detection may be unavailable.",
                             exc_info=True,
                         )
+                    try:
+                        robot.world.connect_cube()
+                    except Exception:
+                        logger.warning(
+                            "LightCube connection failed; cube-based tools may be unavailable.",
+                            exc_info=True,
+                        )
                     self._robot = robot
                     return robot
                 except (ConnectionError, TimeoutError, OSError) as exc:

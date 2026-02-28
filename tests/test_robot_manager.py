@@ -169,6 +169,63 @@ def test_robot_manager_connect_invalid_delay(monkeypatch):
     fake_sdk.Robot.assert_not_called()
 
 
+def test_robot_manager_connect_connects_cube(monkeypatch):
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "0")
+
+    fake_robot = MagicMock()
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.return_value = fake_robot
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    mgr.connect()
+
+    fake_robot.world.connect_cube.assert_called_once_with()
+
+
+def test_robot_manager_connect_cube_failure_does_not_break_connection(monkeypatch):
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "0")
+
+    fake_robot = MagicMock()
+    fake_robot.world.connect_cube.side_effect = RuntimeError("cube unavailable")
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.return_value = fake_robot
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    robot = mgr.connect()
+
+    assert mgr.is_connected
+    assert robot is fake_robot
+
+
+def test_robot_manager_connect_cube_failure_logs_warning(monkeypatch, caplog):
+    import logging
+
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "0")
+
+    fake_robot = MagicMock()
+    fake_robot.world.connect_cube.side_effect = RuntimeError("cube unavailable")
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.return_value = fake_robot
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    with caplog.at_level(logging.WARNING, logger="vectorclaw_mcp.robot"):
+        mgr.connect()
+
+    assert any("LightCube" in r.message for r in caplog.records)
+
+
 def test_robot_manager_connect_cleanup_on_failure(monkeypatch):
     monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
     monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "1")
