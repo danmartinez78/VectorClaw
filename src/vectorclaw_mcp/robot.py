@@ -89,6 +89,14 @@ class RobotManager:
                 robot = anki_vector.Robot(**kwargs)
                 try:
                     robot.connect()
+                    try:
+                        robot.vision.enable_face_detection(estimate_expression=True)
+                        robot.vision.enable_custom_object_detection()
+                    except Exception:
+                        logger.warning(
+                            "Vision mode enablement failed; face/object detection may be unavailable.",
+                            exc_info=True,
+                        )
                     self._robot = robot
                     return robot
                 except (ConnectionError, TimeoutError, OSError) as exc:

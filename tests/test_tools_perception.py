@@ -438,7 +438,7 @@ def test_vector_charger_status(mock_robot):
     assert result["status"] == "ok"
     assert "is_charging" in result
     assert "battery_level" in result
-    assert "is_on_charger_platform" in result
+    assert "is_on_charger" in result
 
 
 def test_vector_charger_status_error(mock_robot):

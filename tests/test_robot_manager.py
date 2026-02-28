@@ -15,6 +15,43 @@ def test_robot_manager_requires_serial(monkeypatch):
         mgr.connect()
 
 
+def test_robot_manager_connect_enables_vision_modes(monkeypatch):
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "0")
+
+    fake_robot = MagicMock()
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.return_value = fake_robot
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    mgr.connect()
+
+    fake_robot.vision.enable_face_detection.assert_called_once_with(estimate_expression=True)
+    fake_robot.vision.enable_custom_object_detection.assert_called_once_with()
+
+
+def test_robot_manager_connect_vision_failure_does_not_break_connection(monkeypatch):
+    monkeypatch.setenv("VECTOR_SERIAL", "test-serial")
+    monkeypatch.setenv("VECTOR_CONNECT_RETRIES", "0")
+
+    fake_robot = MagicMock()
+    fake_robot.vision.enable_face_detection.side_effect = RuntimeError("vision unavailable")
+    fake_sdk = MagicMock()
+    fake_sdk.Robot.return_value = fake_robot
+    monkeypatch.setitem(sys.modules, "anki_vector", fake_sdk)
+
+    from vectorclaw_mcp.robot import RobotManager
+
+    mgr = RobotManager()
+    robot = mgr.connect()
+
+    assert mgr.is_connected
+    assert robot is fake_robot
+
+
 def test_robot_manager_disconnect_noop():
     from vectorclaw_mcp.robot import RobotManager
 

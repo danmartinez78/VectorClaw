@@ -98,7 +98,7 @@ def vector_status() -> dict:
         "is_charging": st.is_charging,
         "is_carrying_block": st.is_carrying_block,
         "is_carrying_object": getattr(st, "is_carrying_object", None),
-        "is_on_charger_platform": getattr(st, "is_on_charger_platform", None),
+        "is_on_charger": st.is_on_charger,
         "is_cliff_detected": getattr(st, "is_cliff_detected", None),
         "is_picked_up": getattr(st, "is_picked_up", None),
     }
@@ -204,7 +204,7 @@ def vector_charger_status() -> dict:
             "status": "ok",
             "is_charging": robot.status.is_charging,
             "battery_level": battery.battery_level,
-            "is_on_charger_platform": robot.status.is_on_charger_platform,
+            "is_on_charger": robot.status.is_on_charger,
         }
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
