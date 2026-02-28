@@ -133,7 +133,13 @@ def vector_list_visible_faces() -> dict:
 def vector_list_visible_objects() -> dict:
     try:
         robot = _robot()
-        robot.vision.enable_custom_object_detection()
+        # Best-effort: enabling custom object detection may fail on some SDK/firmware
+        # combinations or if already enabled. Do not treat this as fatal; still attempt
+        # to read visible_objects.
+        try:
+            robot.vision.enable_custom_object_detection()
+        except Exception:
+            pass
         objects = [
             {"object_id": o.object_id, "object_type": o.descriptive_name}
             for o in robot.world.visible_objects
