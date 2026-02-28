@@ -17,7 +17,7 @@
   the resulting `TypeError` and logs this warning.
 - **Impact:** non-fatal — all tool calls complete normally.
 - **Resolution:** VectorClaw installs a `logging.Filter` on the
-  `anki_vector.events.EventHandler` logger at server startup that silences
+  `events.EventHandler` logger at server startup that silences
   this specific message.  No further action is required.
 
 ### 2) `vector_face` fails with expected byte-length error
