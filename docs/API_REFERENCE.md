@@ -77,7 +77,6 @@ Capture a camera image.
 ---
 
 ### `vector_pose`
-### `vector_pose`
 Return current pose.
 
 **Input:** none
@@ -89,8 +88,9 @@ Return current pose.
 **Reference frame semantics:**
 - Robot body frame origin: Point on ground between Vector's front wheels
 - X: forward, Y: left, Z: up
-- World frame origin: Established at initialization (may reset on delocalization)
-- **Warning:** Poses with different `origin_id` values cannot be compared. Picking up the robot may invalidate pose comparisons.
+- World frame origin: Established at initialization
+- **Delocalization:** When picked up, robot creates new `origin_id` and resets pose to (0,0,0)
+- **Warning:** Poses with different `origin_id` values cannot be compared. Use `pose.is_comparable(other_pose)` to check.
 
 **SDK source:** `anki_vector/util.py` - `class Pose`
 
@@ -156,7 +156,7 @@ Return proximity sensor reading from Vector's time-of-flight sensor.
 **Field semantics:**
 - `found_object`: Sensor detected object in valid operating range (not just "distance changed")
 - `unobstructed`: Sensor confirmed no object up to max range (~1200mm)
-- `signal_quality`: Likelihood that reported distance is a solid surface
+- `signal_quality`: Likelihood that reported distance is a solid surface (**0.0 poor to 1.0 strong**)
 - `is_lift_in_fov`: When true, distance readings may not be useful for object detection
 - Updates with every RobotState broadcast
 

@@ -387,10 +387,16 @@ Type: Property methods
 ### 🔍 Partially Solved (Empirical Testing Needed)
 | Topic | Remaining Question | Test Method |
 |-------|-------------------|-------------|
-| Proximity sensor | Valid operating range for `found_object` | Distance testing |
-| Proximity sensor | `signal_quality` value range | Surface/distance testing |
-| Face detection | Expression detection flag requirement | Test with/without `estimate_expression` |
-| Pose reference frame | World frame origin, delocalization behavior | Pick up robot, observe pose/origin_id |
+| Proximity sensor | Valid operating range for `found_object` (specific mm) | Distance testing |
+| Pose reference frame | Where is initial world frame origin established? | Test at startup |
+
+### ✅ Resolved by Copilot SDK Doc (2026-02-28)
+| Topic | Answer | Source |
+|-------|--------|--------|
+| `signal_quality` value range | **0.0 (poor) to 1.0 (strong)** | Copilot doc §16 |
+| Delocalization behavior | **New origin_id, pose resets to (0,0,0)** | Copilot doc §11 |
+| Pose comparison | **Use `pose.is_comparable(other_pose)`** | Copilot doc §11 |
+| Expression types | **UNKNOWN, NEUTRAL, HAPPINESS, SURPRISE, ANGER, SADNESS** | Copilot doc §15 |
 
 ---
 
