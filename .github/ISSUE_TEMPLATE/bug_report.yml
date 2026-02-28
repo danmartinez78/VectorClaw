@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a reproducible problem in VectorClaw
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+      placeholder: Clear and concise description of the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include exact commands and config when possible.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and traces
+      description: Paste relevant logs, traceback, or MCP tool output.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: VectorClaw version
+      placeholder: 0.1.0
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Devcontainer
+        - Local Linux
+        - Local macOS
+        - Local Windows
+        - GitHub Actions
+        - Other

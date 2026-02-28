@@ -16,6 +16,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "build>=1.2.0",
+    "twine>=5.0.0",
+]
 legacy = [
     "anki_vector>=0.6.0",
 ]
