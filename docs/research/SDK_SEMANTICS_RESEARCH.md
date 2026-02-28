@@ -124,14 +124,31 @@ Type: ProximityComponent class
 | Field of view? | 25 degrees | Line 18 |
 | Update frequency? | Every RobotState broadcast | Lines 145-146 |
 
-#### Open Questions (Need Empirical Testing)
+#### Empirical Results (2026-02-28, live robot)
 
-| Question | Test Method | Priority |
-|----------|-------------|----------|
-| What is "valid operating range" for `found_object`? | Place object at various distances, observe `found_object` flag | HIGH |
-| `signal_quality` value range? | Observe values across different surfaces/distances | MEDIUM |
-| Can `found_object` and `unobstructed` both be false? | Edge case testing | MEDIUM |
-| Does `signal_quality` correlate with surface type? | Test different materials (matte, glossy, dark, light) | LOW |
+Tested via MCP->SDK->robot loop with human physical verification.
+
+| Condition | distance_mm | signal_quality | unobstructed | found_object |
+|----------|-------------:|---------------:|:------------:|:------------:|
+| Far object | 180.0 | 0.0317 | false | false |
+| Mid object | 92.0 | 0.4383 | false | false |
+| Close object | 42.0 | 6.1456 | false | false |
+| Mid (larger cardboard) | 97.0 | 1.4551 | false | false |
+| Close (cardboard touching) | 48.0 | 11.6966 | false | false |
+| No object / clear path | 244.0 | 0.0060 | true | false |
+
+**Conclusions from empirical run:**
+- `found_object` appears **not reliable** in this environment/setup (never flipped true despite strong near-field returns).
+- `unobstructed` behaved as expected (true only when clear-path case).
+- `signal_quality` is **not bounded to 0.0–1.0** in practice (observed > 1.0 up to ~11.7).
+
+#### Updated Open Questions
+
+| Question | Status |
+|----------|--------|
+| What is "valid operating range" for `found_object`? | Still unclear; likely firmware-specific thresholding/semantics |
+| Can `found_object` and `unobstructed` both be false? | **Yes** (observed repeatedly) |
+| Does `signal_quality` correlate with surface type? | Partial; additional controlled material tests still useful |
 
 ---
 

@@ -125,3 +125,65 @@ Use alongside:
   - #88 (`vector_drive_on_charger` behavior mismatch)
   - Additional observation: robot later autonomously returned to charger on low battery (capability exists; tool-path semantics likely mismatched)
 - Event-noise observability issue tracked in #86 (`Unknown Event type` warnings)
+
+---
+
+## 2026-02-28 — Proximity empirical deep dive (release validation)
+
+- **Date/Time (local):** 2026-02-28 14:25–14:40 CST
+- **Operator:** Dan + Tachi (MCP command execution + physical verification)
+- **Robot serial:** `00a1546c`
+- **Branch / Commit:** `dev` (post-doc merge state)
+- **Wire-Pod status:** active/running
+- **SDK env:** `VECTOR_SERIAL=00a1546c`, Python `.venv/bin/python`
+- **Result:** **PARTIAL** (distance/unobstructed usable; `found_object` not reliable)
+
+### Commands + Outcomes
+
+| Command | Tool result | Physical verification | Notes |
+|---|---|---|---|
+| `vector_status` | `ok` | PASS | Connected cleanly; on charger reported true |
+| `vector_pose` | `ok` | PASS | Near-zero pose while stationary on charger |
+| `vector_proximity_status` (far) | `ok` | PASS | `distance_mm=180`, `signal_quality=0.0317`, `found_object=false`, `unobstructed=false` |
+| `vector_proximity_status` (mid) | `ok` | PASS | `distance_mm=92`, `signal_quality=0.4383`, `found_object=false`, `unobstructed=false` |
+| `vector_proximity_status` (close) | `ok` | PASS | `distance_mm=42`, `signal_quality=6.1456`, `found_object=false` |
+| `vector_proximity_status` (mid, larger cardboard) | `ok` | PASS | `distance_mm=97`, `signal_quality=1.4551`, `found_object=false` |
+| `vector_proximity_status` (close, cardboard touching) | `ok` | PASS | `distance_mm=48`, `signal_quality=11.6966`, `found_object=false` |
+| `vector_proximity_status` (no object) | `ok` | PASS | `distance_mm=244`, `signal_quality=0.0060`, `unobstructed=true`, `found_object=false` |
+
+### Anomalies / Follow-ups
+- `found_object` never flipped true despite near-field and high signal-quality returns.
+- `signal_quality` exceeded 1.0 by large margin (up to ~11.7); prior 0.0–1.0 assumption is incorrect for this setup.
+- `unobstructed` did behave as expected in clear-path test.
+- Operator observation: LightCube lit during some proximity trials (possible state interaction worth separate check, but not required for raw ToF reading path).
+
+---
+
+## 2026-02-28 — Final smoke wrap (single-step reruns)
+
+- **Date/Time (local):** 2026-02-28 15:10–15:25 CST
+- **Operator:** Dan + Tachi (strict one-command-at-a-time with explicit human confirmation)
+- **Robot serial:** `00a1546c`
+- **Branch / Commit:** `dev`
+- **Wire-Pod status:** active/running
+- **SDK env:** `VECTOR_SERIAL=00a1546c`, Python `.venv/bin/python`
+- **Result:** **PARTIAL** (core basics work; head/perception/charger-return limitations remain)
+
+### Commands + Outcomes
+
+| Command | Tool result | Physical verification | Notes |
+|---|---|---|---|
+| `vector_say` | `ok` | PASS | Speech confirmed by operator |
+| `vector_lift` | `ok` | PASS | Lift motion confirmed |
+| `vector_touch_status` (no touch) | `ok` | PASS | `is_being_touched=false`, raw value stable |
+| `vector_touch_status` (touching) | `ok` | PASS | `is_being_touched=true`, raw value increased |
+| `vector_charger_status` (off charger) | `ok` | PASS | Negative case validated (`is_on_charger=false`) |
+| `vector_head` | **FAIL** | N/A | Runtime type error: `Unsupported type for comparison expected Angle` |
+| `vector_drive_on_charger` | **FAIL** | FAIL/PARTIAL | Timed out (`timed_out=true`, `motors_stopped=true`) |
+| `vector_emergency_stop` | `ok` | PARTIAL | Stop command returns `ok`; physical interruption validation is limited by sync motion call path |
+
+### Anomalies / Follow-ups
+- `vector_head` currently non-functional due to Angle comparison bug.
+- `vector_drive_on_charger` remains unreliable/timeout-prone in this run.
+- Perception tools still return empty detections under favorable human/cube conditions.
+- **Emergency-stop usability caveat:** current tool path is synchronous for motion, which weakens true mid-command interrupt semantics. Async motion/control path should be added to roadmap before treating emergency stop as robust operational control.
