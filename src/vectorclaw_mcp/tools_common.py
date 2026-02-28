@@ -50,7 +50,9 @@ def _motion_precheck(robot) -> Optional[dict]:
     }
 
 
-_HEAD_ANGLE_MIN = -22.0
-_HEAD_ANGLE_MAX = 45.0
+from anki_vector.behavior import MAX_HEAD_ANGLE, MIN_HEAD_ANGLE
+
+_HEAD_ANGLE_MIN = MIN_HEAD_ANGLE
+_HEAD_ANGLE_MAX = MAX_HEAD_ANGLE
 _LIFT_HEIGHT_MIN = 0.0
 _LIFT_HEIGHT_MAX = 1.0

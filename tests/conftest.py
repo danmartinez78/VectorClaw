@@ -16,9 +16,16 @@ def _make_fake_sdk() -> types.ModuleType:
     util.degrees = lambda v: v
     util.speed_mmps = lambda v: v
     sdk.util = util
+
+    behavior = types.ModuleType("anki_vector.behavior")
+    behavior.MIN_HEAD_ANGLE = -22.0
+    behavior.MAX_HEAD_ANGLE = 45.0
+    sdk.behavior = behavior
+
     # Always override any existing anki_vector modules to keep tests deterministic
     sys.modules["anki_vector"] = sdk
     sys.modules["anki_vector.util"] = util
+    sys.modules["anki_vector.behavior"] = behavior
     return sdk
 
 

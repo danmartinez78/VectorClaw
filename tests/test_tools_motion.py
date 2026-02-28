@@ -111,6 +111,30 @@ def test_vector_head_clamp_low(mock_robot):
     mock_robot.behavior.set_head_angle.assert_called_once_with(-22.0)
 
 
+def test_vector_head_at_min_bound(mock_robot):
+    from anki_vector.behavior import MIN_HEAD_ANGLE
+
+    from vectorclaw_mcp.tools import vector_head
+
+    result = vector_head(MIN_HEAD_ANGLE)
+
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == MIN_HEAD_ANGLE
+    mock_robot.behavior.set_head_angle.assert_called_once_with(MIN_HEAD_ANGLE)
+
+
+def test_vector_head_at_max_bound(mock_robot):
+    from anki_vector.behavior import MAX_HEAD_ANGLE
+
+    from vectorclaw_mcp.tools import vector_head
+
+    result = vector_head(MAX_HEAD_ANGLE)
+
+    assert result["status"] == "ok"
+    assert result["angle_deg"] == MAX_HEAD_ANGLE
+    mock_robot.behavior.set_head_angle.assert_called_once_with(MAX_HEAD_ANGLE)
+
+
 def test_vector_lift_normal(mock_robot):
     from vectorclaw_mcp.tools import vector_lift
 
