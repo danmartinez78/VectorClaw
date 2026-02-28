@@ -542,8 +542,8 @@ def test_vector_proximity_status_no_object(mock_robot):
 
     assert result["status"] == "ok"
     assert result["found_object"] is False
-    assert "signal_quality" in result
-    assert "unobstructed" in result
+    assert result["signal_quality"] == 0.0
+    assert result["unobstructed"] is True
 
 
 def test_vector_proximity_status_error(mock_robot):
