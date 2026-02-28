@@ -32,6 +32,9 @@ class _SuppressUnknownEventType(logging.Filter):
 logging.getLogger("anki_vector.events.EventHandler").addFilter(
     _SuppressUnknownEventType()
 )
+logging.getLogger("events.EventHandler").addFilter(
+    _SuppressUnknownEventType()
+)
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
