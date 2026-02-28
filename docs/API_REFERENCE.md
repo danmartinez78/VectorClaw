@@ -82,8 +82,8 @@ Return current pose.
 **Input:** none
 
 **Output fields:**
-- `x`, `y`, `z`
-- `angle_deg`
+- `x`, `y`, `z` — position coordinates in millimeters, SDK-derived from `robot.pose.position` (`Position.x/y/z`)
+- `angle_deg` — heading angle in degrees
 
 ---
 
@@ -132,18 +132,20 @@ Return proximity sensor reading from Vector's front IR sensor.
 **Input:** none
 
 **Output fields:**
-- `distance_mm`
-- `found_object`
-- `is_lift_in_fov`
+- `distance_mm` — measured distance to the nearest object in millimeters
+- `found_object` — `true` when the sensor detected an object within its valid operating range (not a general "distance changed" flag)
+- `is_lift_in_fov` — `true` when Vector's lift is within the sensor's field of view
 
 ---
 
 ### `vector_face`
 Display a custom image on face.
 
+The image is converted to rgb565 format via `anki_vector.screen.convert_image_to_screen_data()` before being sent to the robot's screen.
+
 **Input:**
-- `image_base64` (required)
-- `duration_sec` (optional)
+- `image_base64` (required): Base64-encoded image (any format supported by PIL). Resized to match the robot's screen dimensions via `anki_vector.screen.dimensions()` (typically 184×96 pixels, for a 35328-byte rgb565 buffer).
+- `duration_sec` (optional): How long to display the image (0.1–60.0 seconds, default 5.0).
 
 ---
 

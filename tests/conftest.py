@@ -22,10 +22,16 @@ def _make_fake_sdk() -> types.ModuleType:
     behavior.MAX_HEAD_ANGLE = 45.0
     sdk.behavior = behavior
 
+    screen = types.ModuleType("anki_vector.screen")
+    screen.dimensions = MagicMock(return_value=(184, 96))
+    screen.convert_image_to_screen_data = MagicMock(return_value=b"\x00" * (184 * 96 * 2))
+    sdk.screen = screen
+
     # Always override any existing anki_vector modules to keep tests deterministic
     sys.modules["anki_vector"] = sdk
     sys.modules["anki_vector.util"] = util
     sys.modules["anki_vector.behavior"] = behavior
+    sys.modules["anki_vector.screen"] = screen
     return sdk
 
 
@@ -73,6 +79,8 @@ def reset_robot_manager():
     from vectorclaw_mcp.robot import robot_manager
 
     robot_manager.reset()
+    _fake_sdk.screen.dimensions.reset_mock()
+    _fake_sdk.screen.convert_image_to_screen_data.reset_mock()
     yield
     robot_manager.reset()
 
