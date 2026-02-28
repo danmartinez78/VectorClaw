@@ -7,7 +7,7 @@
 - Runtime/tool registration architecture split for lower merge-conflict risk
 - Hardware smoke validation process standardized
 
-## New Capability Areas (implemented; MCP exposure pending #67)
+## New Capability Areas (implemented and MCP-registered)
 
 ### Perception Discovery
 - `vector_scan`
@@ -40,7 +40,7 @@
 
 ## Validation
 - CI matrix: Python 3.11 + 3.12 experimental
-- Hardware smoke: baseline command set validated; expanded matrix pending post-integration run
+- Hardware smoke: baseline command set validated; expanded matrix execution in progress for newly registered tools
 
 ## Upgrade Notes
 - Existing users should review updated API docs for new tool registrations and payload shapes

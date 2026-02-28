@@ -6,7 +6,7 @@ Repeatable, low-ambiguity on-robot validation protocol for VectorClaw.
 >
 > **Running records:** [Hardware Smoke Log](HARDWARE_SMOKE_LOG.md) and [Tool Docking Prerequisites](TOOL_DOCKING_PREREQUISITES.md).
 >
-> **Post-integration add-on:** Run the expanded matrix in `HARDWARE_SMOKE_LOG.md` only after issue #67 (tool registration integration) is merged. Skip any rows still marked as pending registration.
+> **Post-integration add-on:** Issue #67 (tool registration integration) is merged. Run the expanded matrix in `HARDWARE_SMOKE_LOG.md` for the newly registered tools before release cut.
 
 ---
 
