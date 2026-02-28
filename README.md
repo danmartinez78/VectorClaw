@@ -225,7 +225,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | [Wire-Pod SDK Implementation Guide](docs/WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) | Implementation patterns and SDK usage notes |
 | [Wire-Pod SDK → MCP Integration Priorities](docs/WIREPOD_SDK_MCP_INTEGRATION_PRIORITIES.md) | Now/Later/Skip decision table for future tools |
 | [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md) | Current mapping of SDK calls to MCP tools |
-| [SDK Patch Notes](docs/SDK_FORK_PATCH_NOTES.md) | Current SDK patch status (baseline: no fork required) |
+| [SDK Patch Notes](docs/SDK_PATCH_NOTES.md) | Current SDK patch status (baseline: no fork required) |
 
 ### 🔬 Hardware Validation
 | Document | Description |
