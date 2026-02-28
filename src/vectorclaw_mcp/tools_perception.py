@@ -60,6 +60,9 @@ def vector_pose() -> dict:
         "y": pose.position.y,
         "z": pose.position.z,
         "angle_deg": pose.rotation.angle_z.degrees,
+        "origin_id": pose.origin_id,
+        "is_picked_up": robot.status.is_picked_up,
+        "localized_to_object_id": getattr(pose, "localized_to_object_id", None),
     }
 
 
