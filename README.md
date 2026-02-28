@@ -68,13 +68,33 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 
 > For the complete walkthrough (Wire-Pod install, robot auth, WiFi config, troubleshooting) see **[docs/SETUP.md](docs/SETUP.md)**.
 
-### Step 1 — Install VectorClaw
+### Guided Setup (recommended for new users)
+
+The `vectorclaw-setup` wizard handles configuration, SDK validation, connectivity
+check, and a smoke test in one go:
+
+```bash
+pip install vectorclaw-mcp
+vectorclaw-setup
+```
+
+You will be prompted for your robot's serial number and optional IP address.
+On success you'll see a clear **SETUP PASSED** message and the next-steps command.
+On failure every step includes an exact remediation hint.
+
+→ Full details in **[docs/OPENCLAW_SETUP_SKILL.md](docs/OPENCLAW_SETUP_SKILL.md)**
+
+---
+
+### Manual Setup
+
+**Step 1 — Install VectorClaw**
 
 ```bash
 pip install vectorclaw-mcp
 ```
 
-### Step 2 — Configure Vector SDK
+**Step 2 — Configure Vector SDK**
 
 [Wire-Pod](https://github.com/kercre123/wire-pod) is the canonical self-hosted server for Vector.
 Install the SDK distribution and run the one-time auth wizard:
