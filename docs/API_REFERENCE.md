@@ -307,9 +307,20 @@ Return the list of objects currently visible to Vector.
 **Output fields:**
 - `objects` (array of `{object_id}` objects)
 
-**Example response:**
+**Semantics and expectations:**
+- This tool is a **snapshot query** of `robot.world.visible_objects` at call time.
+- `status: "ok"` with `objects: []` is a valid result and does **not** imply tool failure.
+- For more deterministic non-empty results, run an active perception behavior before querying (for example `vector_scan`, then re-query).
+- Object visibility depends on runtime conditions (line-of-sight, distance, lighting, angle, and current world-state freshness).
+
+**Example response (objects found):**
 ```json
 {"status": "ok", "objects": [{"object_id": 42}]}
+```
+
+**Example response (no objects in snapshot):**
+```json
+{"status": "ok", "objects": []}
 ```
 
 ---
