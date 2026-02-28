@@ -25,12 +25,21 @@ Use alongside:
 
 | Command | Tool result | Physical verification | Notes |
 |---|---|---|---|
-| `<tool_name>(<args>)` |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| `vector_example(arg=value)` | `ok` / `error` | PASS / PARTIAL / FAIL / N/A | Key observation |
+| `...` |  |  |  |
 
 ### Anomalies / Follow-ups
-- 
+Use this section for anything that needs action, caution, or later validation.
+
+Suggested format:
+- **Observed:** What happened (exact symptom/error)
+- **Impact:** Why it matters (safety, reliability, usability)
+- **Follow-up:** Issue/PR link or explicit next step
+
+Example:
+- **Observed:** `vector_head` returned `Unsupported type for comparison expected Angle`
+- **Impact:** Head actuation unavailable in current build
+- **Follow-up:** Track in issue #<id> and retest after fix
 
 ---
 
