@@ -22,7 +22,7 @@ Purpose: preserve **what changed, where it changed, and where the source of trut
 ### A) SDK/runtime compatibility + reliability
 
 Primary reference:
-- `docs/SDK_FORK_PATCH_NOTES.md`
+- `docs/SDK_PATCH_NOTES.md`
 
 Key patch set tracked:
 - `asyncio.Event(loop=...)` → `asyncio.Event()` (SDK compatibility)

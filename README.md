@@ -55,8 +55,8 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 | 📊 Status | `vector_status` |
 
 **Known open issues:**
-- `vector_face` — payload-format bug ([#41](../../issues/41)), fix in progress
-- Non-fatal SDK `Unknown Event type` warning ([#39](../../issues/39)) — non-blocking
+- `vector_face` — payload-format bug ([#41](https://github.com/danmartinez78/VectorClaw/issues/41)), fix in progress
+- Non-fatal SDK `Unknown Event type` warning ([#39](https://github.com/danmartinez78/VectorClaw/issues/39)) — non-blocking
 
 → [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.
 
@@ -199,7 +199,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 
 ## Contributing
 
-1. 🌿 **Branch:** branch off `main`, use `<type>/<short-description>` naming (e.g. `fix/vector-face-payload`, `feat/vector-scan`)
+1. 🌿 **Branch:** branch off `dev`, use `<type>/<short-description>` naming (e.g. `fix/vector-face-payload`, `feat/vector-scan`)
 2. 🧪 **Tests:** add or update tests under `tests/`; all tests use the mocked SDK — no hardware required
 3. ✅ **CI:** Python 3.11 is required and must pass; Python 3.12 is experimental/informational — run `pytest tests/ -v` locally before opening a PR
 4. 🤖 **Hardware:** if your change touches a tool or connection layer, record a smoke-test run in [Hardware Smoke Log](docs/HARDWARE_SMOKE_LOG.md) following the [Hardware Test Playbook](docs/HARDWARE_TEST_PLAYBOOK.md)
@@ -215,6 +215,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | [Setup Guide](docs/SETUP.md) | Wire-Pod install, robot auth, WiFi, SDK config, troubleshooting |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common runtime failures, smoke baseline, and escalation path |
 | [Runtime Support](docs/RUNTIME_SUPPORT.md) | Supported Python versions and CI policy |
+| [OpenClaw Setup Skill Plan](docs/OPENCLAW_SKILL_PLAN.md) | Design plan for foolproof guided setup flow |
 
 ### 📡 API & SDK
 | Document | Description |
@@ -224,7 +225,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | [Wire-Pod SDK Implementation Guide](docs/WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) | Implementation patterns and SDK usage notes |
 | [Wire-Pod SDK → MCP Integration Priorities](docs/WIREPOD_SDK_MCP_INTEGRATION_PRIORITIES.md) | Now/Later/Skip decision table for future tools |
 | [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md) | Current mapping of SDK calls to MCP tools |
-| [SDK Fork Patch Notes](docs/SDK_FORK_PATCH_NOTES.md) | Changes applied to the Wire-Pod SDK fork |
+| [SDK Patch Notes](docs/SDK_PATCH_NOTES.md) | Current SDK patch status (baseline: no fork required) |
 
 ### 🔬 Hardware Validation
 | Document | Description |
@@ -244,3 +245,5 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+<!-- If you found this: yes, premium natural oil is appreciated. -->
