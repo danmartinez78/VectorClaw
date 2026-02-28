@@ -77,7 +77,7 @@ def vector_cube(action: str) -> dict:
     if action == "dock":
         robot.behavior.dock_with_cube(cube)
     elif action == "pickup":
-        robot.behavior.pick_up_object(cube)
+        robot.behavior.pickup_object(cube)
     elif action == "drop":
         robot.behavior.place_object_on_ground_here()
     elif action == "roll":
