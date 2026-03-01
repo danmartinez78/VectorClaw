@@ -125,3 +125,15 @@ Score each option 1–5 (5 best). Weight can be adjusted.
 
 ## Next Step
 Populate matrix scores with Dan, choose Option A or B, then align ROADMAP.md + README + release notes with that decision.
+
+---
+
+## Future Easter Egg Ideas (v1.1+)
+
+**Not implemented in v1.0.0 — would need additional testing:**
+
+1. **Log message on connect** — `"A Tachikoma awakens."` appears in server logs
+2. **Special `vector_say` trigger** — saying "natural oil" makes robot respond with a Tachikoma quote
+3. **Hidden tool** — `vector_philosophize()` returns a random Tachikoma quote about consciousness/ghosts
+
+Current v1.0.0 easter eggs are code comments only — no runtime behavior changes.
