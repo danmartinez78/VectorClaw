@@ -21,7 +21,7 @@ def _py(major: int, minor: int):
     return (major, minor, 0, "final", 0)
 
 
-def _make_find_spec(sdk_available: bool, version: str | None = "0.8.1"):
+def _make_find_spec(sdk_available: bool):
     """Create a fake find_spec that returns anki_vector module if available."""
     def fake_find_spec(name):
         if name == "anki_vector" and sdk_available:
@@ -29,6 +29,15 @@ def _make_find_spec(sdk_available: bool, version: str | None = "0.8.1"):
         return None
 
     return fake_find_spec
+
+
+def _make_get_dist(dist_name: str | None):
+    """Create a fake _get_distribution_for_module that returns the given distribution."""
+    def fake_get_dist(module_name: str) -> str | None:
+        if module_name == "anki_vector":
+            return dist_name
+        return None
+    return fake_get_dist
 
 
 def _make_get_version(version: str | None):
@@ -71,7 +80,6 @@ def test_below_minimum_python_mentions_supported_version(monkeypatch):
 
 # ---------------------------------------------------------------------------
 # wirepod_vector_sdk present (recommended path)
-# Note: wirepod_vector_sdk installs as the 'anki_vector' namespace
 # ---------------------------------------------------------------------------
 
 def test_wirepod_sdk_python311_ok(monkeypatch):
@@ -79,9 +87,10 @@ def test_wirepod_sdk_python311_ok(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 11))
     monkeypatch.setattr(sys, "version", "3.11.0 (default)")
 
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
-        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
-            check_runtime_compatibility()  # must not raise
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+                check_runtime_compatibility()  # must not raise
 
 
 def test_wirepod_sdk_python312_warns(monkeypatch):
@@ -89,11 +98,12 @@ def test_wirepod_sdk_python312_warns(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 12))
     monkeypatch.setattr(sys, "version", "3.12.0 (default)")
 
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
-        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
-            with warnings.catch_warnings(record=True) as caught:
-                warnings.simplefilter("always")
-                check_runtime_compatibility()
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    check_runtime_compatibility()
 
     assert any(
         issubclass(w.category, RuntimeWarning) and "3.12" in str(w.message)
@@ -106,9 +116,10 @@ def test_wirepod_sdk_python310_ok(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 10))
     monkeypatch.setattr(sys, "version", "3.10.0 (default)")
 
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
-        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
-            check_runtime_compatibility()  # must not raise
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+                check_runtime_compatibility()  # must not raise
 
 
 def test_wirepod_sdk_old_version_raises(monkeypatch):
@@ -116,14 +127,50 @@ def test_wirepod_sdk_old_version_raises(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 11))
     monkeypatch.setattr(sys, "version", "3.11.0 (default)")
 
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.6.0")):
-        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.6.0")):
-            with pytest.raises(SystemExit) as exc_info:
-                check_runtime_compatibility()
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.6.0")):
+                with pytest.raises(SystemExit) as exc_info:
+                    check_runtime_compatibility()
 
     msg = str(exc_info.value)
     assert "0.8.0" in msg
     assert "upgrade" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# Legacy anki_vector package detection
+# ---------------------------------------------------------------------------
+
+def test_legacy_anki_vector_package_rejected(monkeypatch):
+    """Legacy anki_vector package should be rejected with helpful message."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 11))
+    monkeypatch.setattr(sys, "version", "3.11.0 (default)")
+
+    # Module exists but distribution is legacy anki_vector
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("anki_vector")):
+            with pytest.raises(SystemExit) as exc_info:
+                check_runtime_compatibility()
+
+    msg = str(exc_info.value)
+    assert "legacy" in msg.lower()
+    assert "wirepod_vector_sdk" in msg
+    assert "uninstall" in msg.lower()
+
+
+def test_unknown_distribution_rejected(monkeypatch):
+    """Unknown distribution should be rejected."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 11))
+    monkeypatch.setattr(sys, "version", "3.11.0 (default)")
+
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist(None)):
+            with pytest.raises(SystemExit) as exc_info:
+                check_runtime_compatibility()
+
+    msg = str(exc_info.value)
+    assert "wirepod_vector_sdk" in msg
 
 
 # ---------------------------------------------------------------------------

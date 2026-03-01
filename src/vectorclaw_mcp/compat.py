@@ -18,13 +18,44 @@ _COMPAT_MSG = (
 )
 
 
+def _get_distribution_for_module(module_name: str) -> str | None:
+    """Get the distribution name that provides the given module.
+
+    Returns 'wirepod_vector_sdk' or 'anki_vector' or None.
+    """
+    try:
+        # Python 3.8+
+        from importlib.metadata import packages_distributions
+        dists = packages_distributions()
+        return dists.get(module_name, [None])[0]
+    except (ImportError, AttributeError):
+        # Fallback: try importlib.metadata.version on known candidates
+        try:
+            from importlib import metadata
+            for dist_name in ("wirepod_vector_sdk", "anki_vector"):
+                try:
+                    metadata.version(dist_name)
+                    return dist_name
+                except metadata.PackageNotFoundError:
+                    continue
+        except Exception:
+            pass
+    return None
+
+
 def _sdk_available() -> bool:
     """Check if wirepod_vector_sdk is installed.
 
     Note: wirepod_vector_sdk installs under the 'anki_vector' namespace,
-    so we check for that module.
+    but the legacy anki_vector package also provides this module.
+    We verify the distribution name to ensure it's wirepod.
     """
-    return find_spec("anki_vector") is not None
+    if find_spec("anki_vector") is None:
+        return False
+
+    # Verify it's actually wirepod_vector_sdk, not legacy anki_vector
+    dist = _get_distribution_for_module("anki_vector")
+    return dist == "wirepod_vector_sdk"
 
 
 def _get_sdk_version() -> str | None:
@@ -55,26 +86,35 @@ def check_runtime_compatibility() -> None:
             f"  Detected: Python {py_str}"
         )
 
-    # Check SDK availability
-    if not _sdk_available():
+    # Check if anki_vector module exists
+    if find_spec("anki_vector") is None:
         raise SystemExit(
             f"{_COMPAT_MSG}\n"
             "  No Vector SDK found.\n"
             "  The wirepod_vector_sdk package provides the 'anki_vector' module."
         )
 
-    # Verify it's wirepod SDK (version >= 0.8.0)
+    # Verify it's wirepod_vector_sdk distribution, not legacy anki_vector
+    dist = _get_distribution_for_module("anki_vector")
+    if dist != "wirepod_vector_sdk":
+        raise SystemExit(
+            f"VectorClaw requires wirepod_vector_sdk, not the legacy anki_vector package.\n"
+            f"  Detected distribution: {dist or 'unknown'}\n"
+            "  Uninstall legacy: pip uninstall anki_vector\n"
+            "  Install wirepod:  pip install wirepod_vector_sdk"
+        )
+
+    # Verify SDK version >= 0.8.0
     version = _get_sdk_version()
     if version and version.startswith("0."):
-        # Parse minor version
         try:
             parts = version.split(".")
             minor = int(parts[1]) if len(parts) > 1 else 0
             if minor < 8:
                 raise SystemExit(
                     f"VectorClaw requires wirepod_vector_sdk >= 0.8.0.\n"
-                    f"  Detected: anki_vector {version}\n"
-                    "  Install with: pip install wirepod_vector_sdk --upgrade"
+                    f"  Detected: {version}\n"
+                    "  Upgrade with: pip install wirepod_vector_sdk --upgrade"
                 )
         except (ValueError, IndexError):
             pass  # Unknown version format, assume OK
