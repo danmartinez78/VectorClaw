@@ -88,7 +88,7 @@ class RobotManager:
             for attempt in range(max_retries + 1):
                 robot = anki_vector.Robot(**kwargs)
                 try:
-                    robot.connect()
+                    robot.connect()  # A Tachikoma awakens.
                     try:
                         robot.vision.enable_face_detection(estimate_expression=True)
                     except Exception:

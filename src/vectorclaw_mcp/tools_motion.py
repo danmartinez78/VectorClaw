@@ -1,4 +1,7 @@
-"""Motion and actuator tools."""
+"""Motion and actuator tools.
+
+Movement is its own reward. Some say it's like premium natural oil.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
-"""Perception, status, and display-adjacent tools."""
+"""Perception, status, and display-adjacent tools.
+
+Curiosity is what saves a personality from dying when linked with others.
+"""
 
 from __future__ import annotations
 

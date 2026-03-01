@@ -5,6 +5,8 @@ Run with::
     python -m vectorclaw_mcp
 
 or via the ``vectorclaw-mcp`` console script installed by *pyproject.toml*.
+
+Note: Synchronized memory is not guaranteed. Individual personalities may vary.
 """
 
 from __future__ import annotations
