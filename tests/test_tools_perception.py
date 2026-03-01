@@ -469,6 +469,149 @@ def test_vector_vision_reset_sdk_error(mock_robot):
     assert set(result.keys()) == {"status", "message"}
 
 
+# ── vector_enable_face_detection ─────────────────────────────────────────────
+
+def test_vector_enable_face_detection_enable(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_face_detection
+
+    result = vector_enable_face_detection(enable=True)
+
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
+    assert result == {"status": "ok", "face_detection_enabled": True}
+
+
+def test_vector_enable_face_detection_disable(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_face_detection
+
+    result = vector_enable_face_detection(enable=False)
+
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=False)
+    assert result == {"status": "ok", "face_detection_enabled": False}
+
+
+def test_vector_enable_face_detection_default(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_face_detection
+
+    result = vector_enable_face_detection()
+
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
+    assert result["face_detection_enabled"] is True
+
+
+def test_vector_enable_face_detection_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_face_detection
+
+    mock_robot.vision.enable_face_detection.side_effect = RuntimeError("face detection error")
+
+    result = vector_enable_face_detection(enable=True)
+
+    assert result["status"] == "error"
+    assert "face detection error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+# ── vector_enable_motion_detection ───────────────────────────────────────────
+
+def test_vector_enable_motion_detection_enable(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_motion_detection
+
+    result = vector_enable_motion_detection(enable=True)
+
+    mock_robot.vision.enable_motion_detection.assert_called_once_with(detect_motion=True)
+    assert result == {"status": "ok", "motion_detection_enabled": True}
+
+
+def test_vector_enable_motion_detection_disable(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_motion_detection
+
+    result = vector_enable_motion_detection(enable=False)
+
+    mock_robot.vision.enable_motion_detection.assert_called_once_with(detect_motion=False)
+    assert result == {"status": "ok", "motion_detection_enabled": False}
+
+
+def test_vector_enable_motion_detection_default(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_motion_detection
+
+    result = vector_enable_motion_detection()
+
+    mock_robot.vision.enable_motion_detection.assert_called_once_with(detect_motion=True)
+    assert result["motion_detection_enabled"] is True
+
+
+def test_vector_enable_motion_detection_sdk_error(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_enable_motion_detection
+
+    mock_robot.vision.enable_motion_detection.side_effect = RuntimeError("motion detection error")
+
+    result = vector_enable_motion_detection(enable=True)
+
+    assert result["status"] == "error"
+    assert "motion detection error" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
+# ── vector_vision_status ─────────────────────────────────────────────────────
+
+def test_vector_vision_status_success(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_vision_status
+
+    mock_robot.vision.detect_faces = True
+    mock_robot.vision.detect_motion = False
+    mock_robot.vision.detect_custom_objects = False
+    mock_robot.vision.display_camera_feed_on_face = False
+
+    result = vector_vision_status()
+
+    assert result["status"] == "ok"
+    assert result["detect_faces"] is True
+    assert result["detect_motion"] is False
+    assert result["detect_custom_objects"] is False
+    assert result["display_camera_feed_on_face"] is False
+    assert set(result.keys()) == {
+        "status",
+        "detect_faces",
+        "detect_motion",
+        "detect_custom_objects",
+        "display_camera_feed_on_face",
+    }
+
+
+def test_vector_vision_status_all_enabled(mock_robot):
+    from vectorclaw_mcp.tools_perception import vector_vision_status
+
+    mock_robot.vision.detect_faces = True
+    mock_robot.vision.detect_motion = True
+    mock_robot.vision.detect_custom_objects = True
+    mock_robot.vision.display_camera_feed_on_face = True
+
+    result = vector_vision_status()
+
+    assert result["status"] == "ok"
+    assert result["detect_faces"] is True
+    assert result["detect_motion"] is True
+    assert result["detect_custom_objects"] is True
+    assert result["display_camera_feed_on_face"] is True
+
+
+def test_vector_vision_status_sdk_error(mock_robot):
+    from unittest.mock import PropertyMock, patch
+    from vectorclaw_mcp.tools_perception import vector_vision_status
+
+    with patch.object(
+        type(mock_robot.vision),
+        "detect_faces",
+        new_callable=PropertyMock,
+        side_effect=RuntimeError("vision unavailable"),
+        create=True,
+    ):
+        result = vector_vision_status()
+
+    assert result["status"] == "error"
+    assert "vision unavailable" in result["message"]
+    assert set(result.keys()) == {"status", "message"}
+
+
 def test_vector_charger_status(mock_robot):
     from vectorclaw_mcp.tools_perception import vector_charger_status
 
