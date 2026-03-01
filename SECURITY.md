@@ -8,7 +8,11 @@ Security fixes are applied to the latest release on `main`.
 
 Please do not open public GitHub issues for security vulnerabilities.
 
-Report vulnerabilities privately by emailing: **security@vectorclaw.dev**
+**Report privately via GitHub Security Advisories:**
+
+Go to [Security → Advisories](/security/advisories) and click "Report a vulnerability."
+
+Alternatively, email: **danmartinez78@gmail.com**
 
 Include:
 

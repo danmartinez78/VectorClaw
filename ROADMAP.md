@@ -126,7 +126,7 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
-## Sprint Log (Thu 2/26 → Sat 3/1)
+## Sprint Log (Thu 2/26 → Sun 3/1)
 
 | Day | Focus | Result |
 |-----|-------|--------|
@@ -134,8 +134,8 @@ Milestone-based development plan from alpha to public release.
 | **Fri** | Vector SDK auth, test all tools | v0.2.0 ✅ |
 | **Sat AM** | Address review comments, security review | v0.3.0 ✅ |
 | **Sat PM** | Security hardening, edge cases | v0.4.0 ✅ |
-| **Sat PM** | Documentation, RC testing | v1.0.0-rc1 ✅ |
-| **Sat PM** | PyPI publish | v1.0.0 🎉 |
+| **Sun AM** | Documentation, RC testing | v1.0.0-rc1 ✅ |
+| **Sun PM** | PyPI publish, hardware verification | v1.0.0 🎉 |
 
 ---
 
@@ -250,4 +250,4 @@ Vector becomes a **$250 ROS2 development platform** with an AI agent as the high
 
 ---
 
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-01*
