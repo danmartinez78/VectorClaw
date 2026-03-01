@@ -12,7 +12,7 @@
 - [ ] WiFi network — **MUST be 2.4 GHz** (Vector doesn't support 5 GHz!)
 - [ ] Computer with Bluetooth (for initial setup)
 - [ ] Chrome browser (required for BLE setup)
-- [ ] Python 3.10+ on your development machine
+- [ ] Python 3.11+ on your development machine
 
 ---
 

@@ -5,7 +5,7 @@
 [![CI](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status: RC Prep](https://img.shields.io/badge/status-rc%20prep-blue.svg)](ROADMAP.md)
+[![Status: v1.0.0](https://img.shields.io/badge/status-v1.0.0-brightgreen.svg)](ROADMAP.md)
 
 **Give your AI assistant a body.**
 
@@ -42,7 +42,7 @@ All communication is **local-only** — no cloud dependency at runtime (Wire-Pod
 
 ## Current Status
 
-> **Release candidate prep** · Real-hardware smoke tested 2026-02-27
+> **v1.0.0 Released** · 2026-02-28
 
 All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 
@@ -50,12 +50,17 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 |----------|----------------|
 | 🎙️ Speech | `vector_say` |
 | 🏎️ Motion | `vector_drive_off_charger`, `vector_drive` |
-| 👀 Perception | `vector_look` |
-| 🦾 Actuation | `vector_head`, `vector_lift` |
-| 📊 Status | `vector_status` |
+| 👀 Perception | `vector_look`, `vector_capture_image`, `vector_proximity_status` |
+| 🦾 Actuation | `vector_lift` |
+| 📊 Status | `vector_status`, `vector_charger_status`, `vector_touch_status` |
+
+**Known limitations (documented):**
+- `vector_head` — runtime error, documented as FAIL
+- `vector_drive_on_charger` — unreliable, may timeout
+- Perception detections (faces/objects) — limited functionality
+- No rate limiting on motion commands (v1.1 target)
 
 **Known open issues:**
-- `vector_face` — payload-format bug ([#41](https://github.com/danmartinez78/VectorClaw/issues/41)), fix in progress
 - Non-fatal SDK `Unknown Event type` warning ([#39](https://github.com/danmartinez78/VectorClaw/issues/39)) — non-blocking
 
 → [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.

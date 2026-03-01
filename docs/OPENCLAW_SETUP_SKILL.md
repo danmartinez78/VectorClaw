@@ -118,7 +118,7 @@ On failure the report includes a `"remediation"` field with exact fix steps.
 
 | Step | What it validates |
 |---|---|
-| `python_version` | Python ≥ 3.10 (3.11+ recommended) |
+| `python_version` | Python ≥ 3.11 (required) |
 | `config_validation` | `VECTOR_SERIAL` is present |
 | `write_config` | Config file is writable at the OpenClaw path |
 | `sdk_import` | `import anki_vector` succeeds |
@@ -132,7 +132,7 @@ On failure the report includes a `"remediation"` field with exact fix steps.
 
 | Failure check | Likely cause | Exact fix |
 |---|---|---|
-| `python_version` | Python < 3.10 | Install Python 3.11: https://python.org/downloads |
+| `python_version` | Python < 3.11 | Install Python 3.11: https://python.org/downloads |
 | `config_validation` | No serial number supplied | Find serial in Vector app → Settings → My Vector → Serial Number |
 | `write_config` | Permission denied on `~/.openclaw/` | `mkdir -p ~/.openclaw/workspace/config` then re-run |
 | `sdk_import` | wirepod_vector_sdk not installed | `pip install git+https://github.com/kercre123/wirepod-vector-python-sdk.git@065fc197d592d76a164d64dcf0a768183ab37855` |
