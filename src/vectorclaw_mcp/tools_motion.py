@@ -49,7 +49,10 @@ def vector_drive_off_charger() -> dict:
 def vector_head(angle_deg: float) -> dict:
     import anki_vector.util as util  # noqa: PLC0415
 
-    clamped = max(_HEAD_ANGLE_MIN, min(_HEAD_ANGLE_MAX, angle_deg))
+    # SDK constants are Angle objects - compare using .degrees property
+    min_deg = _HEAD_ANGLE_MIN.degrees if hasattr(_HEAD_ANGLE_MIN, "degrees") else _HEAD_ANGLE_MIN
+    max_deg = _HEAD_ANGLE_MAX.degrees if hasattr(_HEAD_ANGLE_MAX, "degrees") else _HEAD_ANGLE_MAX
+    clamped = max(min_deg, min(max_deg, angle_deg))
     robot = _robot()
     robot.behavior.set_head_angle(util.degrees(clamped))
     return {"status": "ok", "angle_deg": clamped}
