@@ -173,3 +173,29 @@ Example:
 - Perception tools still return empty detections under favorable human/cube conditions.
 - Runtime observation seen during perception attempts: `Event callback exception: object_id`.
 - **Emergency-stop usability caveat:** current tool path is synchronous for motion, weakening true mid-command interrupt semantics; async motion/control path should be roadmap follow-up.
+
+---
+
+## 2026-03-01 — v1.0.0 Pre-release fix verification
+
+- **Date/Time (local):** 2026-03-01 09:20–09:24 CST
+- **Operator:** Dan + Tachi (MCP command + human physical verification)
+- **Robot serial:** `00a1546c`
+- **Branch / Commit:** `dev` / `e122933` (vector_head fix)
+- **Wire-Pod status:** active/running
+- **Result:** **PASS** (both fixes verified)
+
+### Commands + Outcomes
+
+| Command | Tool result | Physical verification | Notes |
+|---|---|---|---|
+| `vector_head(-15.0)` | `ok` | PASS | Clear head-down movement observed |
+| `vector_face(image, 3.0)` | `ok` | PASS | Red image displayed on screen (~3s, idle overlap after) |
+
+### Fixes Verified
+- **vector_head:** Angle type comparison bug fixed — SDK constants extracted via `.degrees` property
+- **vector_face:** rgb565 format fix (from PR #116) — confirmed working on hardware
+
+### Notes
+- Idle behavior quickly takes over after commands execute — known Vector SDK characteristic
+- Both v1.0.0 release blockers verified on hardware
