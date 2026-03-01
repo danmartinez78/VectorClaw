@@ -2,22 +2,19 @@
 
 Milestone-based development plan from alpha to public release.
 
-**Target:** Public release by end of weekend (Sunday 2026-03-02)
+**v1.0.0 released** on PyPI — 2026-03-01
 
 ---
 
-## Current State: Alpha (v0.1.0)
+## Completed: v1.0.0
 
-**What we have:**
-- ✅ MCP server scaffold (8 tools)
-- ✅ Basic test suite (mocked SDK)
-- ✅ README with setup instructions
-- ✅ Copilot-generated PR #1 (awaiting merge)
-
-**What we need:**
-- ⚠️ Real hardware testing
-- ⚠️ Security review
-- ⚠️ Edge case handling
+- ✅ MCP server with 23 tools (16 verified, 7 experimental)
+- ✅ Real hardware smoke-tested on production Vector + Wire-Pod
+- ✅ Full test suite (mocked SDK, CI green on Python 3.11)
+- ✅ Security review and threat model documented
+- ✅ Published to PyPI (`pip install vectorclaw-mcp`)
+- ✅ Guided setup wizard (`vectorclaw-setup`)
+- ✅ Wire-Pod SDK compatibility layer (no fork required)
 
 ---
 
@@ -129,16 +126,16 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
-## Sprint Plan (Thu 2/26 → Sun 3/2)
+## Sprint Log (Thu 2/26 → Sat 3/1)
 
-| Day | Focus | Target |
+| Day | Focus | Result |
 |-----|-------|--------|
-| **Thu PM** | Merge PR #1, Wire-Pod setup, Vector unboxing | v0.1.1 |
-| **Fri** | Vector SDK auth, test all 8 tools | v0.2.0 |
-| **Sat AM** | Address Copilot comments, security review | v0.3.0 |
-| **Sat PM** | Security hardening, edge cases | v0.4.0 |
-| **Sun AM** | Documentation, RC | v1.0.0-rc1 |
-| **Sun PM** | PyPI + ClawHub publish, repo public | v1.0.0 🎉 |
+| **Thu PM** | Merge PR #1, Wire-Pod setup, Vector unboxing | v0.1.1 ✅ |
+| **Fri** | Vector SDK auth, test all tools | v0.2.0 ✅ |
+| **Sat AM** | Address review comments, security review | v0.3.0 ✅ |
+| **Sat PM** | Security hardening, edge cases | v0.4.0 ✅ |
+| **Sat PM** | Documentation, RC testing | v1.0.0-rc1 ✅ |
+| **Sat PM** | PyPI publish | v1.0.0 🎉 |
 
 ---
 

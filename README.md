@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danmartinez78/VectorClaw/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/pypi/v/vectorclaw-mcp)](https://pypi.org/project/vectorclaw-mcp/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Status: v1.0.0](https://img.shields.io/badge/status-v1.0.0-brightgreen.svg)](ROADMAP.md)
 
@@ -28,10 +29,12 @@ All communication is **local-only** — no cloud dependency at runtime (Wire-Pod
 
 See [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust model.
 
+
 ---
 
 ## Table of Contents
 
+- [Architecture](#architecture)
 - [Current Status](#current-status)
 - [Quickstart](#quickstart)
 - [MCP Client Configuration](#mcp-client-configuration)
@@ -52,7 +55,7 @@ See [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust mo
 - Perception detections — often returns empty lists; SDK semantics under investigation
 - Idle behaviors — Vector's autonomous animations can overlap with commanded behaviors
 
-See [ROADMAP.md](ROADMAP.md) for the full milestone plan.
+See **[ROADMAP.md](ROADMAP.md)** for the full milestone plan.
 
 ---
 
@@ -76,7 +79,7 @@ You will be prompted for your robot's serial number and optional IP address.
 On success you'll see a clear **SETUP PASSED** message and the next-steps command.
 On failure every step includes an exact remediation hint.
 
-→ Full details in **[docs/OPENCLAW_SETUP_SKILL.md](docs/OPENCLAW_SETUP_SKILL.md)**
+See **[docs/OPENCLAW_SETUP_SKILL.md](docs/OPENCLAW_SETUP_SKILL.md)** for full details.
 
 ---
 
@@ -113,14 +116,14 @@ python -m anki_vector.configure
 Prefer `wirepod_vector_sdk` for reliable, cloud-independent operation.
 </details>
 
-### Step 3 — Set environment variables
+**Step 3 — Set environment variables**
 
 ```bash
 export VECTOR_SERIAL="your-robot-serial"   # required — printed on underside of robot
 export VECTOR_HOST="192.168.x.x"           # optional — auto-discovered if omitted
 ```
 
-### Step 4 — Run the server
+**Step 4 — Run the server**
 
 ```bash
 vectorclaw-mcp
@@ -200,7 +203,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 > ⚠️ **Charger prerequisite:** `vector_drive` requires the robot to be off the charger.
 > Call `vector_drive_off_charger` first, or set `VECTOR_AUTO_DRIVE_OFF_CHARGER=1` for automatic undocking.
 
-See [docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md) for full parameter details and response schemas.
+See **[docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md)** for full parameter details and response schemas.
 
 ---
 
