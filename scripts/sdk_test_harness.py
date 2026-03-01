@@ -360,10 +360,15 @@ def screen_display_text(robot):
 # ---- Vision ---------------------------------------------------------------
 
 def vision_enable_face_detection(robot):
-    """Enable/disable face detection."""
+    """Enable/disable face detection (with optional expression estimation)."""
     enable = _safe_input("  Enable face detection? (y/n)", "y").lower() == 'y'
-    robot.vision.enable_face_detection(detect_faces=enable)
+    expr = False
+    if enable:
+        expr = _safe_input("  Estimate facial expressions? (y/n)", "y").lower() == 'y'
+    robot.vision.enable_face_detection(detect_faces=enable, estimate_expression=expr)
     print(f"  Face detection: {'ON' if enable else 'OFF'}")
+    if expr:
+        print("  Expression estimation: ON (UNKNOWN/NEUTRAL/HAPPINESS/SURPRISE/ANGER/SADNESS)")
 
 def vision_enable_motion_detection(robot):
     """Enable/disable motion detection."""
@@ -731,18 +736,20 @@ def nav_map_snapshot(robot):
 # ---- Events ---------------------------------------------------------------
 
 def events_monitor_faces(robot):
-    """Monitor face events for a few seconds."""
+    """Monitor face events for a few seconds (with expression)."""
     from anki_vector.events import Events as Ev
     seen = []
     def on_face(r, event_type, event):
         seen.append(event)
-        print(f"  [FACE EVENT] {event_type}: {event}")
-    robot.events.subscribe(on_face, Ev.robot_observed_face)
-    robot.vision.enable_face_detection(detect_faces=True)
+        face = event.face
+        print(f"  [FACE] id={face.face_id}, name={face.name}, "
+              f"expression={face.expression}, score={face.expression_score}")
+    robot.vision.enable_face_detection(detect_faces=True, estimate_expression=True)
+    robot.events.subscribe(on_face, Ev.face_observed)
     dur = float(_safe_input("  Monitor duration (seconds)", "10"))
     print(f"  Monitoring face events for {dur}s (look at Vector!) ...")
     time.sleep(dur)
-    robot.events.unsubscribe(on_face, Ev.robot_observed_face)
+    robot.events.unsubscribe(on_face, Ev.face_observed)
     print(f"  Done. {len(seen)} face event(s) received.")
 
 def events_monitor_objects(robot):
