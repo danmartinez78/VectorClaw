@@ -225,17 +225,13 @@ See **[docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md)** for full paramete
 | [Setup Guide](docs/SETUP.md) | Wire-Pod install, robot auth, WiFi, SDK config, troubleshooting |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common runtime failures, smoke baseline, and escalation path |
 | [Runtime Support](docs/RUNTIME_SUPPORT.md) | Supported Python versions and CI policy |
-| [OpenClaw Setup Skill Plan](docs/OPENCLAW_SKILL_PLAN.md) | Design plan for foolproof guided setup flow |
 
 ### 📡 API & SDK
 | Document | Description |
 |----------|-------------|
 | [API Reference](docs/MCP_API_REFERENCE.md) | MCP tool signatures, parameters, response schemas |
-| [Wire-Pod SDK Surface Reference](docs/VECTOR_SDK_REFERENCE.md) | Full SDK capability catalog |
-| [Wire-Pod SDK Implementation Guide](docs/WIREPOD_SDK_IMPLEMENTATION_GUIDE.md) | Implementation patterns and SDK usage notes |
+| [Wire-Pod SDK Reference](docs/VECTOR_SDK_REFERENCE.md) | Full SDK capability catalog |
 | [Wire-Pod SDK → MCP Integration Priorities](docs/WIREPOD_SDK_MCP_INTEGRATION_PRIORITIES.md) | Now/Later/Skip decision table for future tools |
-| [SDK → MCP Coverage Matrix](docs/SDK_TO_MCP_COVERAGE_MATRIX.md) | Current mapping of SDK calls to MCP tools |
-| [SDK Patch Notes](docs/SDK_PATCH_NOTES.md) | Current SDK patch status (baseline: no fork required) |
 
 ### 🔬 Hardware Validation
 | Document | Description |
@@ -243,7 +239,6 @@ See **[docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md)** for full paramete
 | [Hardware Test Playbook](docs/HARDWARE_TEST_PLAYBOOK.md) | Repeatable on-robot validation protocol and PR checklist |
 | [Hardware Smoke Log](docs/HARDWARE_SMOKE_LOG.md) | Running record of real-world smoke tests |
 | [Tool Docking Prerequisites](docs/TOOL_DOCKING_PREREQUISITES.md) | Which tools require undocked state |
-| [Hardware Validation (2026-02-26)](docs/HARDWARE_VALIDATION_2026-02-26.md) | Initial hardware validation session record |
 
 ### 🔒 Security
 | Document | Description |
