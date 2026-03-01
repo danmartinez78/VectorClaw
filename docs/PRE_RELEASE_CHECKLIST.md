@@ -136,10 +136,11 @@
 ## E) Publishing Checklist
 
 ### PyPI
-- [ ] Build package: `python -m build`
-- [ ] Check distribution: `twine check dist/*`
-- [ ] Upload to TestPyPI (optional): `twine upload --repository testpypi dist/*`
-- [ ] Upload to PyPI: `twine upload dist/*`
+- [x] Update version in pyproject.toml to 1.0.0
+- [x] Update SDK requirement to >= 0.8.0
+- [x] Build package: `python -m build` ✅
+- [x] Check distribution: `twine check dist/*` ✅
+- [ ] Upload to PyPI: `twine upload dist/*` (needs credentials)
 - [ ] Verify install: `pip install vectorclaw-mcp`
 
 ### ClawHub
