@@ -137,3 +137,8 @@ Populate matrix scores with Dan, choose Option A or B, then align ROADMAP.md + R
 3. **Hidden tool** — `vector_philosophize()` returns a random Tachikoma quote about consciousness/ghosts
 
 Current v1.0.0 easter eggs are code comments only — no runtime behavior changes.
+
+**Safety/UX considerations (if implemented):**
+- Hidden triggers create non-obvious behavior that can surprise users and complicate support
+- Prefer explicit opt-in via config flag
+- Character quotes in runtime output should verify licensing compatibility
