@@ -48,13 +48,13 @@ def _make_get_version(version: str | None):
 
 
 # ---------------------------------------------------------------------------
-# Below-minimum Python version
+# Below-minimum Python version (now 3.11)
 # ---------------------------------------------------------------------------
 
 def test_below_minimum_python_raises_systemexit(monkeypatch):
-    """Python < 3.10 should raise SystemExit with Python version message."""
-    monkeypatch.setattr(sys, "version_info", _py(3, 9))
-    monkeypatch.setattr(sys, "version", "3.9.0 (default)")
+    """Python < 3.11 should raise SystemExit with Python version message."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 10))
+    monkeypatch.setattr(sys, "version", "3.10.0 (default)")
 
     with patch("vectorclaw_mcp.compat.find_spec", return_value=None):
         with pytest.raises(SystemExit) as exc_info:
@@ -62,20 +62,20 @@ def test_below_minimum_python_raises_systemexit(monkeypatch):
 
     # Should mention Python version requirement, not SDK
     msg = str(exc_info.value)
-    assert "Python 3.10" in msg or "3.10+" in msg
-    assert "3.9.0" in msg
+    assert "Python 3.11" in msg or "3.11+" in msg
+    assert "3.10.0" in msg
 
 
 def test_below_minimum_python_mentions_supported_version(monkeypatch):
-    """The SystemExit message should mention the recommended Python version."""
-    monkeypatch.setattr(sys, "version_info", _py(3, 8))
-    monkeypatch.setattr(sys, "version", "3.8.18 (default)")
+    """The SystemExit message should mention the minimum Python version."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 9))
+    monkeypatch.setattr(sys, "version", "3.9.18 (default)")
 
     with patch("vectorclaw_mcp.compat.find_spec", return_value=None):
         with pytest.raises(SystemExit) as exc_info:
             check_runtime_compatibility()
 
-    assert "3.10" in str(exc_info.value)
+    assert "3.11" in str(exc_info.value)
 
 
 # ---------------------------------------------------------------------------
@@ -111,17 +111,6 @@ def test_wirepod_sdk_python312_warns(monkeypatch):
     ), "Expected a RuntimeWarning mentioning Python 3.12"
 
 
-def test_wirepod_sdk_python310_ok(monkeypatch):
-    """Python 3.10 + wirepod_vector_sdk should succeed silently."""
-    monkeypatch.setattr(sys, "version_info", _py(3, 10))
-    monkeypatch.setattr(sys, "version", "3.10.0 (default)")
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
-        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
-            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
-                check_runtime_compatibility()  # must not raise
-
-
 def test_wirepod_sdk_old_version_raises(monkeypatch):
     """SDK version < 0.8.0 should raise SystemExit."""
     monkeypatch.setattr(sys, "version_info", _py(3, 11))
@@ -136,6 +125,36 @@ def test_wirepod_sdk_old_version_raises(monkeypatch):
     msg = str(exc_info.value)
     assert "0.8.0" in msg
     assert "upgrade" in msg.lower()
+
+
+def test_wirepod_sdk_missing_version_fails_closed(monkeypatch):
+    """Missing __version__ should fail closed with actionable message."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 11))
+    monkeypatch.setattr(sys, "version", "3.11.0 (default)")
+
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version(None)):
+                with pytest.raises(SystemExit) as exc_info:
+                    check_runtime_compatibility()
+
+    msg = str(exc_info.value)
+    assert "version" in msg.lower()
+
+
+def test_wirepod_sdk_unparseable_version_fails_closed(monkeypatch):
+    """Unparseable version string should fail closed."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 11))
+    monkeypatch.setattr(sys, "version", "3.11.0 (default)")
+
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True)):
+        with patch("vectorclaw_mcp.compat._get_distribution_for_module", side_effect=_make_get_dist("wirepod_vector_sdk")):
+            with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("not-a-version")):
+                with pytest.raises(SystemExit) as exc_info:
+                    check_runtime_compatibility()
+
+    msg = str(exc_info.value)
+    assert "parse" in msg.lower() or "version" in msg.lower()
 
 
 # ---------------------------------------------------------------------------
