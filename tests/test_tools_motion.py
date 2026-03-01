@@ -211,40 +211,24 @@ def test_vector_drive_on_charger_error(mock_robot):
     assert "charger nav error" in result["message"]
 
 
-def test_vector_drive_on_charger_timeout(mock_robot):
-    import threading
-
+def test_vector_drive_on_charger_no_timeout_parameter(mock_robot):
     from vectorclaw_mcp.tools_motion import vector_drive_on_charger
 
-    ready = threading.Event()
+    # Phase 0: no timeout parameter - function signature is simply vector_drive_on_charger()
+    import inspect
 
-    def _blocking():
-        ready.wait()
-
-    mock_robot.behavior.drive_on_charger.side_effect = _blocking
-
-    try:
-        result = vector_drive_on_charger(timeout_sec=0.05)
-
-        assert result["status"] == "error"
-        assert result.get("timed_out") is True
-        assert result.get("motors_stopped") is True
-        assert "timed" in result["message"]
-        mock_robot.motors.stop_all_motors.assert_called_once()
-    finally:
-        # Always unblock the background thread so it can exit cleanly,
-        # even if the test fails or raises before the assertions complete.
-        ready.set()
+    sig = inspect.signature(vector_drive_on_charger)
+    assert "timeout_sec" not in sig.parameters
 
 
-def test_vector_drive_on_charger_negative_timeout(mock_robot):
+def test_vector_drive_on_charger_synchronous_call(mock_robot):
     from vectorclaw_mcp.tools_motion import vector_drive_on_charger
 
-    result = vector_drive_on_charger(timeout_sec=-1.0)
-
-    assert result["status"] == "error"
-    assert "timeout_sec" in result["message"]
-    mock_robot.behavior.drive_on_charger.assert_not_called()
+    # Phase 0: no timeout parameter - calling with no args must succeed (not error)
+    mock_robot.status.is_on_charger = False
+    result = vector_drive_on_charger()
+    assert result["status"] == "ok"
+    mock_robot.behavior.drive_on_charger.assert_called_once()
 
 
 def test_vector_emergency_stop_success(mock_robot):
