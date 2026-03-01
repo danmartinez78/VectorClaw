@@ -13,7 +13,7 @@ Purpose: quick operator reference for which tool behaviors require undocked stat
 | `vector_status` | No | Works while docked | hardware smoke 2026-02-27 |
 | `vector_pose` | No | Works while docked | implementation (no motion precheck) |
 | `vector_look` | No | Works while docked | hardware smoke 2026-02-27 |
-| `vector_face` | No (in principle) | Currently fails due to payload-format bug (not docking-related) | issue #41 |
+| `vector_face` | No | Works while docked (fixed in v1.0.0) | hardware smoke 2026-02-28 |
 | `vector_head` | No | Works while docked | hardware smoke 2026-02-27 |
 | `vector_lift` | No | Works while docked | hardware smoke 2026-02-27 |
 | `vector_cube` | Depends on action/cube availability | Requires connected cube for dock/pickup/roll actions; no charger gate today | `tools_perception.vector_cube` |

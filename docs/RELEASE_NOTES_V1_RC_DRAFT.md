@@ -1,10 +1,10 @@
-# VectorClaw v1.0.0-rc1 Release Notes (Draft)
+# VectorClaw v1.0.0 Release Notes
 
 ## Highlights
-- Expanded implementation surface for perception, vision, motion safety, and sensors
-- MCP registration integration for new tools is tracked in issue #67
-- Test architecture split for parallel feature development (`tests/` modularized)
-- Runtime/tool registration architecture split for lower merge-conflict risk
+- 12 MCP tools for robot control: speech, motion, perception, status
+- Wire-Pod SDK integration (>= 0.8.0)
+- MCP registration integration for all tools
+- Test architecture split for parallel feature development
 - Hardware smoke validation process standardized
 
 ## New Capability Areas (implemented and MCP-registered)
@@ -34,9 +34,9 @@
 - Confirmed working against upstream Wire-Pod SDK (`wirepod_vector_sdk` 0.8.1) for baseline functionality
 - No custom SDK fork required for baseline functionality
 
-## Known Issues
-- #39: Non-fatal `Unknown Event type` warnings in logs
-- #41: `vector_face` payload format mismatch on hardware
+## Resolved Issues
+- SDK `Unknown Event type` warnings — suppressed via event filter
+- `vector_face` payload format — fixed (rgb565 format)
 
 ## Validation
 - CI matrix: Python 3.11 + 3.12 experimental

@@ -10,14 +10,14 @@
 
 ### 1) `Unknown Event type` warnings in logs
 - **Symptom:** repeated `events.EventHandler WARNING Unknown Event type`
-- **Impact:** currently non-fatal in observed runs
-- **Action:** continue if tools are functioning; track in issue #39 for cleanup
+- **Impact:** warnings suppressed in v1.0.0 via SDK event filter
+- **Action:** if still seeing these, verify you're on vectorclaw-mcp >= 1.0.0
 
 ### 2) `vector_face` fails with expected byte-length error
 - **Symptom:** `set_screen_with_image_data expected 35328 bytes`
 - **Cause:** payload format mismatch (compressed bytes vs expected raw screen format)
-- **Status:** tracked in issue #41
-- **Workaround:** avoid `vector_face` for release smoke until fixed
+- **Status:** fixed in v1.0.0 (uses rgb565 format)
+- **Action:** upgrade to vectorclaw-mcp >= 1.0.0
 
 ### 3) Robot won’t connect
 - **Check:**

@@ -60,9 +60,6 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 - Perception detections (faces/objects) — limited functionality
 - No rate limiting on motion commands (v1.1 target)
 
-**Known open issues:**
-- Non-fatal SDK `Unknown Event type` warning ([#39](https://github.com/danmartinez78/VectorClaw/issues/39)) — non-blocking
-
 → [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.
 
 ---
