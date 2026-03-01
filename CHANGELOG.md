@@ -29,7 +29,6 @@ and this project follows Semantic Versioning.
 - Known-limitation language updated to reflect empirically observed precondition/timing semantics rather than indeterminate failure states:
   - `vector_drive_on_charger` reliability depends on charger visibility in recent world model; `vector_scan` first is the documented precondition.
   - Perception tools return empty results when vision modes are inactive (disabled-by-design after `vector_vision_reset`), not due to a fundamental SDK defect.
-- `vector_face` payload format fixed (rgb565 via `anki_vector.screen.convert_image_to_screen_data()`).
 - `Unknown Event type` SDK warnings suppressed via event filter.
 
 ### Fixed
