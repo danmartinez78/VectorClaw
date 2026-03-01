@@ -10,7 +10,7 @@ Please do not open public GitHub issues for security vulnerabilities.
 
 **Report privately via GitHub Security Advisories:**
 
-Go to [Security → Advisories](../../security/advisories) and click "Report a vulnerability."
+Go to [Security → Advisories](/security/advisories) and click "Report a vulnerability."
 
 Alternatively, email: **danmartinez78@gmail.com**
 
