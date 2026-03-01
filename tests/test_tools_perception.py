@@ -111,6 +111,20 @@ def test_vector_pose(mock_robot):
     assert result["y"] == 20.0
     assert result["z"] == 0.0
     assert result["angle_deg"] == 45.0
+    assert result["origin_id"] == 1
+    assert result["is_picked_up"] is False
+    assert result["localized_to_object_id"] is None
+
+
+def test_vector_pose_localized_to_object(mock_robot):
+    from vectorclaw_mcp.tools import vector_pose
+
+    mock_robot.localized_to_object_id = 42
+
+    result = vector_pose()
+
+    assert result["status"] == "ok"
+    assert result["localized_to_object_id"] == 42
 
 
 @pytest.mark.parametrize("action", ["dock", "pickup", "drop", "roll"])

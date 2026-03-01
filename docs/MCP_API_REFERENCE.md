@@ -84,6 +84,9 @@ Return current pose.
 **Output fields:**
 - `x`, `y`, `z` — Position coordinates in millimeters
 - `angle_deg` — Heading angle in degrees
+- `origin_id` — Pose frame-of-reference identifier (integer). Changes when the robot is picked up and set down, causing relocalization. Poses with different `origin_id` values cannot be directly compared.
+- `is_picked_up` — `true` when Vector is currently picked up off the ground.
+- `localized_to_object_id` — ID of the object the robot's pose is localized to (integer or `null` when not localized to a specific object). Source: `robot.localized_to_object_id`; SDK reports `-1` when not localized, which is normalized to `null` in the tool response.
 
 **Reference frame semantics:**
 - Robot body frame origin: Point on ground between Vector's front wheels
@@ -470,3 +473,5 @@ Execute one command at a time and wait for explicit confirmation before proceedi
 - [ ] `vector_charger_status` — Returns `is_charging`, `battery_level`, `is_on_charger`
 - [ ] `vector_touch_status` — Returns `is_being_touched`, `raw_touch_value`; verify by touching/not touching sensor
 - [ ] `vector_proximity_status` — Returns `distance_mm`, `found_object`, `is_lift_in_fov`; verify by placing/removing object
+- [ ] `vector_pose` (on ground) — Returns `origin_id` (integer), `is_picked_up: false`, coordinates
+- [ ] `vector_pose` (picked up) — Returns `is_picked_up: true`; `origin_id` changes after set down and relocalization
