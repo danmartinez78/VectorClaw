@@ -23,6 +23,31 @@ import anki_vector
 from anki_vector.util import degrees, distance_mm, speed_mmps
 
 # ---------------------------------------------------------------------------
+# Animation list cache — loaded lazily on first use instead of at startup.
+# Wire-Pod environments may not respond to ListAnimations/ListAnimationTriggers
+# within the default 10s gRPC deadline, so we never block connect() on it.
+# ---------------------------------------------------------------------------
+_anim_cache_attempted = False
+
+
+def _ensure_anim_cache(robot):
+    """Best-effort lazy load of animation lists. Warns but does not raise."""
+    global _anim_cache_attempted
+    if _anim_cache_attempted:
+        return
+    _anim_cache_attempted = True
+    print("  (Loading animation lists from robot — this may take a moment ...)")
+    for loader_name in ("load_animation_list", "load_animation_trigger_list"):
+        try:
+            fut = getattr(robot.anim, loader_name)()
+            if hasattr(fut, "result"):
+                fut.result()  # blocks, but only once and only when user asks
+        except Exception as e:
+            print(f"  WARNING: {loader_name} failed: {e}")
+            print("  Animation listing may be unavailable.  Direct play-by-name still works.")
+
+
+# ---------------------------------------------------------------------------
 # Menu definition
 # Each category has entries: (label, callable_taking_robot)
 # ---------------------------------------------------------------------------
@@ -204,14 +229,22 @@ def motors_lift(robot):
 
 def anim_list_triggers(robot):
     """List all available animation triggers."""
+    _ensure_anim_cache(robot)
     triggers = robot.anim.anim_trigger_list
+    if not triggers:
+        print("  No animation triggers available (list RPC may have failed).")
+        return
     print(f"  {len(triggers)} animation trigger(s) available:")
     for i, t in enumerate(triggers, 1):
         print(f"    {i:3d}. {t}")
 
 def anim_list_animations(robot):
     """List all available animations."""
+    _ensure_anim_cache(robot)
     anims = robot.anim.anim_list
+    if not anims:
+        print("  No animations available (list RPC may have failed).")
+        return
     print(f"  {len(anims)} animation(s) available:")
     for i, a in enumerate(anims, 1):
         print(f"    {i:3d}. {a}")
@@ -630,7 +663,9 @@ def main():
     flat = build_flat_menu()
 
     print("\nConnecting to Vector ...")
-    with anki_vector.Robot(args.serial, cache_animation_lists=True) as robot:
+    # NOTE: cache_animation_lists is False to avoid startup timeout under Wire-Pod.
+    # Animation lists are loaded lazily when you first access an animation menu item.
+    with anki_vector.Robot(args.serial, cache_animation_lists=False) as robot:
         print("Connected!\n")
         while True:
             print_menu()
