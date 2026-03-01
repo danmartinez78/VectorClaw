@@ -65,50 +65,97 @@ These were completed during the v1.0.0 release push and are retained as historic
 
 ---
 
-## Near-Term Plan (Post-v1.0 Evidence Update)
+## Embodied AI MVP API Roadmap (Canonical)
 
-**Status shift after SDK harness + source investigation (2026-03-01):**
-- `drive_on_charger` is **working** in direct SDK harness path (single-call behavior may take search time).
-- Face and object perception are **working with correct preconditions/timing** (not fundamentally broken).
-- Highest-value remaining work is **MCP semantics + orchestration hardening** and evidence-backed docs.
+This roadmap is the canonical post-v1.0 direction.
 
-### v1.1 Active Tracks (Issue-driven)
+### Cross-cutting acceptance criteria (all tracks)
 
-> Tracking issues: #139, #140, #141, #142, #143
+- Deterministic success/failure payloads
+- No silent “empty means anything” outcomes
+- Explicit precondition reporting
+- Tests cover success + failure + disabled-mode paths
+- Docs reflect actual observed semantics (not optimistic assumptions)
 
-1. **Perception semantics hardening**
-   - Explicit face-detection mode requirements
-   - Clear "visible now" vs "known world" object semantics
-   - Timing/TTL expectations surfaced in tool responses
+---
 
-2. **Charger workflow contract hardening**
-   - Improve `vector_drive_on_charger` status/result messaging
-   - Distinguish searching vs attempting vs timeout/failure outcomes
-   - Keep best-effort behavior explicit in operator UX
+## MUST-HAVE (v1.1)
 
-3. **Embodied state expansion**
-   - Expand `vector_status` and `vector_pose` payloads for planning/safety
-   - Include localization/frame context where available (`origin_id`, related state)
+### 1) Embodied state core
+**Goal:** Expand `vector_status` + `vector_pose` for embodied planning
 
-4. **SDK harness parity + regression tests**
-   - Verify MCP behavior matches validated harness behavior for key flows
-   - Add deterministic tests for success/failure/precondition paths
+**Add:**
+- Charging/on-charger, motors moving, pathing, carrying block, picked up, cliff flags
+- Pose origin/localization fields (`origin_id`, `localized_to_object_id` when available)
+- Timestamps for state freshness
 
-5. **Docs + release messaging refresh**
-   - Replace outdated "broken" language with evidence-backed constraints
-   - Clarify setup/preconditions and known-limited behavior
+**DoD:** Agent can decide “can I move?” and “am I localized?” from one call.
 
-## Future Considerations (v1.x)
+### 2) Perception mode control + semantics
+**Goal:** Add explicit vision mode tools and unify perception contracts
 
-**Additional enhancements:**
-- Async motion control primitives (non-blocking drive + interruptable stop semantics)
-- Vision pipeline optimization (optional in-memory look→analyze path, with audit snapshot mode)
-- Pose metadata expansion in `vector_pose` (`origin_id`, `is_picked_up`, optional `localized_to_object_id`)
-- Audio recording from microphones
-- Object detection via camera
-- Multiple robot support
-- Personality modes
-- Voice command passthrough
+**Add:**
+- `vector_enable_face_detection`
+- `vector_enable_motion_detection`
+- `vector_vision_status`
+
+**DoD:** Face/object tools never fail ambiguously; they report disabled/empty/stale clearly.
+
+### 3) Object/face visibility semantics split
+**Goal:** Split “currently visible” vs “known world” entity views
+
+**Add:**
+- Clear payload fields: `visible_now`, `last_seen_ts`, `origin_id`
+- Dedupe for repeated face/object IDs
+
+**DoD:** No more confusion from empty visible list when known entities exist.
+
+### 4) Charger workflow hardening
+**Goal:** Harden `vector_drive_on_charger` with explicit state-machine responses
+
+**Add:**
+- Return states: searching, approaching, docked, timeout, failed
+- Actionable failure reasons + next-step hints
+
+**DoD:** Operator can tell if failure is perception/timing vs impossible state.
+
+---
+
+## SHOULD-HAVE (v1.2)
+
+### 5) Attention primitives
+**Add:**
+- `vector_look_around_in_place` (if not already exposed cleanly)
+- One-shot wait helpers: `vector_wait_for_face`, `vector_wait_for_object` (bounded)
+
+**DoD:** Agent can intentionally gather perception before acting.
+
+### 6) Social/expressive layer
+**Add:**
+- `vector_play_animation_trigger`
+- `vector_set_eye_color`
+- Optional screen text/image polish
+
+**DoD:** Embodied assistant can communicate internal state socially.
+
+### 7) Motion goal helpers
+**Add:**
+- `vector_turn_towards_face`
+- `vector_go_to_pose` (guardrailed)
+
+**DoD:** Fewer brittle low-level movement scripts for common goals.
+
+---
+
+## EXPERIMENTAL LATER
+
+### 8) Audio expansion
+- Guarded `vector_play_wav`
+- Volume profiles
+- Mic/audio-stream integrations (if policy allows)
+
+### 9) Persistent world memory
+- Optional local map of known entities with confidence decay
 
 ---
 
