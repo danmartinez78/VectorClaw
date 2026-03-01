@@ -21,6 +21,23 @@ def _py(major: int, minor: int):
     return (major, minor, 0, "final", 0)
 
 
+def _make_find_spec(sdk_available: bool, version: str | None = "0.8.1"):
+    """Create a fake find_spec that returns anki_vector module if available."""
+    def fake_find_spec(name):
+        if name == "anki_vector" and sdk_available:
+            return object()  # truthy
+        return None
+
+    return fake_find_spec
+
+
+def _make_get_version(version: str | None):
+    """Create a fake _get_sdk_version that returns the given version."""
+    def fake_get_version():
+        return version
+    return fake_get_version
+
+
 # ---------------------------------------------------------------------------
 # Below-minimum Python version
 # ---------------------------------------------------------------------------
@@ -47,11 +64,12 @@ def test_below_minimum_python_mentions_supported_version(monkeypatch):
         with pytest.raises(SystemExit) as exc_info:
             check_runtime_compatibility()
 
-    assert "3.11" in str(exc_info.value)
+    assert "3.10" in str(exc_info.value)
 
 
 # ---------------------------------------------------------------------------
 # wirepod_vector_sdk present (recommended path)
+# Note: wirepod_vector_sdk installs as the 'anki_vector' namespace
 # ---------------------------------------------------------------------------
 
 def test_wirepod_sdk_python311_ok(monkeypatch):
@@ -59,11 +77,9 @@ def test_wirepod_sdk_python311_ok(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 11))
     monkeypatch.setattr(sys, "version", "3.11.0 (default)")
 
-    def fake_find_spec(name):
-        return object() if name == "wirepod_vector_sdk" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        check_runtime_compatibility()  # must not raise
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
+        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+            check_runtime_compatibility()  # must not raise
 
 
 def test_wirepod_sdk_python312_warns(monkeypatch):
@@ -71,13 +87,11 @@ def test_wirepod_sdk_python312_warns(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 12))
     monkeypatch.setattr(sys, "version", "3.12.0 (default)")
 
-    def fake_find_spec(name):
-        return object() if name == "wirepod_vector_sdk" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            check_runtime_compatibility()
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
+        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                check_runtime_compatibility()
 
     assert any(
         issubclass(w.category, RuntimeWarning) and "3.12" in str(w.message)
@@ -90,69 +104,24 @@ def test_wirepod_sdk_python310_ok(monkeypatch):
     monkeypatch.setattr(sys, "version_info", _py(3, 10))
     monkeypatch.setattr(sys, "version", "3.10.0 (default)")
 
-    def fake_find_spec(name):
-        return object() if name == "wirepod_vector_sdk" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        check_runtime_compatibility()  # must not raise
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.8.1")):
+        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.8.1")):
+            check_runtime_compatibility()  # must not raise
 
 
-# ---------------------------------------------------------------------------
-# Legacy anki_vector SDK only
-# ---------------------------------------------------------------------------
+def test_wirepod_sdk_old_version_raises(monkeypatch):
+    """SDK version < 0.8.0 should raise SystemExit."""
+    monkeypatch.setattr(sys, "version_info", _py(3, 11))
+    monkeypatch.setattr(sys, "version", "3.11.0 (default)")
 
-def test_legacy_sdk_python310_raises(monkeypatch):
-    """Legacy anki_vector on Python 3.10 should raise SystemExit."""
-    monkeypatch.setattr(sys, "version_info", _py(3, 10))
-    monkeypatch.setattr(sys, "version", "3.10.14 (default)")
-
-    def fake_find_spec(name):
-        return object() if name == "anki_vector" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        with pytest.raises(SystemExit) as exc_info:
-            check_runtime_compatibility()
+    with patch("vectorclaw_mcp.compat.find_spec", side_effect=_make_find_spec(True, "0.6.0")):
+        with patch("vectorclaw_mcp.compat._get_sdk_version", side_effect=_make_get_version("0.6.0")):
+            with pytest.raises(SystemExit) as exc_info:
+                check_runtime_compatibility()
 
     msg = str(exc_info.value)
-    assert _COMPAT_MSG in msg
-    assert "anki_vector" in msg
-    assert "wirepod_vector_sdk" in msg
-
-
-def test_legacy_sdk_python310_message_mentions_asyncio(monkeypatch):
-    """The error for legacy+3.10 should mention asyncio incompatibility."""
-    monkeypatch.setattr(sys, "version_info", _py(3, 10))
-    monkeypatch.setattr(sys, "version", "3.10.14 (default)")
-
-    def fake_find_spec(name):
-        return object() if name == "anki_vector" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        with pytest.raises(SystemExit) as exc_info:
-            check_runtime_compatibility()
-
-    assert "asyncio" in str(exc_info.value)
-
-
-def test_legacy_sdk_python39_raises_for_version(monkeypatch):
-    """Python 3.9 + legacy anki_vector raises due to the version minimum check.
-
-    The below-minimum-version guard fires before the legacy-SDK check, so
-    the SystemExit message should still be the compatibility message.
-    """
-    monkeypatch.setattr(sys, "version_info", _py(3, 9))
-    monkeypatch.setattr(sys, "version", "3.9.18 (default)")
-
-    def fake_find_spec(name):
-        return object() if name == "anki_vector" else None
-
-    with patch("vectorclaw_mcp.compat.find_spec", side_effect=fake_find_spec):
-        with pytest.raises(SystemExit) as exc_info:
-            check_runtime_compatibility()
-
-    # The version-minimum check fires first, not the legacy-SDK check.
-    assert _COMPAT_MSG in str(exc_info.value)
-    assert "3.9.18" in str(exc_info.value)
+    assert "0.8.0" in msg
+    assert "upgrade" in msg.lower()
 
 
 # ---------------------------------------------------------------------------
