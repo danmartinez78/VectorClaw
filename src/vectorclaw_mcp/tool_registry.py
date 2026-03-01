@@ -255,6 +255,37 @@ TOOLS: list[Tool] = [
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
+        name="vector_enable_face_detection",
+        description="Enable or disable face detection on Vector's vision system.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "description": "True to enable face detection, False to disable (default: true)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_enable_motion_detection",
+        description="Enable or disable motion detection on Vector's vision system.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "description": "True to enable motion detection, False to disable (default: true)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_vision_status",
+        description="Return current vision mode status flags (face detection, motion detection, etc.).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
         name="vector_vision_reset",
         description="Disable all active vision modes via vision.disable_all_vision_modes.",
         inputSchema={"type": "object", "properties": {}},
@@ -315,6 +346,13 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
         "vector_list_visible_objects": _tools_perception.vector_list_visible_objects,
         "vector_capture_image": _tools_perception.vector_capture_image,
         "vector_face_detection": _tools_perception.vector_face_detection,
+        "vector_enable_face_detection": lambda: _tools_perception.vector_enable_face_detection(
+            enable=arguments.get("enable", True),
+        ),
+        "vector_enable_motion_detection": lambda: _tools_perception.vector_enable_motion_detection(
+            enable=arguments.get("enable", True),
+        ),
+        "vector_vision_status": _tools_perception.vector_vision_status,
         "vector_vision_reset": _tools_perception.vector_vision_reset,
         "vector_charger_status": _tools_perception.vector_charger_status,
         "vector_touch_status": _tools_perception.vector_touch_status,
