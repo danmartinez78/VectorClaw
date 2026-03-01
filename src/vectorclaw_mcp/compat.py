@@ -1,8 +1,6 @@
 """Runtime compatibility guardrails for VectorClaw.
 
-Detects known-incompatible Python/SDK combinations and raises a clear,
-actionable error message at startup instead of a cryptic failure later
-(e.g. protobuf API errors or asyncio ``loop=`` argument removal on 3.10+).
+Validates that the wirepod_vector_sdk is installed and Python version is supported.
 """
 
 from __future__ import annotations
@@ -11,32 +9,81 @@ import sys
 import warnings
 from importlib.util import find_spec
 
-_MINIMUM_PYTHON = (3, 10)
-_RECOMMENDED_PYTHON = (3, 11)
+from packaging.version import InvalidVersion, Version
+
+_MINIMUM_PYTHON = (3, 11)
+_MINIMUM_SDK = Version("0.8.0")
 
 _COMPAT_MSG = (
-    "VectorClaw detected an incompatible Vector SDK/runtime combination. "
-    "Use Python 3.11 + wirepod_vector_sdk (recommended)."
+    "VectorClaw requires wirepod_vector_sdk. "
+    "Install with: pip install wirepod_vector_sdk"
 )
 
 
-def _wirepod_sdk_available() -> bool:
-    return find_spec("wirepod_vector_sdk") is not None
+def _get_distribution_for_module(module_name: str) -> str | None:
+    """Get the distribution name that provides the given module.
+
+    Returns 'wirepod_vector_sdk' or 'anki_vector' or None.
+    If both distributions are present, prefers wirepod_vector_sdk.
+    """
+    try:
+        # Python 3.8+
+        from importlib.metadata import packages_distributions
+        dists = packages_distributions()
+        dist_names = dists.get(module_name) or []
+        # Prefer wirepod_vector_sdk over legacy anki_vector if both are present.
+        for preferred in ("wirepod_vector_sdk", "anki_vector"):
+            if preferred in dist_names:
+                return preferred
+        return None
+    except (ImportError, AttributeError):
+        # Fallback: try importlib.metadata.version on known candidates
+        try:
+            from importlib import metadata
+            for dist_name in ("wirepod_vector_sdk", "anki_vector"):
+                try:
+                    metadata.version(dist_name)
+                    return dist_name
+                except metadata.PackageNotFoundError:
+                    continue
+        except Exception:
+            pass
+    return None
 
 
-def _legacy_sdk_available() -> bool:
-    return find_spec("anki_vector") is not None
+def _get_sdk_version() -> str | None:
+    """Get the installed SDK version.
+
+    Returns None if the module is not available.
+    Raises SystemExit if import fails with a non-ImportError exception
+    (e.g., dependency/protobuf issues).
+    """
+    try:
+        import anki_vector  # noqa: PLC0415
+        return getattr(anki_vector, "__version__", None)
+    except ImportError:
+        # Module genuinely not available; let the caller handle via _sdk_available()
+        return None
+    except Exception as exc:
+        # Other import-time failures (e.g., dependency/protobuf issues) should surface as
+        # a clear startup error rather than a long traceback.
+        raise SystemExit(
+            "Error while importing the 'anki_vector' SDK module.\n"
+            f"  Underlying error: {exc}\n"
+            f"  {_COMPAT_MSG}\n"
+            "  If the SDK is already installed, try upgrading it:\n"
+            "    pip install --upgrade wirepod_vector_sdk"
+        ) from exc
 
 
 def check_runtime_compatibility() -> None:
-    """Check Python version and SDK availability for known-incompatible combos.
+    """Check Python version and SDK availability.
 
     This function should be called once at process startup (from
     :func:`vectorclaw_mcp.server.main`).
 
     Raises:
-        SystemExit: If a known-incompatible Python/SDK combination is detected,
-            with an actionable message telling the user how to fix it.
+        SystemExit: If SDK is not available or Python version is too old.
     """
     py = sys.version_info[:2]
     py_str = sys.version.split()[0]
@@ -44,42 +91,59 @@ def check_runtime_compatibility() -> None:
     # Python below minimum declared requirement
     if py < _MINIMUM_PYTHON:
         raise SystemExit(
-            f"{_COMPAT_MSG}\n"
-            f"  Detected:    Python {py_str}\n"
-            f"  Supported:   Python {_RECOMMENDED_PYTHON[0]}.{_RECOMMENDED_PYTHON[1]}+"
-            f" with wirepod_vector_sdk"
+            f"VectorClaw requires Python {_MINIMUM_PYTHON[0]}.{_MINIMUM_PYTHON[1]}+.\n"
+            f"  Detected: Python {py_str}"
         )
 
-    if _wirepod_sdk_available():
-        # wirepod_vector_sdk present — recommended path.
-        # Python 3.12+ is not officially tested; emit a warning but continue.
-        if py >= (3, 12):
-            warnings.warn(
-                f"Python {py_str} with wirepod_vector_sdk is not officially tested. "
-                "Consider using Python 3.11.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-        return
+    # Check if anki_vector module exists
+    if find_spec("anki_vector") is None:
+        raise SystemExit(
+            f"{_COMPAT_MSG}\n"
+            "  No Vector SDK found.\n"
+            "  The wirepod_vector_sdk package provides the 'anki_vector' module."
+        )
 
-    if _legacy_sdk_available():
-        # Legacy anki_vector SDK only.  Python 3.10+ removed the asyncio ``loop=``
-        # keyword argument and changed the protobuf API — both of which the legacy
-        # SDK relies on, producing cryptic errors at connection time.
-        if py >= (3, 10):
+    # Verify it's wirepod_vector_sdk distribution, not legacy anki_vector
+    dist = _get_distribution_for_module("anki_vector")
+    if dist != "wirepod_vector_sdk":
+        raise SystemExit(
+            f"VectorClaw requires wirepod_vector_sdk, not the legacy anki_vector package.\n"
+            f"  Detected distribution: {dist or 'unknown'}\n"
+            "  Uninstall legacy: pip uninstall anki_vector\n"
+            "  Install wirepod:  pip install wirepod_vector_sdk"
+        )
+
+    # Verify SDK version >= 0.8.0 using robust version comparison
+    version = _get_sdk_version()
+    if version is None:
+        # No __version__ attribute - fail closed
+        raise SystemExit(
+            "VectorClaw requires wirepod_vector_sdk >= 0.8.0.\n"
+            "  Could not determine SDK version (no __version__ attribute).\n"
+            "  Upgrade with: pip install wirepod_vector_sdk --upgrade"
+        )
+
+    try:
+        parsed_version = Version(version)
+        if parsed_version < _MINIMUM_SDK:
             raise SystemExit(
-                f"{_COMPAT_MSG}\n"
-                f"  Detected:    Python {py_str} + anki_vector (legacy SDK)\n"
-                "  The legacy anki_vector SDK has known incompatibilities with "
-                "Python 3.10+\n"
-                "  (asyncio loop= argument removal, protobuf API changes).\n"
-                "  Fix: pip install wirepod_vector_sdk"
+                f"VectorClaw requires wirepod_vector_sdk >= {_MINIMUM_SDK}.\n"
+                f"  Detected: {version}\n"
+                "  Upgrade with: pip install wirepod_vector_sdk --upgrade"
             )
-        return
+    except InvalidVersion:
+        # Unknown version format - fail closed
+        raise SystemExit(
+            f"VectorClaw requires wirepod_vector_sdk >= {_MINIMUM_SDK}.\n"
+            f"  Could not parse SDK version: {version}\n"
+            "  Upgrade with: pip install wirepod_vector_sdk --upgrade"
+        )
 
-    # No Vector SDK at all
-    raise SystemExit(
-        f"{_COMPAT_MSG}\n"
-        "  No Vector SDK found.\n"
-        "  Fix: pip install wirepod_vector_sdk"
-    )
+    # Python 3.12+ warning (not officially tested yet)
+    if py >= (3, 12):
+        warnings.warn(
+            f"Python {py_str} with wirepod_vector_sdk is not officially tested. "
+            f"Consider using Python {_MINIMUM_PYTHON[0]}.{_MINIMUM_PYTHON[1]} for best compatibility.",
+            RuntimeWarning,
+            stacklevel=2,
+        )

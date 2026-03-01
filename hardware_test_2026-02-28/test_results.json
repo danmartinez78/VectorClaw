@@ -1,0 +1,27 @@
+[
+  {
+    "test": "1.1 vector_status",
+    "status": "error",
+    "error": "VECTOR_SERIAL environment variable is required but not set."
+  },
+  {
+    "test": "1.2 vector_pose",
+    "status": "error",
+    "error": "VECTOR_SERIAL environment variable is required but not set."
+  },
+  {
+    "test": "5.1 vector_proximity_status",
+    "status": "error",
+    "error": "VECTOR_SERIAL environment variable is required but not set."
+  },
+  {
+    "test": "4.1 vector_capture_image",
+    "status": "error",
+    "error": "VECTOR_SERIAL environment variable is required but not set."
+  },
+  {
+    "test": "3.1 vector_say",
+    "status": "error",
+    "error": "cannot import name 'vector_say' from 'vectorclaw_mcp.tools_motion' (/home/daniel/.openclaw/workspace/VectorClaw/src/vectorclaw_mcp/tools_motion.py)"
+  }
+]
