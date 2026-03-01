@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vectorclaw-mcp"
-version = "1.0.0"
+version = "1.0.1"
 description = "MCP server connecting Anki Vector robots to AI assistants via Wire-Pod"
 readme = "README.md"
 license = { file = "LICENSE" }
