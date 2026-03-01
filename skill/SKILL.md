@@ -84,24 +84,38 @@ export VECTOR_SERIAL=your-serial-here  # e.g., 00a1546c
 }
 ```
 
-## Supported Tools (MVP)
+## Supported Tools
 
-| Tool | Description | Status |
-|------|-------------|--------|
-| `vector_status` | Battery, charging state, status flags | ✅ |
-| `vector_say` | Text-to-speech | ✅ |
-| `vector_drive_off_charger` | Drive off charging dock | ✅ |
-| `vector_drive` | Drive straight or turn | ✅ |
-| `vector_head` | Control head angle | ✅ |
-| `vector_lift` | Control lift height | ✅ |
-| `vector_touch_status` | Read touch sensor state | ✅ |
-| `vector_charger_status` | Read charger connection state | ✅ |
-| `vector_look` | Capture image (feed path) | ✅ |
-| `vector_capture_image` | Capture image (one-shot) | ✅ |
-| `vector_proximity_status` | Read proximity sensor | ✅ |
-| `vector_pose` | Read current pose | ✅ |
-| `vector_head` | Control head angle | ✅ |
-| `vector_face` | Display image on screen | ✅ |
+**Verified ✅ (16 tools)**
+| Tool | Description |
+|------|-------------|
+| `vector_say` | Text-to-speech |
+| `vector_drive_off_charger` | Drive off charging dock |
+| `vector_drive` | Drive straight or turn |
+| `vector_emergency_stop` | Stop all motion |
+| `vector_head` | Control head angle |
+| `vector_lift` | Control lift height |
+| `vector_look` | Capture image (feed path) |
+| `vector_capture_image` | Capture image (one-shot) |
+| `vector_face` | Display image on screen |
+| `vector_scan` | Head scan for environment |
+| `vector_vision_reset` | Disable all vision modes |
+| `vector_pose` | Read current pose |
+| `vector_status` | Battery and charging status |
+| `vector_charger_status` | Charger connection state |
+| `vector_touch_status` | Touch sensor state |
+| `vector_proximity_status` | Proximity sensor reading |
+
+**Experimental ⚠️ (7 tools)**
+| Tool | Description | Limitation |
+|------|-------------|------------|
+| `vector_animate` | Play named animation | Not hardware-validated |
+| `vector_drive_on_charger` | Drive onto charger | Unreliable approach |
+| `vector_find_faces` | Scan for faces | Often no detections |
+| `vector_list_visible_faces` | List visible faces | Often empty |
+| `vector_face_detection` | Face detection summary | Often empty |
+| `vector_list_visible_objects` | List visible objects | Often empty |
+| `vector_cube` | Cube interaction | Requires paired cube |
 
 ## Known Limitations
 
