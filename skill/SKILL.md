@@ -1,6 +1,6 @@
 ---
 name: vectorclaw-mcp
-description: "Control Anki/Digital Dream Labs Vector robot via MCP tools. Speech, motion, camera, sensors, and basic autonomy workflows. Use when: (1) making Vector speak or animate, (2) driving or positioning the robot, (3) capturing images from camera, (4) reading sensor data (proximity, touch, battery), (5) building look→reason→act autonomy loops with VLM integration. Requires: Wire-Pod server, Vector robot, Python 3.11+."
+description: "Control Anki Vector robot via MCP tools. Speech, motion, camera, sensors. Use when: (1) making Vector speak or move, (2) capturing images, (3) reading sensors, (4) building embodied AI workflows. Requires: Wire-Pod server, Vector robot, Python 3.11+."
 openclaw:
   emoji: "🤖"
   requires:
