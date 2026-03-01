@@ -86,7 +86,7 @@ Return current pose.
 - `angle_deg` — Heading angle in degrees
 - `origin_id` — Pose frame-of-reference identifier (integer). Changes when the robot is picked up and set down, causing relocalization. Poses with different `origin_id` values cannot be directly compared.
 - `is_picked_up` — `true` when Vector is currently picked up off the ground.
-- `localized_to_object_id` — ID of the object the robot's pose is localized to (integer or `null` when not localized to a specific object).
+- `localized_to_object_id` — ID of the object the robot's pose is localized to (integer or `null` when not localized to a specific object). Source: `robot.localized_to_object_id`; SDK reports `-1` when not localized, which is normalized to `null` in the tool response.
 
 **Reference frame semantics:**
 - Robot body frame origin: Point on ground between Vector's front wheels

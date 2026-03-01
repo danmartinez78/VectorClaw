@@ -47,7 +47,7 @@ def _make_robot() -> MagicMock:
     robot.pose.position.z = 0.0
     robot.pose.rotation.angle_z.degrees = 45.0
     robot.pose.origin_id = 1
-    robot.pose.localized_to_object_id = None
+    robot.localized_to_object_id = -1
 
     battery = MagicMock()
     battery.battery_level = 2
