@@ -43,24 +43,14 @@ See [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust mo
 
 ## Current Status
 
-> **v1.0.0 Released** · 2026-02-28
+> **v1.0.0 Released** · 2026-03-01
 
-All core tools verified **PASS** on a production Vector robot with Wire-Pod:
+**16 tools verified ✅** on hardware | **7 tools experimental ⚠️**
 
-| Category | Tools verified |
-|----------|----------------|
-| 🎙️ Speech | `vector_say` |
-| 🏎️ Motion | `vector_drive_off_charger`, `vector_drive` |
-| 👀 Perception | `vector_look`, `vector_capture_image`, `vector_proximity_status` |
-| 🦾 Actuation | `vector_head`, `vector_lift` |
-| 🖼️ Display | `vector_face` |
-| 📊 Status | `vector_status`, `vector_charger_status`, `vector_touch_status` |
-
-**Known limitations (documented):**
-- `vector_drive_on_charger` — unreliable; activates cube but no reliable charger approach
-- Perception detections (faces/objects) — often returns empty lists; SDK detection semantics under investigation
-- Idle behaviors overlap — Vector's autonomous idle animations can mask commanded behaviors
-- No rate limiting on motion commands (v1.1 target)
+**Known limitations:**
+- `vector_drive_on_charger` — activates cube but no reliable charger approach
+- Perception detections — often returns empty lists; SDK semantics under investigation
+- Idle behaviors — Vector's autonomous animations can overlap with commanded behaviors
 
 See [ROADMAP.md](ROADMAP.md) for the full milestone plan.
 
@@ -179,26 +169,38 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 
 ## Available Tools
 
-| Tool | Category | Description |
-|------|----------|-------------|
-| `vector_say` | 🎙️ Speech | Make the robot speak text aloud |
-| `vector_animate` | 🎭 Expression | Play a named animation |
-| `vector_drive_off_charger` | 🏎️ Motion | Drive the robot off its charger |
-| `vector_drive` | 🏎️ Motion | Drive straight and/or turn in place |
-| `vector_drive_on_charger` | 🏎️ Motion | Drive Vector back onto its charger |
-| `vector_look` | 👀 Perception | Capture an image from the front camera |
-| `vector_face` | 🖼️ Display | Display a custom image on the face screen |
-| `vector_head` | 🦾 Actuation | Set head angle (clamped −22° – 45°) |
-| `vector_lift` | 🦾 Actuation | Set lift/arm height (0.0 – 1.0 normalised) |
-| `vector_pose` | 📍 Sensing | Get current position and orientation |
-| `vector_cube` | 🎲 Interaction | Interact with the cube (dock/pickup/drop/roll) |
-| `vector_status` | 📊 Status | Get battery level and charging status |
+| Tool | Category | Description | Status |
+|------|----------|-------------|--------|
+| `vector_say` | 🎙️ Speech | Make the robot speak text aloud | ✅ |
+| `vector_animate` | 🎭 Expression | Play a named animation | ⚠️ |
+| `vector_drive_off_charger` | 🏎️ Motion | Drive the robot off its charger | ✅ |
+| `vector_drive` | 🏎️ Motion | Drive straight and/or turn in place | ✅ |
+| `vector_drive_on_charger` | 🏎️ Motion | Drive Vector back onto its charger | ⚠️ |
+| `vector_emergency_stop` | 🏎️ Motion | Stop all motion immediately | ✅ |
+| `vector_head` | 🦾 Actuation | Set head angle (−22° – 45°) | ✅ |
+| `vector_lift` | 🦾 Actuation | Set lift height (0.0 – 1.0) | ✅ |
+| `vector_look` | 👀 Perception | Capture image from front camera | ✅ |
+| `vector_capture_image` | 👀 Perception | One-shot image capture | ✅ |
+| `vector_face` | 🖼️ Display | Display custom image on face screen | ✅ |
+| `vector_scan` | 🔍 Perception | Head scan for environment | ✅ |
+| `vector_find_faces` | 🔍 Perception | Scan for faces | ⚠️ |
+| `vector_list_visible_faces` | 🔍 Perception | List currently visible faces | ⚠️ |
+| `vector_face_detection` | 🔍 Perception | Get face detection summary | ⚠️ |
+| `vector_list_visible_objects` | 🔍 Perception | List currently visible objects | ⚠️ |
+| `vector_cube` | 🎲 Interaction | Interact with cube (dock/pickup/drop/roll) | ⚠️ |
+| `vector_vision_reset` | 👀 Perception | Disable all vision modes | ✅ |
+| `vector_pose` | 📍 Sensing | Get current position and orientation | ✅ |
+| `vector_status` | 📊 Status | Get battery level and charging status | ✅ |
+| `vector_charger_status` | 📊 Status | Get charger connection state | ✅ |
+| `vector_touch_status` | 📊 Status | Get touch sensor state | ✅ |
+| `vector_proximity_status` | 📊 Status | Get proximity sensor reading | ✅ |
+
+**Status legend:** ✅ Verified on hardware | ⚠️ Experimental (limited/reliable issues)
 
 > ⚠️ **Charger prerequisite:** `vector_drive` requires the robot to be off the charger.
 > Call `vector_drive_off_charger` first, or set `VECTOR_AUTO_DRIVE_OFF_CHARGER=1` for automatic undocking.
-> → [Tool Docking Prerequisites](docs/TOOL_DOCKING_PREREQUISITES.md) for the full matrix.
 
-→ **[docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md)** for full parameter details and response schemas.
+See [docs/MCP_API_REFERENCE.md](docs/MCP_API_REFERENCE.md) for full parameter details and response schemas.
 
 ---
 
