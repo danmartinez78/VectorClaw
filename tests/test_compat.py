@@ -43,7 +43,7 @@ def _make_get_version(version: str | None):
 # ---------------------------------------------------------------------------
 
 def test_below_minimum_python_raises_systemexit(monkeypatch):
-    """Python < 3.10 should raise SystemExit with the compatibility message."""
+    """Python < 3.10 should raise SystemExit with Python version message."""
     monkeypatch.setattr(sys, "version_info", _py(3, 9))
     monkeypatch.setattr(sys, "version", "3.9.0 (default)")
 
@@ -51,8 +51,10 @@ def test_below_minimum_python_raises_systemexit(monkeypatch):
         with pytest.raises(SystemExit) as exc_info:
             check_runtime_compatibility()
 
-    assert _COMPAT_MSG in str(exc_info.value)
-    assert "3.9.0" in str(exc_info.value)
+    # Should mention Python version requirement, not SDK
+    msg = str(exc_info.value)
+    assert "Python 3.10" in msg or "3.10+" in msg
+    assert "3.9.0" in msg
 
 
 def test_below_minimum_python_mentions_supported_version(monkeypatch):
