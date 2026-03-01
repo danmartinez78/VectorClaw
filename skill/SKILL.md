@@ -1,6 +1,6 @@
 ---
 name: vectorclaw-mcp
-description: "Control Anki Vector robot via MCP tools. Speech, motion, camera, sensors. Use when: (1) making Vector speak or move, (2) capturing images, (3) reading sensors, (4) building embodied AI workflows. Requires: Wire-Pod server, Vector robot, Python 3.11+."
+description: "MCP tools for Anki Vector: speech, motion, camera, sensors, and automation workflows."
 openclaw:
   emoji: "🤖"
   requires:
