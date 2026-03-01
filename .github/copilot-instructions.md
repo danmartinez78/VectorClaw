@@ -10,7 +10,7 @@
 
 **Before implementing or modifying ANY tool that interacts with the SDK, you MUST:**
 
-1. **Read the authoritative SDK surface reference:** `docs/WIREPOD_SDK_SURFACE_REFERENCE.md`
+1. **Read the authoritative SDK surface reference:** `docs/VECTOR_SDK_REFERENCE.md`
 2. **Verify all property names, method signatures, and behavior against this doc**
 3. **Do NOT assume field names or behavior** — check the reference
 
