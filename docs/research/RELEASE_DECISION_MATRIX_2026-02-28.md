@@ -1,4 +1,4 @@
-# Release Decision Matrix — 2026-02-28
+# Release Decision Matrix - 2026-02-28
 
 ## Purpose
 Decide between:
@@ -36,11 +36,11 @@ Decide between:
 
 ## Roadmap Staleness Highlights (initial)
 
-1. **Milestone wording implies broad “all tools tested and working”** as hardware-validation target.
+1. **Milestone wording implies broad "all tools tested and working"** as hardware-validation target.
    - Actual state now is mixed (clear MVP subset + known non-functional areas).
 
 2. **v1 release criteria likely under-specify capability tiers**.
-   - Need explicit “MVP guaranteed tools” vs “known-limited tools”.
+   - Need explicit "MVP guaranteed tools" vs "known-limited tools".
 
 3. **Emergency stop confidence is not represented with sync/async nuance**.
    - Current path is command-acknowledged but interrupt semantics are limited.
@@ -55,7 +55,7 @@ Decide between:
 
 ## Decision Criteria
 
-Score each option 1–5 (5 best). Weight can be adjusted.
+Score each option 1-5 (5 best). Weight can be adjusted.
 
 | Criterion | Weight | Ship Now (MVP) | Fix First |
 |---|---:|---:|---:|
@@ -70,7 +70,7 @@ Score each option 1–5 (5 best). Weight can be adjusted.
 
 ---
 
-## Option A — Ship Now (MVP Scope)
+## Option A - Ship Now (MVP Scope)
 
 ### Publicly supported tool subset
 - status/charger-status
@@ -95,7 +95,7 @@ Score each option 1–5 (5 best). Weight can be adjusted.
 
 ---
 
-## Option B — Fix First, Then Release
+## Option B - Fix First, Then Release
 
 ### Suggested pre-release fixes
 - `vector_head` type bug
@@ -117,7 +117,7 @@ Score each option 1–5 (5 best). Weight can be adjusted.
 ## Open Questions to Resolve Before Final Decision
 
 1. Do we want first release to be **capability-complete** or **honest MVP subset**?
-2. Is “look→reason→act via external VLM” acceptable as core autonomy story for v1?
+2. Is "look→reason→act via external VLM" acceptable as core autonomy story for v1?
 3. Should non-functional tools be hidden/de-scoped from README until fixed?
 4. What minimum bar do we require for charger return and stop semantics before public launch?
 
@@ -125,20 +125,3 @@ Score each option 1–5 (5 best). Weight can be adjusted.
 
 ## Next Step
 Populate matrix scores with Dan, choose Option A or B, then align ROADMAP.md + README + release notes with that decision.
-
----
-
-## Future Easter Egg Ideas (v1.1+)
-
-**Not implemented in v1.0.0 — would need additional testing:**
-
-1. **Log message on connect** — `"A Tachikoma awakens."` appears in server logs
-2. **Special `vector_say` trigger** — saying "natural oil" makes robot respond with a Tachikoma quote
-3. **Hidden tool** — `vector_philosophize()` returns a random Tachikoma quote about consciousness/ghosts
-
-Current v1.0.0 easter eggs are code comments only — no runtime behavior changes.
-
-**Safety/UX considerations (if implemented):**
-- Hidden triggers create non-obvious behavior that can surprise users and complicate support
-- Prefer explicit opt-in via config flag
-- Character quotes in runtime output should verify licensing compatibility
