@@ -24,8 +24,9 @@ VectorClaw is an MCP server that exposes [Anki Vector](https://github.com/kercre
 └─────────────┘                 └──────────────────┘                 └─────────┘
 ```
 
-All communication is **local-only** — no cloud dependency at runtime (Wire-Pod setup path).  
-→ [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust model.
+All communication is **local-only** — no cloud dependency at runtime (Wire-Pod setup path).
+
+See [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust model.
 
 ---
 
@@ -61,7 +62,7 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 - Idle behaviors overlap — Vector's autonomous idle animations can mask commanded behaviors
 - No rate limiting on motion commands (v1.1 target)
 
-→ [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.
+See [ROADMAP.md](ROADMAP.md) for the full milestone plan.
 
 ---
 
