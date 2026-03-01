@@ -1,35 +1,25 @@
 ---
 name: vectorclaw-mcp
 description: "Control Anki/Digital Dream Labs Vector robot via MCP tools. Speech, motion, camera, sensors, and basic autonomy workflows. Use when: (1) making Vector speak or animate, (2) driving or positioning the robot, (3) capturing images from camera, (4) reading sensor data (proximity, touch, battery), (5) building look→reason→act autonomy loops with VLM integration. Requires: Wire-Pod server, Vector robot, Python 3.11+."
-metadata:
-  {
-    "openclaw":
-      {
-        "emoji": "🤖",
-        "requires": { "bins": ["python3"], "env": ["VECTOR_SERIAL"] },
-        "install":
-          [
-            {
-              "id": "pip",
-              "kind": "pip",
-              "package": "vectorclaw-mcp",
-              "label": "Install VectorClaw MCP (pip)",
-            },
-          ],
-        "mcp":
-          {
-            "servers":
-              {
-                "vectorclaw":
-                  {
-                    "command": "python",
-                    "args": ["-m", "vectorclaw_mcp.server"],
-                    "env": { "VECTOR_SERIAL": "${VECTOR_SERIAL}" },
-                  },
-              },
-          },
-      },
-  }
+openclaw:
+  emoji: "🤖"
+  requires:
+    bins: ["python3"]
+    env: ["VECTOR_SERIAL"]
+  install:
+    - id: pip
+      kind: pip
+      package: vectorclaw-mcp
+      label: "Install VectorClaw MCP (pip)"
+  mcp:
+    servers:
+      vectorclaw:
+        command: python3
+        args:
+          - "-m"
+          - "vectorclaw_mcp.server"
+        env:
+          VECTOR_SERIAL: "${VECTOR_SERIAL}"
 ---
 
 # VectorClaw MCP Skill
@@ -67,11 +57,11 @@ Control your Vector robot through OpenClaw using MCP tools. Enables speech, moti
 ## Setup
 
 ### 1. Install Wire-Pod
-See: https://github.com/nguyenmas/WirePod
+See: https://github.com/kercre123/wire-pod
 
 ### 2. Configure Vector SDK
 ```bash
-python3 -m wirepod_vector_sdk.configure
+python3 -m anki_vector.configure
 ```
 
 ### 3. Set environment variable
@@ -84,7 +74,7 @@ export VECTOR_SERIAL=your-serial-here  # e.g., 00a1546c
 {
   "mcpServers": {
     "vectorclaw": {
-      "command": "python",
+      "command": "python3",
       "args": ["-m", "vectorclaw_mcp.server"],
       "env": {
         "VECTOR_SERIAL": "${VECTOR_SERIAL}"
@@ -112,11 +102,10 @@ export VECTOR_SERIAL=your-serial-here  # e.g., 00a1546c
 
 ## Known Limitations
 
-- **Head control:** Currently broken (type error)
+- **Head control:** Currently broken (type error) — see issue #131
 - **Drive on charger:** Unreliable timeout behavior
 - **Perception detections:** Face/object lists often empty
 - **Emergency stop:** Limited by sync motion path
-- **Pose metadata:** Missing origin_id for delocalization detection
 
 ## Autonomy Note
 
