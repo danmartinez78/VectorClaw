@@ -14,8 +14,7 @@ openclaw:
   mcp:
     servers:
       vectorclaw:
-        command: python3
-        args: ["-m", "vectorclaw_mcp.server"]
+        command: vectorclaw-mcp
         env:
           VECTOR_SERIAL: "${VECTOR_SERIAL}"
 ---
@@ -55,8 +54,7 @@ For see → reason → act workflows, the agent must either be vision-capable it
 {
   "mcpServers": {
     "vectorclaw": {
-      "command": "python3",
-      "args": ["-m", "vectorclaw_mcp.server"],
+      "command": "vectorclaw-mcp",
       "env": { "VECTOR_SERIAL": "${VECTOR_SERIAL}" }
     }
   }
