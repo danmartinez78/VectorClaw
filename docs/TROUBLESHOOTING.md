@@ -42,7 +42,7 @@
   - Confirm the robot camera has line-of-sight to the subject (correct head angle, adequate lighting).
 
 ### 6) `vector_drive_on_charger` times out with no robot motion
-- **Symptom:** Tool returns `timed_out: true` and motors stop, but Vector never approached the charger.
+- **Symptom:** Tool returns `timed_out: true` and attempts a motor stop as a fallback (see `motors_stopped` in the response), but Vector never approached the charger.
 - **Cause (precondition):** `drive_on_charger` requires the charger to be present in Vector's recently-observed world model. If Vector has not seen the charger in the current session the SDK command has nothing to navigate to.
 - **Action:**
   1. Place the charger in Vector's field of view.
