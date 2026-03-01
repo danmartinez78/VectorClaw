@@ -98,13 +98,16 @@ export VECTOR_SERIAL=your-serial-here  # e.g., 00a1546c
 | `vector_charger_status` | Read charger connection state | ✅ |
 | `vector_look` | Capture image (feed path) | ✅ |
 | `vector_capture_image` | Capture image (one-shot) | ✅ |
-| `vector_proximity_status` | Read proximity sensor | ✅ (with caveats) |
+| `vector_proximity_status` | Read proximity sensor | ✅ |
 | `vector_pose` | Read current pose | ✅ |
+| `vector_head` | Control head angle | ✅ |
+| `vector_face` | Display image on screen | ✅ |
 
 ## Known Limitations
 
-- **Drive on charger:** Unreliable timeout behavior
-- **Perception detections:** Face/object lists often empty
+- **Drive on charger:** Unreliable; activates cube but no reliable charger approach
+- **Perception detections:** Face/object lists often empty; SDK detection semantics under investigation
+- **Idle behaviors:** Vector's autonomous animations can overlap with commanded behaviors
 - **Emergency stop:** Limited by sync motion path
 
 ## Autonomy Note

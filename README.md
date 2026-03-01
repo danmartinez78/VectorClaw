@@ -51,13 +51,14 @@ All core tools verified **PASS** on a production Vector robot with Wire-Pod:
 | 🎙️ Speech | `vector_say` |
 | 🏎️ Motion | `vector_drive_off_charger`, `vector_drive` |
 | 👀 Perception | `vector_look`, `vector_capture_image`, `vector_proximity_status` |
-| 🦾 Actuation | `vector_lift` |
+| 🦾 Actuation | `vector_head`, `vector_lift` |
+| 🖼️ Display | `vector_face` |
 | 📊 Status | `vector_status`, `vector_charger_status`, `vector_touch_status` |
 
 **Known limitations (documented):**
-- `vector_head` — runtime error, documented as FAIL
-- `vector_drive_on_charger` — unreliable, may timeout
-- Perception detections (faces/objects) — limited functionality
+- `vector_drive_on_charger` — unreliable; activates cube but no reliable charger approach
+- Perception detections (faces/objects) — often returns empty lists; SDK detection semantics under investigation
+- Idle behaviors overlap — Vector's autonomous idle animations can mask commanded behaviors
 - No rate limiting on motion commands (v1.1 target)
 
 → [ROADMAP.md](ROADMAP.md) for the full v1.0 milestone plan.
