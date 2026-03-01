@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vectorclaw-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "MCP server connecting Anki Vector robots to AI assistants via Wire-Pod"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
     "mcp>=1.0.0",
-    "wirepod_vector_sdk>=0.1.0",
+    "wirepod_vector_sdk>=0.8.0",
     "Pillow>=9.0.0",
     "packaging>=21.0",
 ]
