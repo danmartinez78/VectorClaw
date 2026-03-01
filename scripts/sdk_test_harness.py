@@ -20,7 +20,7 @@ import traceback
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import anki_vector
-from anki_vector.util import degrees, distance_mm, speed_mmps
+from anki_vector.util import degrees, distance_mm, speed_mmps, Pose, Angle
 
 # ---------------------------------------------------------------------------
 # Animation list cache — loaded lazily on first use instead of at startup.
@@ -68,7 +68,7 @@ def info_battery(robot):
     print(f"  Battery voltage : {b.battery_volts:.2f} V")
     print(f"  Battery level   : {b.battery_level}")
     print(f"  Is charging     : {b.is_charging}")
-    print(f"  Is on charger   : {b.is_on_charger}")
+    print(f"  Is on charger   : {b.is_on_charger_platform}")
     print(f"  Suggested charger sec: {b.suggested_charger_sec}")
 
 def info_version(robot):
@@ -108,7 +108,7 @@ def info_status_flags(robot):
         ("are_wheels_moving",   s.are_wheels_moving),
         ("is_robot_moving",     s.is_robot_moving),
         ("is_button_pressed",   s.is_button_pressed),
-        ("calm_power_mode",     s.calm_power_mode),
+        ("is_in_calm_power_mode", s.is_in_calm_power_mode),
     ]
     for name, val in flags:
         print(f"  {name:25s}: {val}")
@@ -176,6 +176,16 @@ def move_look_around(robot):
     result = robot.behavior.look_around_in_place()
     print(f"  Result: {result}")
 
+def move_go_to_pose(robot):
+    """Go to a specific pose (x, y, angle) relative to robot."""
+    x = float(_safe_input("  X position (mm)", "100"))
+    y = float(_safe_input("  Y position (mm)", "0"))
+    angle = float(_safe_input("  Angle (degrees)", "0"))
+    print(f"  Navigating to ({x}, {y}) at {angle} degrees ...")
+    pose = Pose(x=x, y=y, z=0, angle_z=Angle(degrees=angle))
+    result = robot.behavior.go_to_pose(pose, relative_to_robot=True)
+    print(f"  Result: {result}")
+
 def move_find_faces(robot):
     """Turn in place looking for faces."""
     print("  Searching for faces ...")
@@ -223,6 +233,11 @@ def motors_lift(robot):
     time.sleep(dur)
     robot.motors.set_lift_motor(0)
     print("  Stopped.")
+
+def motors_stop_all(robot):
+    """Emergency stop all motors."""
+    robot.motors.stop_all_motors()
+    print("  All motors stopped.")
 
 
 # ---- Animations -----------------------------------------------------------
@@ -482,11 +497,341 @@ def world_cube(robot):
 
 def faces_known(robot):
     """List known/enrolled faces."""
-    names = robot.faces.known_face_names
-    count = robot.faces.face_count
-    print(f"  {count} known face(s):")
-    for n in names:
-        print(f"    - {n}")
+    response = robot.faces.request_enrolled_names()
+    faces = list(response.faces)
+    print(f"  {len(faces)} known face(s):")
+    for f in faces:
+        print(f"    - {f.name} (id={f.face_id})")
+
+def faces_rename(robot):
+    """Rename an enrolled face."""
+    response = robot.faces.request_enrolled_names()
+    faces_list = list(response.faces)
+    if not faces_list:
+        print("  No enrolled faces to rename.")
+        return
+    print("  Enrolled faces:")
+    for f in faces_list:
+        print(f"    ID {f.face_id}: {f.name}")
+    face_id = int(_safe_input("  Face ID to rename"))
+    old_name = _safe_input("  Current name (must match exactly)")
+    new_name = _safe_input("  New name")
+    result = robot.faces.update_enrolled_face_by_id(face_id, old_name, new_name)
+    print(f"  Result: {result}")
+
+def faces_erase_one(robot):
+    """Erase a single enrolled face by ID."""
+    response = robot.faces.request_enrolled_names()
+    faces_list = list(response.faces)
+    if not faces_list:
+        print("  No enrolled faces to erase.")
+        return
+    print("  Enrolled faces:")
+    for f in faces_list:
+        print(f"    ID {f.face_id}: {f.name}")
+    face_id = int(_safe_input("  Face ID to erase"))
+    result = robot.faces.erase_enrolled_face_by_id(face_id)
+    print(f"  Result: {result}")
+
+def faces_erase_all(robot):
+    """Erase ALL enrolled faces (use with caution!)."""
+    confirm = _safe_input("  This will delete ALL enrolled faces. Type 'yes' to confirm", "no")
+    if confirm.lower() != 'yes':
+        print("  Cancelled.")
+        return
+    result = robot.faces.erase_all_enrolled_faces()
+    print(f"  Result: {result}")
+
+def faces_visible(robot):
+    """List currently visible faces."""
+    vis = list(robot.world.visible_faces)
+    if not vis:
+        print("  No faces currently visible.")
+        return
+    print(f"  {len(vis)} visible face(s):")
+    for f in vis:
+        print(f"    Face ID: {f.face_id}, Name: {f.name}, Expression: {f.expression}")
+
+
+# ---- Cube Management ------------------------------------------------------
+
+def cube_connect(robot):
+    """Connect to the light cube."""
+    print("  Connecting to cube ...")
+    result = robot.world.connect_cube()
+    print(f"  Result: {result}")
+    cube = robot.world.connected_light_cube
+    if cube:
+        print(f"  Connected cube: {cube}")
+    else:
+        print("  No cube connected.")
+
+def cube_disconnect(robot):
+    """Disconnect from the light cube."""
+    result = robot.world.disconnect_cube()
+    print(f"  Result: {result}")
+
+def cube_flash_lights(robot):
+    """Flash the cube lights (default animation)."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    result = robot.world.flash_cube_lights()
+    print(f"  Result: {result}")
+
+def cube_set_color(robot):
+    """Set cube lights to a color."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    print("  Available colors: green, red, blue, cyan, magenta, yellow, white, off")
+    color_name = _safe_input("  Color", "blue").lower()
+    color_map = {
+        'green': anki_vector.lights.green_light,
+        'red': anki_vector.lights.red_light,
+        'blue': anki_vector.lights.blue_light,
+        'cyan': anki_vector.lights.cyan_light,
+        'magenta': anki_vector.lights.magenta_light,
+        'yellow': anki_vector.lights.yellow_light,
+        'white': anki_vector.lights.white_light,
+        'off': anki_vector.lights.off_light,
+    }
+    light = color_map.get(color_name)
+    if not light:
+        print(f"  Unknown color: {color_name}")
+        return
+    cube.set_lights(light)
+    print(f"  Cube lights set to {color_name}.")
+    dur = float(_safe_input("  Duration to hold (seconds)", "5"))
+    time.sleep(dur)
+    cube.set_lights_off()
+    print("  Cube lights off.")
+
+def cube_set_corners(robot):
+    """Set each cube corner to a different color."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    cube.set_light_corners(
+        anki_vector.lights.red_light,
+        anki_vector.lights.green_light,
+        anki_vector.lights.blue_light,
+        anki_vector.lights.white_light)
+    print("  Cube corners: red, green, blue, white")
+    dur = float(_safe_input("  Duration to hold (seconds)", "5"))
+    time.sleep(dur)
+    cube.set_lights_off()
+    print("  Cube lights off.")
+
+def cube_info_detailed(robot):
+    """Show detailed cube status."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected.")
+        cube = robot.world.light_cube
+        if cube:
+            print(f"  Known cube (not connected): {cube}")
+        return
+    print(f"  Cube object       : {cube}")
+    print(f"  Object ID         : {cube.object_id}")
+    print(f"  Factory ID        : {cube.factory_id}")
+    print(f"  Is connected      : {cube.is_connected}")
+    print(f"  Is visible        : {cube.is_visible}")
+    print(f"  Is moving         : {cube.is_moving}")
+    print(f"  Pose              : {cube.pose}")
+
+
+# ---- Object Interaction ---------------------------------------------------
+
+def obj_roll_visible_cube(robot):
+    """Roll the visible cube (Vector must see it)."""
+    print("  Rolling visible cube ...")
+    result = robot.behavior.roll_visible_cube()
+    print(f"  Result: {result}")
+
+def obj_dock_with_cube(robot):
+    """Dock with the connected cube."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    print("  Docking with cube ...")
+    result = robot.behavior.dock_with_cube(cube)
+    print(f"  Result: {result}")
+
+def obj_go_to_cube(robot):
+    """Drive to the connected cube."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    dist = float(_safe_input("  Stop distance from cube (mm)", "70"))
+    print(f"  Driving to cube (stopping {dist}mm away) ...")
+    result = robot.behavior.go_to_object(cube, distance_mm(dist))
+    print(f"  Result: {result}")
+
+def obj_roll_cube(robot):
+    """Roll a specific cube object."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    print("  Rolling cube ...")
+    result = robot.behavior.roll_cube(cube)
+    print(f"  Result: {result}")
+
+def obj_pop_a_wheelie(robot):
+    """Pop a wheelie using the cube."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    print("  Popping a wheelie ...")
+    result = robot.behavior.pop_a_wheelie(cube)
+    print(f"  Result: {result}")
+
+def obj_pickup_object(robot):
+    """Pick up the connected cube."""
+    cube = robot.world.connected_light_cube
+    if not cube:
+        print("  No cube connected. Connect first.")
+        return
+    print("  Picking up cube ...")
+    result = robot.behavior.pickup_object(cube)
+    print(f"  Result: {result}")
+
+def obj_place_on_ground(robot):
+    """Place the currently held object on the ground."""
+    print("  Placing object on ground ...")
+    result = robot.behavior.place_object_on_ground_here()
+    print(f"  Result: {result}")
+
+
+# ---- Navigation Map -------------------------------------------------------
+
+def nav_map_snapshot(robot):
+    """Take a nav map snapshot and show summary."""
+    print("  Starting nav map feed ...")
+    robot.nav_map.init_nav_map_feed(frequency=2.0)
+    print("  Waiting for nav map data (drive around to populate) ...")
+    time.sleep(3)
+    nav_map = robot.nav_map.latest_nav_map
+    if nav_map is None:
+        print("  No nav map data received yet.")
+    else:
+        print(f"  Nav map center   : {nav_map.center}")
+        print(f"  Nav map size     : {nav_map.size}")
+    robot.nav_map.close_nav_map_feed()
+    print("  Nav map feed closed.")
+
+
+# ---- Events ---------------------------------------------------------------
+
+def events_monitor_faces(robot):
+    """Monitor face events for a few seconds."""
+    from anki_vector.events import Events as Ev
+    seen = []
+    def on_face(r, event_type, event):
+        seen.append(event)
+        print(f"  [FACE EVENT] {event_type}: {event}")
+    robot.events.subscribe(on_face, Ev.robot_observed_face)
+    robot.vision.enable_face_detection(detect_faces=True)
+    dur = float(_safe_input("  Monitor duration (seconds)", "10"))
+    print(f"  Monitoring face events for {dur}s (look at Vector!) ...")
+    time.sleep(dur)
+    robot.events.unsubscribe(on_face, Ev.robot_observed_face)
+    print(f"  Done. {len(seen)} face event(s) received.")
+
+def events_monitor_objects(robot):
+    """Monitor object events for a few seconds."""
+    from anki_vector.events import Events as Ev
+    seen = []
+    def on_obj(r, event_type, event):
+        seen.append(event)
+        print(f"  [OBJECT EVENT] {event_type}: {event}")
+    robot.events.subscribe(on_obj, Ev.robot_observed_object)
+    dur = float(_safe_input("  Monitor duration (seconds)", "10"))
+    print(f"  Monitoring object events for {dur}s ...")
+    time.sleep(dur)
+    robot.events.unsubscribe(on_obj, Ev.robot_observed_object)
+    print(f"  Done. {len(seen)} object event(s) received.")
+
+def events_monitor_touch(robot):
+    """Monitor wake word and touch events."""
+    from anki_vector.events import Events as Ev
+    seen = []
+    def on_event(r, event_type, event):
+        seen.append(event)
+        print(f"  [EVENT] {event_type}: {event}")
+    robot.events.subscribe(on_event, Ev.wake_word)
+    robot.events.subscribe(on_event, Ev.object_tapped)
+    dur = float(_safe_input("  Monitor duration (seconds)", "15"))
+    print(f"  Monitoring wake word + object tap events for {dur}s ...")
+    time.sleep(dur)
+    robot.events.unsubscribe(on_event, Ev.wake_word)
+    robot.events.unsubscribe(on_event, Ev.object_tapped)
+    print(f"  Done. {len(seen)} event(s) received.")
+
+
+# ---- Settings / Intents ---------------------------------------------------
+
+def settings_app_intent(robot):
+    """Send an app intent (e.g. sleep, explore, come here)."""
+    print("  Common intents:")
+    print("    intent_system_sleep        - Go to sleep")
+    print("    intent_greeting_hello      - Greeting")
+    print("    intent_imperative_come     - Come here")
+    print("    intent_play_fistbump       - Fist bump")
+    print("    intent_clock_settimer      - Set timer (param = seconds)")
+    intent = _safe_input("  Intent", "intent_greeting_hello")
+    param = _safe_input("  Param (optional, Enter to skip)", "")
+    if param.isdigit():
+        param = int(param)
+    elif param == "":
+        param = None
+    result = robot.behavior.app_intent(intent, param)
+    print(f"  Result: {result}")
+
+def settings_update(robot):
+    """Update robot settings (volume, locale, etc.)."""
+    print("  Available settings keys:")
+    print("    locale, master_volume, clock_24_hour, temp_is_fahrenheit, dist_is_metric")
+    key = _safe_input("  Setting key", "locale")
+    value = _safe_input("  Value", "en_US")
+    if value.lower() in ('true', 'false'):
+        value = value.lower() == 'true'
+    settings = {key: value}
+    result = robot.behavior.update_settings(settings)
+    print(f"  Result: {result}")
+
+
+# ---- Photos (extended) ----------------------------------------------------
+
+def photos_download(robot):
+    """Download a photo by ID and save to file."""
+    try:
+        from PIL import Image
+        import io
+    except ImportError:
+        print("  ERROR: Pillow is required. pip install Pillow")
+        return
+    robot.photos.load_photo_info()
+    photos = robot.photos.photo_info
+    if not photos:
+        print("  No photos stored on robot.")
+        return
+    print(f"  {len(photos)} photo(s) available:")
+    for p in photos:
+        print(f"    ID: {p.photo_id}  Timestamp: {p.timestamp_utc}")
+    photo_id = int(_safe_input("  Photo ID to download", str(photos[0].photo_id)))
+    photo = robot.photos.get_photo(photo_id)
+    image = Image.open(io.BytesIO(photo.image))
+    filename = _safe_input("  Save filename", f"vector_photo_{photo_id}.png")
+    image.save(filename)
+    print(f"  Image saved to {filename}  (size: {image.size})")
 
 
 # ---- Composite tests ------------------------------------------------------
@@ -568,6 +913,7 @@ CATEGORIES = [
         ("Drive on charger", move_drive_on_charger),
         ("Drive straight", move_drive_straight),
         ("Turn in place", move_turn_in_place),
+        ("Go to pose (relative)", move_go_to_pose),
         ("Set head angle", move_set_head_angle),
         ("Set lift height", move_set_lift_height),
         ("Look around in place", move_look_around),
@@ -578,6 +924,7 @@ CATEGORIES = [
         ("Wheel motors", motors_wheels),
         ("Head motor", motors_head),
         ("Lift motor", motors_lift),
+        ("STOP all motors", motors_stop_all),
     ]),
     ("Animations", [
         ("List animation triggers", anim_list_triggers),
@@ -612,14 +959,48 @@ CATEGORIES = [
     ]),
     ("Photos", [
         ("List stored photos", photos_list),
+        ("Download photo by ID", photos_download),
     ]),
     ("World", [
         ("All known objects", world_objects),
         ("Currently visible objects", world_visible),
         ("Light cube info", world_cube),
     ]),
+    ("Cube Management", [
+        ("Connect to cube", cube_connect),
+        ("Disconnect from cube", cube_disconnect),
+        ("Flash cube lights", cube_flash_lights),
+        ("Set cube color", cube_set_color),
+        ("Set cube corner colors", cube_set_corners),
+        ("Detailed cube status", cube_info_detailed),
+    ]),
+    ("Object Interaction", [
+        ("Roll visible cube", obj_roll_visible_cube),
+        ("Dock with cube", obj_dock_with_cube),
+        ("Drive to cube", obj_go_to_cube),
+        ("Roll cube (specific)", obj_roll_cube),
+        ("Pop a wheelie", obj_pop_a_wheelie),
+        ("Pick up cube", obj_pickup_object),
+        ("Place object on ground", obj_place_on_ground),
+    ]),
     ("Face Recognition", [
         ("Known / enrolled faces", faces_known),
+        ("Rename enrolled face", faces_rename),
+        ("Erase one enrolled face", faces_erase_one),
+        ("Erase ALL enrolled faces", faces_erase_all),
+        ("Currently visible faces", faces_visible),
+    ]),
+    ("Navigation Map", [
+        ("Nav map snapshot", nav_map_snapshot),
+    ]),
+    ("Event Monitoring", [
+        ("Monitor face events", events_monitor_faces),
+        ("Monitor object events", events_monitor_objects),
+        ("Monitor wake word + tap events", events_monitor_touch),
+    ]),
+    ("Settings / Intents", [
+        ("Send app intent", settings_app_intent),
+        ("Update robot settings", settings_update),
     ]),
     ("Composite Tests", [
         ("Full motion test", test_full_motion),
@@ -699,3 +1080,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
