@@ -1,2 +1,2 @@
-# Require review from the code owner on all changes
+# Set the default code owner for all changes (required reviews are configured via branch protection)
 * @danmartinez78
