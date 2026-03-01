@@ -33,6 +33,23 @@
   - search for `<<<<<<<`, `=======`, `>>>>>>>`
   - validate test contracts against actual return payloads
 
+### 5) Perception tools return empty results
+- **Symptom:** `vector_find_faces`, `vector_list_visible_faces`, `vector_face_detection`, or `vector_list_visible_objects` always return empty arrays even when objects/faces are present.
+- **Cause (precondition):** Vision modes must be active for these tools to populate results. Vision modes are enabled automatically at connect time; however, calling `vector_vision_reset` disables them for the remainder of the session.
+- **Action:**
+  - Do **not** call `vector_vision_reset` before using perception tools in the same session.
+  - If `vector_vision_reset` was already called, reconnect the MCP server to restore vision mode enablement.
+  - Confirm the robot camera has line-of-sight to the subject (correct head angle, adequate lighting).
+
+### 6) `vector_drive_on_charger` times out with no robot motion
+- **Symptom:** Tool returns `timed_out: true` and attempts a motor stop as a fallback (see `motors_stopped` in the response), but Vector never approached the charger.
+- **Cause (precondition):** `drive_on_charger` requires the charger to be present in Vector's recently-observed world model. If Vector has not seen the charger in the current session the SDK command has nothing to navigate to.
+- **Action:**
+  1. Place the charger in Vector's field of view.
+  2. Call `vector_scan` to let Vector observe and register the charger in its world model.
+  3. Then call `vector_drive_on_charger`.
+- **Note:** Calling `vector_drive_on_charger` while already docked returns `{status: ok, already_on_charger: true}` immediately — this is expected behavior.
+
 ## Smoke Test Baseline (Recommended)
 - `vector_status`
 - `vector_say`

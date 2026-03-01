@@ -51,9 +51,9 @@ See [Security Architecture](docs/SECURITY_ARCHITECTURE.md) for the full trust mo
 **16 tools verified ✅** on hardware | **7 tools experimental ⚠️**
 
 **Known limitations:**
-- `vector_drive_on_charger` — activates cube but no reliable charger approach
-- Perception detections — often returns empty lists; SDK semantics under investigation
-- Idle behaviors — Vector's autonomous animations can overlap with commanded behaviors
+- `vector_drive_on_charger` — requires the charger to be in Vector's recently-observed world model; call `vector_scan` first to give Vector a chance to locate the charger before attempting to dock (observed: invoking while charger is unobserved causes the command to time out without any robot motion)
+- Perception tools (`vector_find_faces`, `vector_list_visible_faces`, `vector_face_detection`, `vector_list_visible_objects`) — return empty results when vision modes are not active; vision modes are enabled automatically at connect but will be disabled for the remainder of the session after a `vector_vision_reset` call (reconnect to restore)
+- Idle behaviors — Vector's autonomous animations can overlap with commanded behaviors; use one-command-at-a-time sequencing and wait for completion before issuing the next command
 
 See **[ROADMAP.md](ROADMAP.md)** for the full milestone plan.
 
@@ -198,7 +198,7 @@ Add the following block to your `mcporter.json` (or equivalent MCP client config
 | `vector_touch_status` | 📊 Status | Get touch sensor state | ✅ |
 | `vector_proximity_status` | 📊 Status | Get proximity sensor reading | ✅ |
 
-**Status legend:** ✅ Verified on hardware | ⚠️ Experimental (limited/reliable issues)
+**Status legend:** ✅ Verified on hardware | ⚠️ Experimental (requires specific preconditions; see [API Reference](docs/MCP_API_REFERENCE.md))
 
 > ⚠️ **Charger prerequisite:** `vector_drive` requires the robot to be off the charger.
 > Call `vector_drive_off_charger` first, or set `VECTOR_AUTO_DRIVE_OFF_CHARGER=1` for automatic undocking.
