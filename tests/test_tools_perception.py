@@ -476,7 +476,7 @@ def test_vector_enable_face_detection_enable(mock_robot):
 
     result = vector_enable_face_detection(enable=True)
 
-    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True, estimate_expression=True)
     assert result == {"status": "ok", "face_detection_enabled": True}
 
 
@@ -494,7 +494,7 @@ def test_vector_enable_face_detection_default(mock_robot):
 
     result = vector_enable_face_detection()
 
-    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True)
+    mock_robot.vision.enable_face_detection.assert_called_once_with(detect_faces=True, estimate_expression=True)
     assert result["face_detection_enabled"] is True
 
 

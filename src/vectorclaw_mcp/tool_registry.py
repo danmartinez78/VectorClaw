@@ -346,7 +346,6 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
         "vector_list_visible_objects": _tools_perception.vector_list_visible_objects,
         "vector_capture_image": _tools_perception.vector_capture_image,
         "vector_face_detection": _tools_perception.vector_face_detection,
-        "vector_vision_reset": _tools_perception.vector_vision_reset,
         "vector_enable_face_detection": lambda: _tools_perception.vector_enable_face_detection(
             enable=arguments.get("enable", True),
         ),
@@ -354,6 +353,7 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
             enable=arguments.get("enable", True),
         ),
         "vector_vision_status": _tools_perception.vector_vision_status,
+        "vector_vision_reset": _tools_perception.vector_vision_reset,
         "vector_charger_status": _tools_perception.vector_charger_status,
         "vector_touch_status": _tools_perception.vector_touch_status,
         "vector_proximity_status": _tools_perception.vector_proximity_status,

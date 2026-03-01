@@ -200,7 +200,10 @@ def vector_enable_face_detection(enable: bool = True) -> dict:
     """Enable or disable face detection via vision.enable_face_detection."""
     robot = _robot()
     try:
-        robot.vision.enable_face_detection(detect_faces=enable)
+        if enable:
+            robot.vision.enable_face_detection(detect_faces=True, estimate_expression=True)
+        else:
+            robot.vision.enable_face_detection(detect_faces=False)
     except Exception as exc:
         return {"status": "error", "message": str(exc)}
     return {"status": "ok", "face_detection_enabled": enable}
