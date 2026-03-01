@@ -92,17 +92,17 @@ export VECTOR_SERIAL=your-serial-here  # e.g., 00a1546c
 | `vector_say` | Text-to-speech | ✅ |
 | `vector_drive_off_charger` | Drive off charging dock | ✅ |
 | `vector_drive` | Drive straight or turn | ✅ |
+| `vector_head` | Control head angle | ✅ |
 | `vector_lift` | Control lift height | ✅ |
 | `vector_touch_status` | Read touch sensor state | ✅ |
 | `vector_charger_status` | Read charger connection state | ✅ |
 | `vector_look` | Capture image (feed path) | ✅ |
 | `vector_capture_image` | Capture image (one-shot) | ✅ |
 | `vector_proximity_status` | Read proximity sensor | ✅ (with caveats) |
-| `vector_pose` | Read current pose | ✅ (happy path) |
+| `vector_pose` | Read current pose | ✅ |
 
 ## Known Limitations
 
-- **Head control:** Currently broken (type error) — see issue #131
 - **Drive on charger:** Unreliable timeout behavior
 - **Perception detections:** Face/object lists often empty
 - **Emergency stop:** Limited by sync motion path
