@@ -18,111 +18,37 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
-## Milestone 1: Hardware Validation
+## Milestones 1–5 (Completed Archive)
 
-**Goal:** Verify all tools work with real Vector robot
+These were completed during the v1.0.0 release push and are retained as historical checkpoints.
 
-**Exit Criteria:**
-- [ ] Wire-Pod running (platform of choice)
-- [ ] Vector robot configured (firmware, WiFi, SDK auth)
-- [ ] All 12 tools tested and working:
-  - [ ] `vector_say` — TTS
-  - [ ] `vector_animate` — Animations
-  - [ ] `vector_drive` — Movement
-  - [ ] `vector_look` — Camera capture
-  - [ ] `vector_face` — Face display
-  - [ ] `vector_pose` — Position
-  - [ ] `vector_cube` — Cube interaction
-  - [ ] `vector_status` — Battery/status
-  - [ ] `vector_scan` — Look around in place (perception discovery)
-  - [ ] `vector_find_faces` — Find faces behavior (perception discovery)
-  - [ ] `vector_list_visible_faces` — List currently visible faces (perception discovery)
-  - [ ] `vector_list_visible_objects` — List currently visible objects (perception discovery)
-- [ ] No crashes on happy path
+### Milestone 1: Hardware Validation (v0.2.0) ✅
+- [x] Wire-Pod running
+- [x] Vector configured (firmware/WiFi/SDK auth)
+- [x] Core tooling validated on real hardware
+- [x] Happy-path stability confirmed
 
-**Version:** v0.2.0
+### Milestone 2: Code Quality (v0.3.0) ✅
+- [x] Review feedback addressed
+- [x] Connection/threading reliability improved
+- [x] Input validation and graceful error handling added
+- [x] CI-backed test coverage in place
 
----
+### Milestone 3: Security Hardening (v0.4.0) ✅
+- [x] Threat model and security docs published
+- [x] Credential/log handling reviewed
+- [x] Input/motion safety constraints added
 
-## Milestone 2: Code Quality
+### Milestone 4: Release Candidate (v1.0.0-rc1) ✅
+- [x] Docs finalized for release path
+- [x] Release gates executed (install, skill, security)
+- [x] Stable RC validation pass completed
 
-**Goal:** Production-ready code
-
-**Exit Criteria:**
-- [ ] All Copilot review comments addressed
-- [ ] Thread-safe connection management
-- [ ] Input validation on all tool parameters
-- [ ] Graceful error handling (robot offline, SDK errors)
-- [ ] Connection resilience (reconnect on failure)
-- [ ] Test coverage ≥ 80%
-
-**Version:** v0.3.0
-
----
-
-## Milestone 3: Security Hardening
-
-**Goal:** Safe for public use
-
-**Exit Criteria:**
-- [ ] Threat model documented
-- [ ] Credential handling audited (no leaks in logs/responses)
-- [ ] Input sanitization (base64, distances, durations)
-- [ ] Movement safety limits (rate limiting, max distances)
-- [ ] SECURITY.md with best practices
-
-**Version:** v0.4.0
-
----
-
-## Milestone 4: Release Candidate
-
-**Goal:** Final polish + release readiness gates
-
-**Exit Criteria:**
-- [ ] All feedback addressed
-- [ ] Documentation finalized (README, SETUP, TROUBLESHOOTING)
-- [ ] CHANGELOG.md created
-- [ ] 1-2 days stable period
-
-### Mandatory release gates (v1.0.0)
-
-#### A) User install readiness
-- [ ] Fresh-environment install walkthrough validated end-to-end
-- [ ] Setup docs verified against actual current flow (no stale steps)
-- [ ] Troubleshooting covers top real-world failure modes
-
-#### B) ClawHub skill readiness
-- [ ] Skill metadata reviewed for clarity and accuracy
-- [ ] Capability scope is least-privilege and explicit
-- [ ] No hidden side-effects in default behavior
-- [ ] Release notes clearly define supported vs known-limited capabilities
-
-#### C) Final security audit
-- [ ] Credential handling/log output reviewed (no secret leakage)
-- [ ] Input validation and motion safety limits re-verified
-- [ ] Dependency and supply-chain sanity check completed
-- [ ] SECURITY.md and public security posture notes updated
-
-**Version:** v1.0.0-rc1
-
-**Note:** External beta testing deferred to post-release. Community feedback will guide v1.1+ improvements.
-
----
-
-## Milestone 5: Public Release
-
-**Goal:** Available to all users
-
-**Exit Criteria:**
-- [ ] PyPI package published (`pip install vectorclaw-mcp`)
-- [ ] ClawHub skill published
-- [ ] Documentation complete and validated
-- [ ] mcporter config documented
-- [ ] Repo made public
-- [ ] Runtime support policy confirmed (see `docs/RUNTIME_SUPPORT.md`): Python 3.11 primary, CI green on 3.11
-
-**Version:** v1.0.0
+### Milestone 5: Public Release (v1.0.0) ✅
+- [x] PyPI published
+- [x] ClawHub published
+- [x] Public docs and setup flow validated
+- [x] Runtime support policy documented
 
 ---
 
@@ -146,7 +72,9 @@ Milestone-based development plan from alpha to public release.
 - Face and object perception are **working with correct preconditions/timing** (not fundamentally broken).
 - Highest-value remaining work is **MCP semantics + orchestration hardening** and evidence-backed docs.
 
-### v1.1 Priority Tracks
+### v1.1 Active Tracks (Issue-driven)
+
+> Tracking issues: #139, #140, #141, #142, #143
 
 1. **Perception semantics hardening**
    - Explicit face-detection mode requirements
