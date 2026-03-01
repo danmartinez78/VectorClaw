@@ -139,13 +139,43 @@ Milestone-based development plan from alpha to public release.
 
 ---
 
+## Near-Term Plan (Post-v1.0 Evidence Update)
+
+**Status shift after SDK harness + source investigation (2026-03-01):**
+- `drive_on_charger` is **working** in direct SDK harness path (single-call behavior may take search time).
+- Face and object perception are **working with correct preconditions/timing** (not fundamentally broken).
+- Highest-value remaining work is **MCP semantics + orchestration hardening** and evidence-backed docs.
+
+### v1.1 Priority Tracks
+
+1. **Perception semantics hardening**
+   - Explicit face-detection mode requirements
+   - Clear "visible now" vs "known world" object semantics
+   - Timing/TTL expectations surfaced in tool responses
+
+2. **Charger workflow contract hardening**
+   - Improve `vector_drive_on_charger` status/result messaging
+   - Distinguish searching vs attempting vs timeout/failure outcomes
+   - Keep best-effort behavior explicit in operator UX
+
+3. **Embodied state expansion**
+   - Expand `vector_status` and `vector_pose` payloads for planning/safety
+   - Include localization/frame context where available (`origin_id`, related state)
+
+4. **SDK harness parity + regression tests**
+   - Verify MCP behavior matches validated harness behavior for key flows
+   - Add deterministic tests for success/failure/precondition paths
+
+5. **Docs + release messaging refresh**
+   - Replace outdated "broken" language with evidence-backed constraints
+   - Clarify setup/preconditions and known-limited behavior
+
 ## Future Considerations (v1.x)
 
-**Near-term enhancements:**
+**Additional enhancements:**
 - Async motion control primitives (non-blocking drive + interruptable stop semantics)
 - Vision pipeline optimization (optional in-memory look→analyze path, with audit snapshot mode)
 - Pose metadata expansion in `vector_pose` (`origin_id`, `is_picked_up`, optional `localized_to_object_id`)
-- Perception reliability hardening (face/object visibility behavior, cube-connect workflow)
 - Audio recording from microphones
 - Object detection via camera
 - Multiple robot support

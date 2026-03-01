@@ -374,12 +374,12 @@ def vision_enable_motion_detection(robot):
 def vision_camera_on_face(robot):
     """Show camera feed on Vector's face screen."""
     enable = _safe_input("  Show camera on face? (y/n)", "y").lower() == 'y'
-    robot.vision.enable_display_camera_feed_on_face(enable=enable)
+    robot.vision.enable_display_camera_feed_on_face(enable)
     print(f"  Camera on face: {'ON' if enable else 'OFF'}")
     if enable:
         dur = float(_safe_input("  Duration (seconds)", "5"))
         time.sleep(dur)
-        robot.vision.enable_display_camera_feed_on_face(enable=False)
+        robot.vision.enable_display_camera_feed_on_face(False)
         print("  Camera on face: OFF")
 
 def vision_status(robot):
