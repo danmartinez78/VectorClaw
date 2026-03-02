@@ -121,21 +121,12 @@ TOOLS: list[Tool] = [
     Tool(
         name="vector_drive_on_charger",
         description=(
-            "Drive Vector back onto its charger with a configurable timeout. "
+            "Drive Vector back onto its charger. "
             "Returns immediately (already_on_charger: true) if Vector is already docked. "
             "Requires the charger to be in Vector's recent world model; use vector_scan first "
-            "if the charger may not have been recently observed. "
-            "Attempts a motor stop as a best-effort fallback if the maneuver times out."
+            "if the charger may not have been recently observed."
         ),
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "timeout_sec": {
-                    "type": "number",
-                    "description": "Seconds to wait before triggering motor-stop fallback (default: 10.0, must be >= 0)",
-                },
-            },
-        },
+        inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="vector_emergency_stop",
@@ -326,9 +317,7 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
             angle_deg=arguments.get("angle_deg"),
         ),
         "vector_drive_off_charger": _tools.vector_drive_off_charger,
-        "vector_drive_on_charger": lambda: _tools_motion.vector_drive_on_charger(
-            timeout_sec=arguments.get("timeout_sec", 10.0),
-        ),
+        "vector_drive_on_charger": _tools_motion.vector_drive_on_charger,
         "vector_emergency_stop": _tools_motion.vector_emergency_stop,
         "vector_look": _tools.vector_look,
         "vector_face": lambda: _tools.vector_face(

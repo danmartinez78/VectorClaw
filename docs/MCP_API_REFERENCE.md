@@ -393,9 +393,8 @@ Return the list of objects currently visible to Vector.
 
 ### `vector_drive_on_charger`
 
-Drive Vector back onto its charger. Includes a configurable timeout; if the
-maneuver does not complete in time a motor stop is attempted as a best-effort
-fallback (the stop itself may fail, which is reflected in the response).
+Drive Vector back onto its charger. Issues `robot.behavior.drive_on_charger()` and
+waits for the SDK call to complete. No timeout parameter is accepted.
 
 If Vector is already on the charger the SDK call is skipped and a success
 response with `already_on_charger: true` is returned immediately.  Invoking
@@ -405,11 +404,10 @@ sequence).
 
 > ⚠️ **Reliability note:** Reliable docking requires the charger to be within
 > the robot's recently-observed world model.  If Vector has not seen the charger
-> recently the command may time out without the robot approaching it.  Use
+> recently the SDK call may fail without the robot approaching it.  Use
 > `vector_scan` first to give Vector a chance to locate the charger.
 
-**Input:**
-- `timeout_sec` (number, optional, default `10.0`): seconds to wait before triggering the motor-stop fallback; must be `>= 0`
+**Input:** none
 
 **Example response (success):**
 ```json
@@ -421,24 +419,9 @@ sequence).
 {"status": "ok", "already_on_charger": true}
 ```
 
-**Example response (timeout — motors stopped successfully):**
+**Example response (runtime error):**
 ```json
-{
-  "status": "error",
-  "timed_out": true,
-  "motors_stopped": true,
-  "message": "drive_on_charger timed out after 10.0s; motors stopped as fallback"
-}
-```
-
-**Example response (timeout — motor stop also failed):**
-```json
-{
-  "status": "error",
-  "timed_out": true,
-  "motors_stopped": false,
-  "message": "drive_on_charger timed out after 10.0s; attempted motor stop failed: <error>"
-}
+{"status": "error", "message": "<error detail>"}
 ```
 
 ---
