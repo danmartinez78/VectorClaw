@@ -9,7 +9,7 @@ and this project follows Semantic Versioning.
 
 ### Added
 
-- No notable changes yet.
+- Repeat guard for actuating tools (`vector_say`, `vector_drive`, `vector_head`, `vector_lift`, `vector_animate`, `vector_face`, `vector_cube`, `vector_drive_off_charger`, `vector_drive_on_charger`): an identical call (same tool and arguments) that already succeeded within `VECTOR_REPEAT_GUARD_SECONDS` (default 10, `0` disables) returns `{"status": "skipped", "reason": "duplicate_call"}` instead of moving the robot again. Protects against agents (especially small local models) replaying a successful call in a loop.
 
 ## [1.0.0] - 2026-03-01
 

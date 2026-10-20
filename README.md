@@ -121,6 +121,7 @@ Prefer `wirepod_vector_sdk` for reliable, cloud-independent operation.
 ```bash
 export VECTOR_SERIAL="your-robot-serial"   # required — printed on underside of robot
 export VECTOR_HOST="192.168.x.x"           # optional — auto-discovered if omitted
+export VECTOR_REPEAT_GUARD_SECONDS="10"    # optional — refuse identical actuating calls within N s (0 = off)
 ```
 
 **Step 4 — Run the server**
