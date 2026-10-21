@@ -121,21 +121,12 @@ TOOLS: list[Tool] = [
     Tool(
         name="vector_drive_on_charger",
         description=(
-            "Drive Vector back onto its charger with a configurable timeout. "
+            "Drive Vector back onto its charger. "
             "Returns immediately (already_on_charger: true) if Vector is already docked. "
             "Requires the charger to be in Vector's recent world model; use vector_scan first "
-            "if the charger may not have been recently observed. "
-            "Attempts a motor stop as a best-effort fallback if the maneuver times out."
+            "if the charger may not have been recently observed."
         ),
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "timeout_sec": {
-                    "type": "number",
-                    "description": "Seconds to wait before triggering motor-stop fallback (default: 10.0, must be >= 0)",
-                },
-            },
-        },
+        inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="vector_emergency_stop",
@@ -255,6 +246,37 @@ TOOLS: list[Tool] = [
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
+        name="vector_enable_face_detection",
+        description="Enable or disable face detection on Vector's vision system.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "description": "True to enable face detection, False to disable (default: true)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_enable_motion_detection",
+        description="Enable or disable motion detection on Vector's vision system.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean",
+                    "description": "True to enable motion detection, False to disable (default: true)",
+                },
+            },
+        },
+    ),
+    Tool(
+        name="vector_vision_status",
+        description="Return current vision mode status flags (face detection, motion detection, etc.).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
         name="vector_vision_reset",
         description="Disable all active vision modes via vision.disable_all_vision_modes.",
         inputSchema={"type": "object", "properties": {}},
@@ -295,9 +317,7 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
             angle_deg=arguments.get("angle_deg"),
         ),
         "vector_drive_off_charger": _tools.vector_drive_off_charger,
-        "vector_drive_on_charger": lambda: _tools_motion.vector_drive_on_charger(
-            timeout_sec=arguments.get("timeout_sec", 10.0),
-        ),
+        "vector_drive_on_charger": _tools_motion.vector_drive_on_charger,
         "vector_emergency_stop": _tools_motion.vector_emergency_stop,
         "vector_look": _tools.vector_look,
         "vector_face": lambda: _tools.vector_face(
@@ -315,6 +335,13 @@ def build_dispatch(arguments: dict[str, Any]) -> dict[str, Any]:
         "vector_list_visible_objects": _tools_perception.vector_list_visible_objects,
         "vector_capture_image": _tools_perception.vector_capture_image,
         "vector_face_detection": _tools_perception.vector_face_detection,
+        "vector_enable_face_detection": lambda: _tools_perception.vector_enable_face_detection(
+            enable=arguments.get("enable", True),
+        ),
+        "vector_enable_motion_detection": lambda: _tools_perception.vector_enable_motion_detection(
+            enable=arguments.get("enable", True),
+        ),
+        "vector_vision_status": _tools_perception.vector_vision_status,
         "vector_vision_reset": _tools_perception.vector_vision_reset,
         "vector_charger_status": _tools_perception.vector_charger_status,
         "vector_touch_status": _tools_perception.vector_touch_status,
