@@ -75,9 +75,9 @@ For see → reason → act workflows, the agent must either be vision-capable it
 
 ## Current limitations
 
-- Charger return (`vector_drive_on_charger`) is currently unreliable
-- Face/object detection is currently inconsistent
-- Visual interpretation requires the vision capability described above
+- Charger return (`vector_drive_on_charger`) requires the charger to be in Vector's recently-observed world model; call `vector_scan` first to ensure reliable docking (without a prior scan the command may time out with no robot motion)
+- Perception tools (`vector_find_faces`, `vector_list_visible_faces`, `vector_face_detection`, `vector_list_visible_objects`) return empty results when vision modes are not active; vision modes are enabled automatically at connect but are disabled for the remainder of the session after `vector_vision_reset` — reconnect to restore them
+- Visual interpretation of camera images requires the agent to be vision-capable (e.g., a VLM) or have access to a separate image-interpretation tool
 
 ## Documentation
 
