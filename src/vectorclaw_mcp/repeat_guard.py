@@ -92,7 +92,13 @@ class RepeatGuard:
         if not isinstance(result, dict) or result.get("status") != "ok":
             return
         with self._lock:
-            self._last[self._key(name, arguments)] = self._clock()
+            now = self._clock()
+            self._last = {
+                key: timestamp
+                for key, timestamp in self._last.items()
+                if now - timestamp < self.window_s
+            }
+            self._last[self._key(name, arguments)] = now
 
     def reset(self) -> None:
         with self._lock:
