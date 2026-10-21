@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import time
+
+import pytest
 
 from vectorclaw_mcp.repeat_guard import DEFAULT_WINDOW_S, RepeatGuard
 
@@ -64,6 +67,16 @@ def test_intervening_actuation_invalidates_previous_success():
     assert guard.begin("vector_drive_off_charger", {}) is None
     guard.finish("vector_drive_off_charger", {}, OK)
     assert guard.check("vector_drive_on_charger", {}) is None
+
+
+def test_scan_movements_invalidate_cached_success_without_being_blocked():
+    guard = RepeatGuard(window_s=10, clock=FakeClock())
+    arguments = {"distance_mm": 100}
+
+    for name in ("vector_scan", "vector_find_faces"):
+        guard.record("vector_drive", arguments, OK)
+        assert guard.begin(name, {}) is None
+        assert guard.check("vector_drive", arguments) is None
 
 
 def test_argument_order_does_not_matter():
@@ -170,3 +183,42 @@ def test_call_tool_releases_reservation_after_exception(monkeypatch):
     assert first["status"] == "error"
     assert second["status"] == "ok"
     assert len(calls) == 2
+
+
+def test_cancelled_call_keeps_reservation_until_worker_finishes(monkeypatch):
+    from vectorclaw_mcp import server
+
+    started = threading.Event()
+    release = threading.Event()
+
+    def handler():
+        started.set()
+        release.wait(timeout=2)
+        return OK
+
+    monkeypatch.setattr(server, "build_dispatch", lambda arguments: {"vector_drive": handler})
+
+    async def cancel_call():
+        task = asyncio.create_task(server.call_tool("vector_drive", {}))
+        assert await asyncio.to_thread(started.wait, 1)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    asyncio.run(cancel_call())
+
+    still_running = json.loads(
+        asyncio.run(server.call_tool("vector_drive", {}))[0].text
+    )
+    assert still_running["status"] == "skipped"
+    assert "already in progress" in still_running["message"]
+
+    release.set()
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        completed = server.repeat_guard.check("vector_drive", {})
+        if completed is not None and "already succeeded" in completed["message"]:
+            break
+        time.sleep(0.01)
+    assert completed is not None
+    assert "already succeeded" in completed["message"]

@@ -207,6 +207,7 @@ def _twist(x=0.0, z=0.0):
 
 def _drain(node):
     node._executor.shutdown(wait=True)
+    node._stop_executor.shutdown(wait=True)
     node._poll_executor.shutdown(wait=True)
 
 
@@ -253,6 +254,20 @@ class TestCmdVelCallback:
         assert calls[0]["distance_mm"] == pytest.approx(25.0)  # 100 mm/s * 0.25 s
         assert calls[0]["angle_deg"] is None
 
+    def test_drive_distance_uses_clamped_speed(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+
+        def fake_drive(**kw):
+            node._invalidate_motion()
+            return {"status": "ok"}
+
+        ros2_env.vector_drive.side_effect = fake_drive
+        node._cmd_vel_cb(_twist(x=1.0))
+        _drain(node)
+
+        assert ros2_env.vector_drive.call_args.kwargs["speed"] == 200
+        assert ros2_env.vector_drive.call_args.kwargs["distance_mm"] == 50.0
+
     def test_turn_rate_converted_to_degrees(self, ros2_env):
         import math
 
@@ -270,10 +285,16 @@ class TestCmdVelCallback:
 
         assert calls[0]["distance_mm"] is None
         assert calls[0]["angle_deg"] == pytest.approx(22.5)
+        assert calls[0]["turn_speed_degps"] == pytest.approx(90.0)
 
     def test_zero_twist_stops_motors(self, ros2_env):
         node = ros2_env.VectorClawNode()
+        stopped = threading.Event()
+        ros2_env.vector_emergency_stop.side_effect = (
+            lambda: stopped.set() or {"status": "ok"}
+        )
         node._cmd_vel_cb(_twist())
+        assert stopped.wait(timeout=1)
         _drain(node)
         ros2_env.vector_emergency_stop.assert_called_once()
         ros2_env.vector_drive.assert_not_called()
@@ -285,10 +306,57 @@ class TestCmdVelCallback:
         for _ in range(2):
             node._executor.submit(gate.wait)
         node._cmd_head_cb(MagicMock(data=10.0))
+        stopped = threading.Event()
+        ros2_env.vector_emergency_stop.side_effect = (
+            lambda: stopped.set() or {"status": "ok"}
+        )
         node._cmd_vel_cb(_twist())  # stop: invalidates the queued head command
+        assert stopped.wait(timeout=1)
         gate.set()
         _drain(node)
+        ros2_env.vector_emergency_stop.assert_called_once()
         ros2_env.vector_head.assert_not_called()
+
+    def test_fresh_velocity_is_restarted_after_stale_worker_exits(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        started = threading.Event()
+        release = threading.Event()
+        successor_started = threading.Event()
+        calls = []
+
+        def fake_drive(**kw):
+            calls.append(kw)
+            if len(calls) == 1:
+                started.set()
+                release.wait(timeout=2)
+                return {"status": "cancelled"}
+            successor_started.set()
+            node._invalidate_motion()
+            return {"status": "ok"}
+
+        ros2_env.vector_drive.side_effect = fake_drive
+        node._cmd_vel_cb(_twist(x=0.1))
+        assert started.wait(timeout=1)
+        node._cmd_vel_cb(_twist())
+        node._cmd_vel_cb(_twist(x=0.2))
+        release.set()
+        assert successor_started.wait(timeout=1)
+        _drain(node)
+
+        assert len(calls) == 2
+        assert calls[1]["distance_mm"] == pytest.approx(50.0)
+        ros2_env.vector_emergency_stop.assert_called_once()
+
+    def test_velocity_loop_stops_after_error_result(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_drive.return_value = {
+            "status": "error", "message": "on charger"
+        }
+
+        node._cmd_vel_cb(_twist(x=0.1))
+        _drain(node)
+
+        ros2_env.vector_drive.assert_called_once()
 
 
 class TestCmdSayCallback:

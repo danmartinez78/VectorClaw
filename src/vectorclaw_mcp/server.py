@@ -12,6 +12,7 @@ Note: Synchronized memory is not guaranteed. Individual personalities may vary.
 from __future__ import annotations
 
 import asyncio
+from concurrent.futures import Future, ThreadPoolExecutor
 import logging
 from typing import Any
 
@@ -25,6 +26,7 @@ from .robot import robot_manager
 from .tool_registry import TOOLS, build_dispatch
 
 logger = logging.getLogger(__name__)
+_tool_executor = ThreadPoolExecutor(thread_name_prefix="vectorclaw-tool")
 
 # ---------------------------------------------------------------------------
 # Suppress non-fatal SDK noise
@@ -88,11 +90,19 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             logger.warning("Refused duplicate %r call within repeat-guard window", name)
             result = skipped
         else:
-            result = None
-            try:
-                result = await loop.run_in_executor(None, handler)
-            finally:
-                repeat_guard.finish(name, arguments, result)
+            worker_future: Future[dict[str, Any]] = _tool_executor.submit(handler)
+
+            def finish_when_worker_completes(
+                completed: Future[dict[str, Any]],
+            ) -> None:
+                try:
+                    worker_result = completed.result()
+                except BaseException:
+                    worker_result = None
+                repeat_guard.finish(name, arguments, worker_result)
+
+            worker_future.add_done_callback(finish_when_worker_completes)
+            result = await asyncio.wrap_future(worker_future, loop=loop)
     except Exception as exc:
         logger.exception("Tool %r raised an exception", name)
         result = {"status": "error", "message": str(exc)}

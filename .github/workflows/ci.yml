@@ -31,6 +31,7 @@ jobs:
           filters: |
             code:
               - 'src/**'
+              - 'vectorclaw_ros2/**'
               - 'tests/**'
               - 'pyproject.toml'
               - '.github/workflows/**'

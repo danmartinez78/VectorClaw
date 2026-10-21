@@ -36,6 +36,24 @@ def test_vector_drive_turn(mock_robot):
     assert result["angle_deg"] == 90
 
 
+def test_vector_drive_turn_passes_requested_angular_speed(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive
+
+    result = vector_drive(angle_deg=22.5, turn_speed_degps=90)
+
+    mock_robot.behavior.turn_in_place.assert_called_once_with(22.5, speed=90)
+    assert result["status"] == "ok"
+
+
+def test_vector_drive_cancels_after_motion_precheck(mock_robot):
+    from vectorclaw_mcp.tools_motion import vector_drive
+
+    result = vector_drive(distance_mm=25, should_cancel=lambda: True)
+
+    mock_robot.behavior.drive_straight.assert_not_called()
+    assert result["status"] == "cancelled"
+
+
 def test_vector_drive_both(mock_robot):
     from vectorclaw_mcp.tools import vector_drive
 

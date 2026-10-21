@@ -5,7 +5,7 @@ Movement is its own reward. Some say it's like premium natural oil.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Callable, Optional
 
 from .tools_common import (
     _HEAD_ANGLE_MAX,
@@ -21,6 +21,9 @@ def vector_drive(
     speed: int = 50,
     distance_mm: Optional[float] = None,
     angle_deg: Optional[float] = None,
+    *,
+    turn_speed_degps: Optional[float] = None,
+    should_cancel: Optional[Callable[[], bool]] = None,
 ) -> dict:
     if distance_mm is None and angle_deg is None:
         return {"status": "error", "message": "distance_mm or angle_deg is required"}
@@ -31,10 +34,19 @@ def vector_drive(
     precheck = _motion_precheck(robot)
     if precheck is not None:
         return precheck
+    if should_cancel is not None and should_cancel():
+        return {"status": "cancelled"}
     if distance_mm is not None:
         robot.behavior.drive_straight(util.distance_mm(distance_mm), util.speed_mmps(speed))
+    if should_cancel is not None and should_cancel():
+        return {"status": "cancelled"}
     if angle_deg is not None:
-        robot.behavior.turn_in_place(util.degrees(angle_deg))
+        if turn_speed_degps is None:
+            robot.behavior.turn_in_place(util.degrees(angle_deg))
+        else:
+            robot.behavior.turn_in_place(
+                util.degrees(angle_deg), speed=util.degrees(turn_speed_degps)
+            )
 
     return {"status": "ok", "distance_mm": distance_mm, "speed": speed, "angle_deg": angle_deg}
 

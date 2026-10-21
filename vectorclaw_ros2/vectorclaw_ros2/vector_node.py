@@ -112,6 +112,8 @@ _VEL_STEP_SEC = 0.25        # duration of each bounded drive step
 _VEL_TIMEOUT_SEC = 0.5      # stop driving if no new cmd_vel arrives within this
 _MIN_SPEED_MMPS = 10
 _MAX_SPEED_MMPS = 200
+_MAX_TURN_STEP_DEG = 45.0
+_MAX_TURN_SPEED_DEGPS = 180.0
 _EPS = 1e-6
 
 
@@ -162,10 +164,17 @@ class VectorClawNode(Node):
         # SDK calls are synchronous — run them off the spin thread.
         # Commands and telemetry use separate pools so polling cannot starve control.
         self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="vclaw-cmd")
+        self._stop_executor = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="vclaw-stop"
+        )
         self._poll_executor = ThreadPoolExecutor(
             max_workers=2, thread_name_prefix="vclaw-poll"
         )
         self._state_lock = threading.Lock()
+        self._motion_lock = threading.Lock()
+        self._stop_complete = threading.Event()
+        self._stop_complete.set()
+        self._pending_stops = 0
         self._generation = 0
         self._shutting_down = False
         self._inflight_polls: set[str] = set()
@@ -403,11 +412,12 @@ class VectorClawNode(Node):
             gen = self._generation
 
         def _run() -> None:
-            with self._state_lock:
-                if gen != self._generation or self._shutting_down:
-                    return
             try:
-                fn(*args)
+                self._stop_complete.wait()
+                with self._motion_lock:
+                    if not self._is_current(gen):
+                        return
+                    fn(*args)
             except Exception:
                 self.get_logger().warning(f"Command {fn.__name__} failed", once=True)
 
@@ -426,6 +436,46 @@ class VectorClawNode(Node):
         with self._state_lock:
             return gen == self._generation and not self._shutting_down
 
+    def _velocity_is_current(self, gen: int) -> bool:
+        with self._state_lock:
+            latest = self._latest_vel
+            return (
+                gen == self._generation
+                and not self._shutting_down
+                and latest is not None
+                and time.monotonic() - latest[2] <= _VEL_TIMEOUT_SEC
+            )
+
+    def _stop_motors(self) -> dict[str, Any]:
+        try:
+            with self._motion_lock:
+                return vector_emergency_stop()
+        finally:
+            with self._state_lock:
+                self._pending_stops -= 1
+                if self._pending_stops == 0:
+                    self._stop_complete.set()
+
+    def _schedule_stop(self):
+        with self._state_lock:
+            self._pending_stops += 1
+            self._stop_complete.clear()
+        try:
+            return self._stop_executor.submit(self._stop_motors)
+        except RuntimeError:
+            with self._state_lock:
+                self._pending_stops -= 1
+                if self._pending_stops == 0:
+                    self._stop_complete.set()
+            return None
+
+    def _dispatch_stop(self) -> dict[str, Any]:
+        future = self._schedule_stop()
+        return future.result() if future is not None else {
+            "status": "error",
+            "message": "Stop executor is shut down",
+        }
+
     def _cmd_vel_cb(self, msg: Twist) -> None:
         """Map Twist (SI units) -> bounded SDK drive steps.
 
@@ -441,9 +491,9 @@ class VectorClawNode(Node):
 
         if abs(lin_mmps) < _EPS and abs(ang_dps) < _EPS:
             # Zero Twist is the "stop" command: invalidate queued/running motion
-            # first, then halt the motors.
+            # first, then dispatch the stop on its own worker.
             self._invalidate_motion()
-            self._submit_cmd(vector_emergency_stop)
+            self._schedule_stop()
             return
 
         with self._state_lock:
@@ -464,6 +514,7 @@ class VectorClawNode(Node):
     def _vel_loop(self, gen: int) -> None:
         try:
             while True:
+                self._stop_complete.wait()
                 with self._state_lock:
                     latest = self._latest_vel
                     current = gen == self._generation and not self._shutting_down
@@ -473,24 +524,63 @@ class VectorClawNode(Node):
                 if time.monotonic() - stamp > _VEL_TIMEOUT_SEC:
                     return
 
+                step_started = time.monotonic()
+                kwargs: dict[str, Any] = {
+                    "speed": _MIN_SPEED_MMPS,
+                    "distance_mm": None,
+                    "angle_deg": None,
+                    "turn_speed_degps": None,
+                }
                 if abs(lin_mmps) >= _EPS:
                     speed = int(max(_MIN_SPEED_MMPS, min(_MAX_SPEED_MMPS, abs(lin_mmps))))
-                    vector_drive(
-                        speed=speed,
-                        distance_mm=lin_mmps * _VEL_STEP_SEC,
-                        angle_deg=None,
+                    kwargs["speed"] = speed
+                    kwargs["distance_mm"] = math.copysign(
+                        speed * _VEL_STEP_SEC, lin_mmps
                     )
-                if abs(ang_dps) >= _EPS and self._is_current(gen):
-                    vector_drive(
-                        speed=_MIN_SPEED_MMPS,
-                        distance_mm=None,
-                        angle_deg=ang_dps * _VEL_STEP_SEC,
+                if abs(ang_dps) >= _EPS:
+                    turn_speed = min(abs(ang_dps), _MAX_TURN_SPEED_DEGPS)
+                    kwargs["turn_speed_degps"] = turn_speed
+                    kwargs["angle_deg"] = math.copysign(
+                        min(turn_speed * _VEL_STEP_SEC, _MAX_TURN_STEP_DEG),
+                        ang_dps,
                     )
+
+                with self._motion_lock:
+                    if not self._velocity_is_current(gen):
+                        return
+                    result = vector_drive(
+                        **kwargs,
+                        should_cancel=lambda: not self._velocity_is_current(gen),
+                    )
+                if result.get("status") != "ok":
+                    if result.get("status") != "cancelled":
+                        self.get_logger().warning("cmd_vel drive failed", once=True)
+                    return
+
+                remaining = _VEL_STEP_SEC - (time.monotonic() - step_started)
+                if remaining > 0 and self._velocity_is_current(gen):
+                    time.sleep(remaining)
         except Exception:
             self.get_logger().warning("cmd_vel drive failed", once=True)
         finally:
+            successor_gen: int | None = None
             with self._state_lock:
-                self._vel_loop_running = False
+                latest = self._latest_vel
+                if (
+                    gen != self._generation
+                    and not self._shutting_down
+                    and latest is not None
+                    and time.monotonic() - latest[2] <= _VEL_TIMEOUT_SEC
+                ):
+                    successor_gen = self._generation
+                else:
+                    self._vel_loop_running = False
+            if successor_gen is not None:
+                try:
+                    self._executor.submit(self._vel_loop, successor_gen)
+                except RuntimeError:
+                    with self._state_lock:
+                        self._vel_loop_running = False
 
     def _cmd_say_cb(self, msg: String) -> None:
         text = msg.data.strip()
@@ -532,25 +622,40 @@ class VectorClawNode(Node):
         # Invalidate queued/active actuation before acknowledging so nothing
         # restarts motion after the stop.
         self._invalidate_motion()
-        return self._fill_response(response, vector_emergency_stop)
+        return self._fill_response(response, self._dispatch_stop)
+
+    def _drive_off_charger(self) -> dict[str, Any]:
+        self._stop_complete.wait()
+        with self._motion_lock:
+            with self._state_lock:
+                if self._shutting_down:
+                    return {"status": "error", "message": "Node is shutting down"}
+            return vector_drive_off_charger()
 
     def _drive_off_charger_srv(
         self, _request: Trigger.Request, response: Trigger.Response
     ) -> Trigger.Response:
-        return self._fill_response(response, vector_drive_off_charger)
+        return self._fill_response(response, self._drive_off_charger)
 
-    def destroy_node(self) -> None:
-        """Stop accepting work, halt the robot, drain workers, then disconnect."""
+    def prepare_shutdown(self) -> None:
+        """Reject new work and stop the motors before ROS callbacks are drained."""
         with self._state_lock:
+            if self._shutting_down:
+                return
             self._shutting_down = True
             self._generation += 1
             self._latest_vel = None
         try:
             if robot_manager.is_connected:
-                vector_emergency_stop()
+                self._dispatch_stop()
         except Exception:
             logger.exception("Failed to stop motors during shutdown")
+
+    def destroy_node(self) -> None:
+        """Stop accepting work, halt the robot, drain workers, then disconnect."""
+        self.prepare_shutdown()
         self._executor.shutdown(wait=True, cancel_futures=True)
+        self._stop_executor.shutdown(wait=True, cancel_futures=True)
         self._poll_executor.shutdown(wait=True, cancel_futures=True)
         try:
             robot_manager.disconnect()
@@ -574,6 +679,7 @@ def main(args: list[str] | None = None) -> None:
     except KeyboardInterrupt:
         pass
     finally:
+        node.prepare_shutdown()
         executor.shutdown()
         node.destroy_node()
         rclpy.shutdown()
