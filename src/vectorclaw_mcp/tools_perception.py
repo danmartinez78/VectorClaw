@@ -196,6 +196,44 @@ def vector_face_detection() -> dict:
     return {"status": "ok", "face_count": len(detections), "faces": detections}
 
 
+def vector_enable_face_detection(enable: bool = True) -> dict:
+    """Enable or disable face detection via vision.enable_face_detection."""
+    robot = _robot()
+    try:
+        if enable:
+            robot.vision.enable_face_detection(detect_faces=True, estimate_expression=True)
+        else:
+            robot.vision.enable_face_detection(detect_faces=False)
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+    return {"status": "ok", "face_detection_enabled": enable}
+
+
+def vector_enable_motion_detection(enable: bool = True) -> dict:
+    """Enable or disable motion detection via vision.enable_motion_detection."""
+    robot = _robot()
+    try:
+        robot.vision.enable_motion_detection(detect_motion=enable)
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+    return {"status": "ok", "motion_detection_enabled": enable}
+
+
+def vector_vision_status() -> dict:
+    """Return current vision mode status flags."""
+    robot = _robot()
+    try:
+        return {
+            "status": "ok",
+            "detect_faces": robot.vision.detect_faces,
+            "detect_motion": robot.vision.detect_motion,
+            "detect_custom_objects": robot.vision.detect_custom_objects,
+            "display_camera_feed_on_face": robot.vision.display_camera_feed_on_face,
+        }
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
 def vector_vision_reset() -> dict:
     """Disable all vision modes via vision.disable_all_vision_modes."""
     robot = _robot()

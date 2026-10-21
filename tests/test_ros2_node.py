@@ -1,46 +1,14 @@
-"""Tests for the VectorClaw ROS2 bridge node (vectorclaw_ros2).
-
-These tests mock out both ``rclpy`` and ``vectorclaw_mcp`` so they can run in a
-plain pytest environment without a ROS2 installation or a real robot.
-
-Run with:
-    pytest tests/test_ros2_node.py -v
-"""
-
-from __future__ import annotations
-
-# ---------------------------------------------------------------------------
-# IMPORTANT: inject stubs at MODULE LOAD TIME — before any pytest fixture
-# (including the autouse reset_robot_manager in conftest.py) can run.
-# ---------------------------------------------------------------------------
-import os
+import importlib
 import sys
+import threading
 import types
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
+
 # Add the vectorclaw_ros2 package root so importlib can find it without a colcon install
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_ROS2_PKG_ROOT = _REPO_ROOT / "vectorclaw_ros2"
-if str(_ROS2_PKG_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROS2_PKG_ROOT))
-
-# ---- Build and inject vectorclaw_mcp stubs ---------------------------------
-# The parent conftest.py has an autouse fixture that does:
-#   from vectorclaw_mcp.robot import robot_manager
-# If vectorclaw_mcp isn't installed this raises ModuleNotFoundError before our
-# own inject_stubs fixture can fire, so we seed sys.modules right here.
-
-_vclaw_mcp = types.ModuleType("vectorclaw_mcp")
-
-_vclaw_robot_mod = types.ModuleType("vectorclaw_mcp.robot")
-_fake_robot_manager = MagicMock()
-_fake_robot_manager.reset = MagicMock()
-_vclaw_robot_mod.robot_manager = _fake_robot_manager
-
-_vclaw_tools = types.ModuleType("vectorclaw_mcp.tools")
-_vclaw_motion = types.ModuleType("vectorclaw_mcp.tools_motion")
-_vclaw_perception = types.ModuleType("vectorclaw_mcp.tools_perception")
+_ROS2_PKG_ROOT = Path(__file__).resolve().parent.parent / "vectorclaw_ros2"
 
 _ALL_FNS = [
     "vector_say", "vector_animate", "vector_pose",
@@ -49,15 +17,6 @@ _ALL_FNS = [
     "vector_status", "vector_proximity_status",
     "vector_touch_status", "vector_capture_image",
 ]
-for _mod in (_vclaw_tools, _vclaw_motion, _vclaw_perception):
-    for _fn in _ALL_FNS:
-        setattr(_mod, _fn, MagicMock(return_value={"status": "ok"}))
-
-sys.modules.setdefault("vectorclaw_mcp", _vclaw_mcp)
-sys.modules.setdefault("vectorclaw_mcp.robot", _vclaw_robot_mod)
-sys.modules.setdefault("vectorclaw_mcp.tools", _vclaw_tools)
-sys.modules.setdefault("vectorclaw_mcp.tools_motion", _vclaw_motion)
-sys.modules.setdefault("vectorclaw_mcp.tools_perception", _vclaw_perception)
 
 # ---- Build and inject rclpy stubs ------------------------------------------
 
@@ -81,6 +40,7 @@ def _make_rclpy_stub() -> types.ModuleType:
             self._subscriptions: list = []
             self._services: list = []
             self._timers: list = []
+            self.published_tf: list = []
 
         def declare_parameter(self, name, default):
             class _P:
@@ -94,6 +54,7 @@ def _make_rclpy_stub() -> types.ModuleType:
                 "sensor_hz": 5.0,
                 "camera_enabled": True,
                 "frame_id": "vector",
+                "world_frame_id": "vector_world",
             }
             class _P:
                 value = defaults.get(name)
@@ -113,7 +74,7 @@ def _make_rclpy_stub() -> types.ModuleType:
             self._subscriptions.append(sub)
             return sub
 
-        def create_service(self, srv_type, name, cb):
+        def create_service(self, srv_type, name, cb, callback_group=None):
             srv = MagicMock()
             srv.name = name
             srv.callback = cb
@@ -147,7 +108,7 @@ def _make_msg_stubs() -> dict[str, types.ModuleType]:
     def _simple(mod_name: str, *names: str) -> types.ModuleType:
         mod = types.ModuleType(mod_name)
         for n in names:
-            cls = type(n, (), {"__init__": lambda self: None})
+            cls = type(n, (MagicMock,), {})
             setattr(mod, n, cls)
         stubs[mod_name] = mod
         return mod
@@ -166,41 +127,70 @@ def _make_msg_stubs() -> dict[str, types.ModuleType]:
 
     geo.Twist = _Twist
 
+    class _Header:
+        stamp = None
+        frame_id = ""
+
+    class _Tf:
+        def __init__(self):
+            self.header = _Header()
+            self.child_frame_id = ""
+            self.transform = MagicMock()
+
+    geo.TransformStamped = _Tf
+
     sensor = _simple("sensor_msgs.msg", "Image", "Range")
     sensor.Range.INFRARED = 1
 
     return stubs
 
 
-_rclpy_stub = _make_rclpy_stub()
-_msg_stubs = _make_msg_stubs()
+def _make_extra_stubs(rclpy: types.ModuleType) -> dict[str, types.ModuleType]:
+    cbg = types.ModuleType("rclpy.callback_groups")
+    cbg.ReentrantCallbackGroup = MagicMock
+    exe = types.ModuleType("rclpy.executors")
+    exe.MultiThreadedExecutor = MagicMock
+    tf2 = types.ModuleType("tf2_ros")
+    tf2.TransformBroadcaster = lambda node: MagicMock()
+    tf2.StaticTransformBroadcaster = lambda node: MagicMock()
+    return {
+        "rclpy.callback_groups": cbg,
+        "rclpy.executors": exe,
+        "tf2_ros": tf2,
+    }
 
-sys.modules.setdefault("rclpy", _rclpy_stub)
-sys.modules.setdefault("rclpy.node", _rclpy_stub.node)
-for _mod_name, _mod in _msg_stubs.items():
-    sys.modules.setdefault(_mod_name, _mod)
 
-# ---------------------------------------------------------------------------
-# Now it's safe to import pytest and write tests
-# ---------------------------------------------------------------------------
-import importlib
+@pytest.fixture
+def ros2_env(monkeypatch):
+    """Install ROS2 stubs and mock tool functions for one test only.
 
-import pytest
+    Everything is installed through ``monkeypatch`` so ``sys.modules`` and the
+    real ``vectorclaw_mcp`` tool modules are restored afterwards.
+    """
+    import vectorclaw_mcp.tools as tools_mod
+    import vectorclaw_mcp.tools_motion as motion_mod
+    import vectorclaw_mcp.tools_perception as perception_mod
 
+    rclpy = _make_rclpy_stub()
+    modules = {"rclpy": rclpy, "rclpy.node": rclpy.node}
+    modules.update(_make_msg_stubs())
+    modules.update(_make_extra_stubs(rclpy))
+    for name, mod in modules.items():
+        monkeypatch.setitem(sys.modules, name, mod)
 
-def _fresh_node_class():
-    """Re-import VectorClawNode cleanly (clears cached module)."""
+    for fn in _ALL_FNS:
+        mock = MagicMock(return_value={"status": "ok"})
+        for mod in (tools_mod, motion_mod, perception_mod):
+            if hasattr(mod, fn):
+                monkeypatch.setattr(mod, fn, mock)
+
+    monkeypatch.syspath_prepend(str(_ROS2_PKG_ROOT))
+    monkeypatch.delitem(sys.modules, "vectorclaw_ros2.vector_node", raising=False)
+    monkeypatch.delitem(sys.modules, "vectorclaw_ros2", raising=False)
+    vn = importlib.import_module("vectorclaw_ros2.vector_node")
+    yield vn
     sys.modules.pop("vectorclaw_ros2.vector_node", None)
     sys.modules.pop("vectorclaw_ros2", None)
-    vn = importlib.import_module("vectorclaw_ros2.vector_node")
-    # Reset all mock call counts so each test starts clean
-    for fn in _ALL_FNS:
-        for mod in (_vclaw_tools, _vclaw_motion, _vclaw_perception):
-            attr = getattr(mod, fn, None)
-            if isinstance(attr, MagicMock):
-                attr.reset_mock()
-                attr.return_value = {"status": "ok"}
-    return vn.VectorClawNode
 
 
 # ---------------------------------------------------------------------------
@@ -208,160 +198,137 @@ def _fresh_node_class():
 # ---------------------------------------------------------------------------
 
 
+def _twist(x=0.0, z=0.0):
+    t = MagicMock()
+    t.linear.x = x
+    t.angular.z = z
+    return t
+
+
+def _drain(node):
+    node._executor.shutdown(wait=True)
+    node._poll_executor.shutdown(wait=True)
+
+
 class TestNodeCreation:
-    def test_publishers_created(self):
-        VCN = _fresh_node_class()
-        node = VCN()
+    def test_publishers_created(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         topics = [p.topic for p in node._publishers]
-        assert "/vector/status" in topics
-        assert "/vector/pose" in topics
-        assert "/vector/proximity" in topics
-        assert "/vector/touch" in topics
-        assert "/vector/camera" in topics
+        for t in ("status", "pose", "proximity", "touch", "camera"):
+            assert f"/vector/{t}" in topics
 
-    def test_subscriptions_created(self):
-        VCN = _fresh_node_class()
-        node = VCN()
+    def test_subscriptions_created(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         topics = [s.topic for s in node._subscriptions]
-        assert "/vector/cmd_vel" in topics
-        assert "/vector/cmd_say" in topics
-        assert "/vector/cmd_head" in topics
-        assert "/vector/cmd_lift" in topics
-        assert "/vector/cmd_animate" in topics
+        for t in ("cmd_vel", "cmd_say", "cmd_head", "cmd_lift", "cmd_animate"):
+            assert f"/vector/{t}" in topics
 
-    def test_services_created(self):
-        VCN = _fresh_node_class()
-        node = VCN()
+    def test_services_created(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         names = [s.name for s in node._services]
         assert "/vector/emergency_stop" in names
         assert "/vector/drive_off_charger" in names
 
-    def test_timers_created(self):
-        VCN = _fresh_node_class()
-        node = VCN()
-        # status_hz=1 → 2 timers (status + pose)
-        # sensor_hz=5 → 3 timers (proximity + touch + camera)
+    def test_timers_created(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         assert len(node._timers) == 5
 
 
 class TestCmdVelCallback:
-    def test_forward_drive_dispatched(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+    def test_forward_velocity_converted_to_si(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        calls = []
 
-        VCN = _fresh_node_class()
-        node = VCN()
+        def fake_drive(**kw):
+            calls.append(kw)
+            node._invalidate_motion()  # end the loop after one step
+            return {"status": "ok"}
 
-        class _Twist:
-            class _V: x = 150.0; y = 0.0; z = 0.0
-            class _A: x = 0.0; y = 0.0; z = 0.0
-            linear = _V(); angular = _A()
+        ros2_env.vector_drive.side_effect = fake_drive
+        node._cmd_vel_cb(_twist(x=0.1))
+        _drain(node)
 
-        node._cmd_vel_cb(_Twist())
-        node._executor.shutdown(wait=True)
+        assert len(calls) == 1
+        assert calls[0]["speed"] == 100  # 0.1 m/s -> 100 mm/s
+        assert calls[0]["distance_mm"] == pytest.approx(25.0)  # 100 mm/s * 0.25 s
+        assert calls[0]["angle_deg"] is None
 
-        vn_mod.vector_drive.assert_called_once()
-        kwargs = vn_mod.vector_drive.call_args.kwargs
-        assert kwargs["distance_mm"] == 150.0
+    def test_turn_rate_converted_to_degrees(self, ros2_env):
+        import math
 
-    def test_zero_command_ignored(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+        node = ros2_env.VectorClawNode()
+        calls = []
 
-        VCN = _fresh_node_class()
-        node = VCN()
+        def fake_drive(**kw):
+            calls.append(kw)
+            node._invalidate_motion()
+            return {"status": "ok"}
 
-        class _ZeroTwist:
-            class _V: x = 0.0; y = 0.0; z = 0.0
-            class _A: x = 0.0; y = 0.0; z = 0.0
-            linear = _V(); angular = _A()
+        ros2_env.vector_drive.side_effect = fake_drive
+        node._cmd_vel_cb(_twist(z=math.pi / 2))  # 90 deg/s
+        _drain(node)
 
-        node._cmd_vel_cb(_ZeroTwist())
-        node._executor.shutdown(wait=True)
-        vn_mod.vector_drive.assert_not_called()
+        assert calls[0]["distance_mm"] is None
+        assert calls[0]["angle_deg"] == pytest.approx(22.5)
 
-    def test_turn_command_dispatched(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+    def test_zero_twist_stops_motors(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        node._cmd_vel_cb(_twist())
+        _drain(node)
+        ros2_env.vector_emergency_stop.assert_called_once()
+        ros2_env.vector_drive.assert_not_called()
 
-        VCN = _fresh_node_class()
-        node = VCN()
-
-        class _TurnTwist:
-            class _V: x = 0.0; y = 0.0; z = 0.0
-            class _A: x = 0.0; y = 0.0; z = 90.0
-            linear = _V(); angular = _A()
-
-        node._cmd_vel_cb(_TurnTwist())
-        node._executor.shutdown(wait=True)
-
-        kwargs = vn_mod.vector_drive.call_args.kwargs
-        assert kwargs["angle_deg"] == 90.0
-        assert kwargs["distance_mm"] is None
+    def test_zero_twist_invalidates_queued_commands(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        gate = threading.Event()
+        # Block both workers so later submissions stay queued
+        for _ in range(2):
+            node._executor.submit(gate.wait)
+        node._cmd_head_cb(MagicMock(data=10.0))
+        node._cmd_vel_cb(_twist())  # stop: invalidates the queued head command
+        gate.set()
+        _drain(node)
+        ros2_env.vector_head.assert_not_called()
 
 
 class TestCmdSayCallback:
-    def test_say_forwards_text(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+    def test_say_forwards_text(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        node._cmd_say_cb(MagicMock(data="Hello ROS2"))
+        _drain(node)
+        ros2_env.vector_say.assert_called_once_with("Hello ROS2")
 
-        VCN = _fresh_node_class()
-        node = VCN()
-        msg = MagicMock()
-        msg.data = "Hello ROS2"
-        node._cmd_say_cb(msg)
-        node._executor.shutdown(wait=True)
-        vn_mod.vector_say.assert_called_once_with("Hello ROS2")
-
-    def test_empty_say_ignored(self):
-        import vectorclaw_ros2.vector_node as vn_mod
-
-        VCN = _fresh_node_class()
-        node = VCN()
-        msg = MagicMock()
-        msg.data = "   "
-        node._cmd_say_cb(msg)
-        node._executor.shutdown(wait=True)
-        vn_mod.vector_say.assert_not_called()
+    def test_empty_say_ignored(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        node._cmd_say_cb(MagicMock(data="   "))
+        _drain(node)
+        ros2_env.vector_say.assert_not_called()
 
 
 class TestCmdHeadLiftCallbacks:
-    def test_head_callback(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+    def test_head_callback(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        node._cmd_head_cb(MagicMock(data=15.0))
+        _drain(node)
+        ros2_env.vector_head.assert_called_once_with(15.0)
 
-        VCN = _fresh_node_class()
-        node = VCN()
-        msg = MagicMock()
-        msg.data = 15.0
-        node._cmd_head_cb(msg)
-        node._executor.shutdown(wait=True)
-        vn_mod.vector_head.assert_called_once_with(15.0)
-
-    def test_lift_callback(self):
-        import vectorclaw_ros2.vector_node as vn_mod
-
-        VCN = _fresh_node_class()
-        node = VCN()
-        msg = MagicMock()
-        msg.data = 0.75
-        node._cmd_lift_cb(msg)
-        node._executor.shutdown(wait=True)
-        vn_mod.vector_lift.assert_called_once_with(0.75)
+    def test_lift_callback(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        node._cmd_lift_cb(MagicMock(data=0.75))
+        _drain(node)
+        ros2_env.vector_lift.assert_called_once_with(0.75)
 
 
 class TestServices:
-    def test_emergency_stop_success(self):
-        import vectorclaw_ros2.vector_node as vn_mod
-
-        VCN = _fresh_node_class()
-        node = VCN()
-        vn_mod.vector_emergency_stop.return_value = {"status": "ok"}
+    def test_emergency_stop_success(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         response = MagicMock()
         node._emergency_stop_srv(MagicMock(), response)
         assert response.success is True
 
-    def test_emergency_stop_failure_propagated(self):
-        import vectorclaw_ros2.vector_node as vn_mod
-
-        VCN = _fresh_node_class()
-        node = VCN()
-        vn_mod.vector_emergency_stop.return_value = {
+    def test_emergency_stop_failure_propagated(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_emergency_stop.return_value = {
             "status": "error", "message": "motors jammed"
         }
         response = MagicMock()
@@ -369,12 +336,88 @@ class TestServices:
         assert response.success is False
         assert response.message == "motors jammed"
 
-    def test_drive_off_charger_service(self):
-        import vectorclaw_ros2.vector_node as vn_mod
+    def test_emergency_stop_exception_returned(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_emergency_stop.side_effect = RuntimeError("not connected")
+        response = MagicMock()
+        node._emergency_stop_srv(MagicMock(), response)
+        assert response.success is False
+        assert response.message == "not connected"
 
-        VCN = _fresh_node_class()
-        node = VCN()
-        vn_mod.vector_drive_off_charger.return_value = {"status": "ok"}
+    def test_emergency_stop_cancels_pending_actuation(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        gate = threading.Event()
+        for _ in range(2):
+            node._executor.submit(gate.wait)
+        node._cmd_lift_cb(MagicMock(data=1.0))
+        node._emergency_stop_srv(MagicMock(), MagicMock())
+        gate.set()
+        _drain(node)
+        ros2_env.vector_lift.assert_not_called()
+
+    def test_drive_off_charger_service(self, ros2_env):
+        node = ros2_env.VectorClawNode()
         response = MagicMock()
         node._drive_off_charger_srv(MagicMock(), response)
         assert response.success is True
+
+    def test_drive_off_charger_exception_returned(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_drive_off_charger.side_effect = RuntimeError("no config")
+        response = MagicMock()
+        node._drive_off_charger_srv(MagicMock(), response)
+        assert response.success is False
+        assert response.message == "no config"
+
+
+class TestPublishers:
+    def test_pose_converted_to_meters_in_world_frame(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_pose.return_value = {
+            "status": "ok", "x": 100.0, "y": 200.0, "z": 0.0, "angle_deg": 0.0
+        }
+        node._publish_pose()
+        msg = node._pub_pose.publish.call_args.args[0]
+        assert msg.pose.position.x == pytest.approx(0.1)
+        assert msg.pose.position.y == pytest.approx(0.2)
+        assert msg.header.frame_id == "vector_world"
+
+    def test_proximity_error_skipped(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_proximity_status.return_value = {"status": "error", "message": "x"}
+        node._publish_proximity()
+        node._pub_proximity.publish.assert_not_called()
+
+    def test_proximity_published_in_sensor_frame(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_proximity_status.return_value = {"status": "ok", "distance_mm": 150.0}
+        node._publish_proximity()
+        msg = node._pub_proximity.publish.call_args.args[0]
+        assert msg.range == pytest.approx(0.15)
+        assert msg.header.frame_id == "vector_proximity"
+
+    def test_touch_error_skipped(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.vector_touch_status.return_value = {"status": "error", "message": "x"}
+        node._publish_touch()
+        node._pub_touch.publish.assert_not_called()
+
+    def test_polls_coalesced(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        gate = threading.Event()
+        ros2_env.vector_status.side_effect = lambda: gate.wait() or {"status": "ok"}
+        for _ in range(5):
+            node._status_timer_cb()
+        gate.set()
+        _drain(node)
+        assert ros2_env.vector_status.call_count == 1
+
+
+class TestShutdown:
+    def test_destroy_stops_and_disconnects(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+        ros2_env.robot_manager = MagicMock()
+        node.destroy_node()
+        ros2_env.robot_manager.disconnect.assert_called_once()
+        node._cmd_say_cb(MagicMock(data="late"))
+        ros2_env.vector_say.assert_not_called()

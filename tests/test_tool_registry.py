@@ -54,3 +54,17 @@ def test_dispatch_entry_exists(tool_name):
 
     dispatch = build_dispatch({})
     assert tool_name in dispatch, f"Tool '{tool_name}' missing from build_dispatch"
+
+
+def test_drive_on_charger_dispatch_no_timeout(mock_robot):
+    """Calling the dispatch entry for vector_drive_on_charger must not raise a TypeError.
+
+    Previously the dispatch lambda passed ``timeout_sec`` to the function, which
+    would cause a TypeError after the parameter was removed.  This test exercises
+    the full dispatch path (schema → function call) to catch wiring regressions.
+    """
+    from vectorclaw_mcp.tool_registry import build_dispatch
+
+    dispatch = build_dispatch({})
+    result = dispatch["vector_drive_on_charger"]()
+    assert result["status"] == "ok"

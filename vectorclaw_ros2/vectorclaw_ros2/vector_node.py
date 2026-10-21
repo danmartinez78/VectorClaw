@@ -9,19 +9,32 @@ Architecture
 ------------
 The node reuses the VectorClaw tool functions directly
 (vectorclaw_mcp.tools_motion, tools_perception, etc.).  All SDK calls are
-dispatched to a ThreadPoolExecutor so they never block the rclpy spin loop.
+dispatched to worker ThreadPoolExecutors so they never block the rclpy spin
+loop.  Telemetry polls are coalesced (at most one outstanding job per stream)
+and run on a pool separate from command dispatch.  Actuation is tagged with a
+generation counter: emergency stop / zero cmd_vel / shutdown bump it, so any
+queued or in-progress multi-step command is abandoned instead of moving the
+robot after the stop.  Service callbacks run in a reentrant callback group on a
+MultiThreadedExecutor so /vector/emergency_stop stays available while another
+service call is blocked.
+
+TF frames
+---------
+  <world_frame_id>  (default 'vector_world')  parent of the robot base
+  <frame_id>        (default 'vector')        robot base; pose is world -> base
+  <frame_id>_proximity / <frame_id>_camera_optical  sensor frames (static TF)
 
 Topics Published
 ----------------
   /vector/status        std_msgs/String        (JSON)  1 Hz
-  /vector/pose          geometry_msgs/PoseStamped       1 Hz
+  /vector/pose          geometry_msgs/PoseStamped       1 Hz  (meters, world frame)
   /vector/proximity     sensor_msgs/Range               5 Hz
   /vector/camera        sensor_msgs/Image               5 Hz
   /vector/touch         std_msgs/Bool                   5 Hz
 
 Topics Subscribed
 -----------------
-  /vector/cmd_vel       geometry_msgs/Twist   drive (linear.x mm/s, angular.z deg/s)
+  /vector/cmd_vel       geometry_msgs/Twist   velocity (linear.x m/s, angular.z rad/s)
   /vector/cmd_say       std_msgs/String       TTS
   /vector/cmd_head      std_msgs/Float32      head angle degrees
   /vector/cmd_lift      std_msgs/Float32      lift height 0.0–1.0
@@ -43,17 +56,23 @@ import base64
 import io
 import json
 import logging
+import math
 import sys
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import Any, Callable
 
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped, Quaternion, Twist
+from geometry_msgs.msg import PoseStamped, Quaternion, TransformStamped, Twist
 from sensor_msgs.msg import Image, Range
 from std_msgs.msg import Bool, Float32, String
 from std_srvs.srv import Trigger
+from tf2_ros import StaticTransformBroadcaster, TransformBroadcaster
 
 # ---------------------------------------------------------------------------
 # Import VectorClaw tool functions.
@@ -79,6 +98,7 @@ try:
         vector_pose,
         vector_say,
     )
+    from vectorclaw_mcp.robot import robot_manager
 except ImportError as exc:
     sys.exit(
         f"[vectorclaw_ros2] Cannot import vectorclaw_mcp: {exc}\n"
@@ -87,11 +107,16 @@ except ImportError as exc:
 
 logger = logging.getLogger(__name__)
 
+# Twist -> SDK drive mapping
+_VEL_STEP_SEC = 0.25        # duration of each bounded drive step
+_VEL_TIMEOUT_SEC = 0.5      # stop driving if no new cmd_vel arrives within this
+_MIN_SPEED_MMPS = 10
+_MAX_SPEED_MMPS = 200
+_EPS = 1e-6
+
 
 def _yaw_to_quaternion(yaw_deg: float) -> Quaternion:
     """Convert a yaw angle (degrees) to a geometry_msgs/Quaternion."""
-    import math
-
     yaw_rad = math.radians(yaw_deg)
     q = Quaternion()
     q.w = math.cos(yaw_rad / 2.0)
@@ -109,7 +134,9 @@ class VectorClawNode(Node):
     status_hz  (float, default 1.0)  — publish rate for /vector/status and /vector/pose
     sensor_hz  (float, default 5.0)  — publish rate for /vector/proximity, /camera, /touch
     camera_enabled (bool, default True) — enable camera publishing (costs ~30% CPU)
-    frame_id   (str, default 'vector') — TF frame_id used in stamped messages
+    frame_id   (str, default 'vector') — robot base frame; sensor frames are
+                 '<frame_id>_proximity' and '<frame_id>_camera_optical'
+    world_frame_id (str, default 'vector_world') — frame the pose is expressed in
     """
 
     def __init__(self) -> None:
@@ -122,14 +149,32 @@ class VectorClawNode(Node):
         self.declare_parameter("sensor_hz", 5.0)
         self.declare_parameter("camera_enabled", True)
         self.declare_parameter("frame_id", "vector")
+        self.declare_parameter("world_frame_id", "vector_world")
 
         status_hz: float = self.get_parameter("status_hz").value
         sensor_hz: float = self.get_parameter("sensor_hz").value
         self._camera_enabled: bool = self.get_parameter("camera_enabled").value
         self._frame_id: str = self.get_parameter("frame_id").value
+        self._world_frame_id: str = self.get_parameter("world_frame_id").value
+        self._proximity_frame_id = f"{self._frame_id}_proximity"
+        self._camera_frame_id = f"{self._frame_id}_camera_optical"
 
-        # SDK calls are synchronous — run them off the spin thread
-        self._executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="vclaw")
+        # SDK calls are synchronous — run them off the spin thread.
+        # Commands and telemetry use separate pools so polling cannot starve control.
+        self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="vclaw-cmd")
+        self._poll_executor = ThreadPoolExecutor(
+            max_workers=2, thread_name_prefix="vclaw-poll"
+        )
+        self._state_lock = threading.Lock()
+        self._generation = 0
+        self._shutting_down = False
+        self._inflight_polls: set[str] = set()
+        self._latest_vel: tuple[float, float, float] | None = None
+        self._vel_loop_running = False
+
+        self._tf_broadcaster = TransformBroadcaster(self)
+        self._static_tf_broadcaster = StaticTransformBroadcaster(self)
+        self._publish_static_transforms()
 
         # ------------------------------------------------------------------ #
         # Publishers
@@ -153,9 +198,20 @@ class VectorClawNode(Node):
         # ------------------------------------------------------------------ #
         # Services
         # ------------------------------------------------------------------ #
-        self.create_service(Trigger, "/vector/emergency_stop", self._emergency_stop_srv)
+        # Reentrant group + MultiThreadedExecutor (see main) keeps emergency stop
+        # callable while another service call is blocked in the SDK.
+        self._srv_group = ReentrantCallbackGroup()
         self.create_service(
-            Trigger, "/vector/drive_off_charger", self._drive_off_charger_srv
+            Trigger,
+            "/vector/emergency_stop",
+            self._emergency_stop_srv,
+            callback_group=self._srv_group,
+        )
+        self.create_service(
+            Trigger,
+            "/vector/drive_off_charger",
+            self._drive_off_charger_srv,
+            callback_group=self._srv_group,
         )
 
         # ------------------------------------------------------------------ #
@@ -181,20 +237,70 @@ class VectorClawNode(Node):
     # Timer callbacks — publishers
     # ---------------------------------------------------------------------- #
 
+    def _submit_poll(self, key: str, fn: Callable[[], None]) -> None:
+        """Run a telemetry poll off-thread, at most one outstanding job per stream."""
+        with self._state_lock:
+            if self._shutting_down or key in self._inflight_polls:
+                return
+            self._inflight_polls.add(key)
+
+        def _run() -> None:
+            try:
+                fn()
+            finally:
+                with self._state_lock:
+                    self._inflight_polls.discard(key)
+
+        try:
+            self._poll_executor.submit(_run)
+        except RuntimeError:  # executor already shut down
+            with self._state_lock:
+                self._inflight_polls.discard(key)
+
     def _status_timer_cb(self) -> None:
-        self._executor.submit(self._publish_status)
+        self._submit_poll("status", self._publish_status)
 
     def _pose_timer_cb(self) -> None:
-        self._executor.submit(self._publish_pose)
+        self._submit_poll("pose", self._publish_pose)
 
     def _proximity_timer_cb(self) -> None:
-        self._executor.submit(self._publish_proximity)
+        self._submit_poll("proximity", self._publish_proximity)
 
     def _touch_timer_cb(self) -> None:
-        self._executor.submit(self._publish_touch)
+        self._submit_poll("touch", self._publish_touch)
 
     def _camera_timer_cb(self) -> None:
-        self._executor.submit(self._publish_camera)
+        self._submit_poll("camera", self._publish_camera)
+
+    # ---------------------------------------------------------------------- #
+    # Frames
+    # ---------------------------------------------------------------------- #
+
+    def _publish_static_transforms(self) -> None:
+        """Publish approximate base -> sensor transforms (meters)."""
+        stamp = self.get_clock().now().to_msg()
+
+        prox = TransformStamped()
+        prox.header.stamp = stamp
+        prox.header.frame_id = self._frame_id
+        prox.child_frame_id = self._proximity_frame_id
+        prox.transform.translation.x = 0.03
+        prox.transform.translation.z = 0.02
+        prox.transform.rotation.w = 1.0
+
+        cam = TransformStamped()
+        cam.header.stamp = stamp
+        cam.header.frame_id = self._frame_id
+        cam.child_frame_id = self._camera_frame_id
+        cam.transform.translation.x = 0.03
+        cam.transform.translation.z = 0.05
+        # Optical frame convention: z forward, x right, y down (rpy = -90, 0, -90)
+        cam.transform.rotation.x = -0.5
+        cam.transform.rotation.y = 0.5
+        cam.transform.rotation.z = -0.5
+        cam.transform.rotation.w = 0.5
+
+        self._static_tf_broadcaster.sendTransform([prox, cam])
 
     # ---------------------------------------------------------------------- #
     # Publish helpers (run in thread pool)
@@ -212,28 +318,41 @@ class VectorClawNode(Node):
     def _publish_pose(self) -> None:
         try:
             data = vector_pose()
+            if data.get("status") != "ok":
+                return
             msg = PoseStamped()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = self._frame_id
+            msg.header.frame_id = self._world_frame_id
             msg.pose.position.x = float(data.get("x", 0.0)) / 1000.0
             msg.pose.position.y = float(data.get("y", 0.0)) / 1000.0
             msg.pose.position.z = float(data.get("z", 0.0)) / 1000.0
             msg.pose.orientation = _yaw_to_quaternion(float(data.get("angle_deg", 0.0)))
             self._pub_pose.publish(msg)
+
+            tf = TransformStamped()
+            tf.header = msg.header
+            tf.child_frame_id = self._frame_id
+            tf.transform.translation.x = msg.pose.position.x
+            tf.transform.translation.y = msg.pose.position.y
+            tf.transform.translation.z = msg.pose.position.z
+            tf.transform.rotation = msg.pose.orientation
+            self._tf_broadcaster.sendTransform(tf)
         except Exception:
             self.get_logger().warning("Failed to publish /vector/pose", once=True)
 
     def _publish_proximity(self) -> None:
         try:
             data = vector_proximity_status()
+            if data.get("status") != "ok" or data.get("distance_mm") is None:
+                return
             msg = Range()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = self._frame_id
+            msg.header.frame_id = self._proximity_frame_id
             msg.radiation_type = Range.INFRARED
             msg.field_of_view = 0.4363  # ~25 degrees in radians
             msg.min_range = 0.03        # 30 mm
             msg.max_range = 0.30        # 300 mm
-            msg.range = float(data.get("distance_mm", 0.0)) / 1000.0  # mm → m
+            msg.range = float(data["distance_mm"]) / 1000.0  # mm → m
             self._pub_proximity.publish(msg)
         except Exception:
             self.get_logger().warning("Failed to publish /vector/proximity", once=True)
@@ -241,8 +360,10 @@ class VectorClawNode(Node):
     def _publish_touch(self) -> None:
         try:
             data = vector_touch_status()
+            if data.get("status") != "ok" or "is_being_touched" not in data:
+                return
             msg = Bool()
-            msg.data = bool(data.get("is_being_touched", False))
+            msg.data = bool(data["is_being_touched"])
             self._pub_touch.publish(msg)
         except Exception:
             self.get_logger().warning("Failed to publish /vector/touch", once=True)
@@ -259,7 +380,7 @@ class VectorClawNode(Node):
             width, height = pil_img.size
             msg = Image()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = self._frame_id
+            msg.header.frame_id = self._camera_frame_id
             msg.height = height
             msg.width = width
             msg.encoding = "rgb8"
@@ -274,65 +395,167 @@ class VectorClawNode(Node):
     # Subscription callbacks
     # ---------------------------------------------------------------------- #
 
+    def _submit_cmd(self, fn: Callable[..., Any], *args: Any) -> None:
+        """Queue an actuation job that is dropped if a stop invalidates it first."""
+        with self._state_lock:
+            if self._shutting_down:
+                return
+            gen = self._generation
+
+        def _run() -> None:
+            with self._state_lock:
+                if gen != self._generation or self._shutting_down:
+                    return
+            try:
+                fn(*args)
+            except Exception:
+                self.get_logger().warning(f"Command {fn.__name__} failed", once=True)
+
+        try:
+            self._executor.submit(_run)
+        except RuntimeError:  # executor already shut down
+            pass
+
+    def _invalidate_motion(self) -> None:
+        """Abandon all queued and in-progress actuation."""
+        with self._state_lock:
+            self._generation += 1
+            self._latest_vel = None
+
+    def _is_current(self, gen: int) -> bool:
+        with self._state_lock:
+            return gen == self._generation and not self._shutting_down
+
     def _cmd_vel_cb(self, msg: Twist) -> None:
-        """Map Twist → vector_drive.
+        """Map Twist (SI units) -> bounded SDK drive steps.
 
-        linear.x  : forward speed in mm/s  (treated as distance for one-shot drive)
-        angular.z : turn rate in deg/s      (treated as angle for one-shot turn)
+        linear.x  : forward velocity in m/s   (converted to mm/s)
+        angular.z : yaw rate in rad/s         (converted to deg/s)
 
-        For continuous velocity control, publish at your desired control rate
-        and the node will issue repeated drive commands.
+        The latest command wins.  While commands keep arriving (within
+        ``_VEL_TIMEOUT_SEC``) the node executes short drive steps; when they stop
+        arriving, or a zero Twist is received, motion stops.
         """
-        distance_mm = float(msg.linear.x) if abs(msg.linear.x) > 0.1 else None
-        angle_deg = float(msg.angular.z) if abs(msg.angular.z) > 0.1 else None
+        lin_mmps = float(msg.linear.x) * 1000.0
+        ang_dps = math.degrees(float(msg.angular.z))
 
-        if distance_mm is None and angle_deg is None:
-            return  # dead-zone: ignore zero commands
+        if abs(lin_mmps) < _EPS and abs(ang_dps) < _EPS:
+            # Zero Twist is the "stop" command: invalidate queued/running motion
+            # first, then halt the motors.
+            self._invalidate_motion()
+            self._submit_cmd(vector_emergency_stop)
+            return
 
-        speed = max(10, min(300, int(abs(distance_mm)))) if distance_mm else 50
-        self._executor.submit(
-            vector_drive, speed=speed, distance_mm=distance_mm, angle_deg=angle_deg
-        )
+        with self._state_lock:
+            if self._shutting_down:
+                return
+            self._latest_vel = (lin_mmps, ang_dps, time.monotonic())
+            if self._vel_loop_running:
+                return
+            self._vel_loop_running = True
+            gen = self._generation
+
+        try:
+            self._executor.submit(self._vel_loop, gen)
+        except RuntimeError:
+            with self._state_lock:
+                self._vel_loop_running = False
+
+    def _vel_loop(self, gen: int) -> None:
+        try:
+            while True:
+                with self._state_lock:
+                    latest = self._latest_vel
+                    current = gen == self._generation and not self._shutting_down
+                if not current or latest is None:
+                    return
+                lin_mmps, ang_dps, stamp = latest
+                if time.monotonic() - stamp > _VEL_TIMEOUT_SEC:
+                    return
+
+                if abs(lin_mmps) >= _EPS:
+                    speed = int(max(_MIN_SPEED_MMPS, min(_MAX_SPEED_MMPS, abs(lin_mmps))))
+                    vector_drive(
+                        speed=speed,
+                        distance_mm=lin_mmps * _VEL_STEP_SEC,
+                        angle_deg=None,
+                    )
+                if abs(ang_dps) >= _EPS and self._is_current(gen):
+                    vector_drive(
+                        speed=_MIN_SPEED_MMPS,
+                        distance_mm=None,
+                        angle_deg=ang_dps * _VEL_STEP_SEC,
+                    )
+        except Exception:
+            self.get_logger().warning("cmd_vel drive failed", once=True)
+        finally:
+            with self._state_lock:
+                self._vel_loop_running = False
 
     def _cmd_say_cb(self, msg: String) -> None:
         text = msg.data.strip()
         if text:
-            self._executor.submit(vector_say, text)
+            self._submit_cmd(vector_say, text)
 
     def _cmd_head_cb(self, msg: Float32) -> None:
-        self._executor.submit(vector_head, float(msg.data))
+        self._submit_cmd(vector_head, float(msg.data))
 
     def _cmd_lift_cb(self, msg: Float32) -> None:
-        self._executor.submit(vector_lift, float(msg.data))
+        self._submit_cmd(vector_lift, float(msg.data))
 
     def _cmd_animate_cb(self, msg: String) -> None:
         name = msg.data.strip()
         if name:
-            self._executor.submit(vector_animate, name)
+            self._submit_cmd(vector_animate, name)
 
     # ---------------------------------------------------------------------- #
-    # Service callbacks
+    # Service callbacks (run in a reentrant group on worker threads)
     # ---------------------------------------------------------------------- #
+
+    @staticmethod
+    def _fill_response(
+        response: Trigger.Response, tool: Callable[[], dict]
+    ) -> Trigger.Response:
+        try:
+            result = tool()
+        except Exception as exc:
+            response.success = False
+            response.message = str(exc)
+            return response
+        response.success = result.get("status") == "ok"
+        response.message = result.get("message", "")
+        return response
 
     def _emergency_stop_srv(
         self, _request: Trigger.Request, response: Trigger.Response
     ) -> Trigger.Response:
-        result = vector_emergency_stop()
-        response.success = result.get("status") == "ok"
-        response.message = result.get("message", "")
-        return response
+        # Invalidate queued/active actuation before acknowledging so nothing
+        # restarts motion after the stop.
+        self._invalidate_motion()
+        return self._fill_response(response, vector_emergency_stop)
 
     def _drive_off_charger_srv(
         self, _request: Trigger.Request, response: Trigger.Response
     ) -> Trigger.Response:
-        result = vector_drive_off_charger()
-        response.success = result.get("status") == "ok"
-        response.message = result.get("message", "")
-        return response
+        return self._fill_response(response, vector_drive_off_charger)
 
     def destroy_node(self) -> None:
-        """Shutdown the thread pool before destroying the node."""
-        self._executor.shutdown(wait=False)
+        """Stop accepting work, halt the robot, drain workers, then disconnect."""
+        with self._state_lock:
+            self._shutting_down = True
+            self._generation += 1
+            self._latest_vel = None
+        try:
+            if robot_manager.is_connected:
+                vector_emergency_stop()
+        except Exception:
+            logger.exception("Failed to stop motors during shutdown")
+        self._executor.shutdown(wait=True, cancel_futures=True)
+        self._poll_executor.shutdown(wait=True, cancel_futures=True)
+        try:
+            robot_manager.disconnect()
+        except Exception:
+            logger.exception("Failed to disconnect during shutdown")
         super().destroy_node()
 
 
@@ -344,11 +567,14 @@ class VectorClawNode(Node):
 def main(args: list[str] | None = None) -> None:
     rclpy.init(args=args)
     node = VectorClawNode()
+    executor = MultiThreadedExecutor(num_threads=4)
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     finally:
+        executor.shutdown()
         node.destroy_node()
         rclpy.shutdown()
 
