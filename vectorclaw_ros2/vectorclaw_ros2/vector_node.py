@@ -456,8 +456,13 @@ class VectorClawNode(Node):
                 if self._pending_stops == 0:
                     self._stop_complete.set()
 
-    def _schedule_stop(self) -> Future[dict[str, Any]] | None:
+    def _schedule_stop(
+        self, invalidate_motion: bool = False
+    ) -> Future[dict[str, Any]] | None:
         with self._state_lock:
+            if invalidate_motion:
+                self._generation += 1
+                self._latest_vel = None
             self._pending_stops += 1
             self._stop_complete.clear()
         try:
@@ -470,7 +475,7 @@ class VectorClawNode(Node):
             return None
 
     def _dispatch_stop(self) -> dict[str, Any]:
-        future = self._schedule_stop()
+        future = self._schedule_stop(invalidate_motion=True)
         return future.result() if future is not None else {
             "status": "error",
             "message": "Stop executor is shut down",
@@ -492,8 +497,7 @@ class VectorClawNode(Node):
         if abs(lin_mmps) < _EPS and abs(ang_dps) < _EPS:
             # Zero Twist is the "stop" command: invalidate queued/running motion
             # first, then dispatch the stop on its own worker.
-            self._invalidate_motion()
-            self._schedule_stop()
+            self._schedule_stop(invalidate_motion=True)
             return
 
         with self._state_lock:
@@ -621,7 +625,6 @@ class VectorClawNode(Node):
     ) -> Trigger.Response:
         # Invalidate queued/active actuation before acknowledging so nothing
         # restarts motion after the stop.
-        self._invalidate_motion()
         return self._fill_response(response, self._dispatch_stop)
 
     def _drive_off_charger(self) -> dict[str, Any]:
