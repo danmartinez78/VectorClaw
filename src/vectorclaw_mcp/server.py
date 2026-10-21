@@ -84,12 +84,15 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
                 "status": "error",
                 "message": f"Unknown tool: {name!r}",
             }
-        elif (skipped := repeat_guard.check(name, arguments)) is not None:
+        elif (skipped := repeat_guard.begin(name, arguments)) is not None:
             logger.warning("Refused duplicate %r call within repeat-guard window", name)
             result = skipped
         else:
-            result = await loop.run_in_executor(None, handler)
-            repeat_guard.record(name, arguments, result)
+            result = None
+            try:
+                result = await loop.run_in_executor(None, handler)
+            finally:
+                repeat_guard.finish(name, arguments, result)
     except Exception as exc:
         logger.exception("Tool %r raised an exception", name)
         result = {"status": "error", "message": str(exc)}

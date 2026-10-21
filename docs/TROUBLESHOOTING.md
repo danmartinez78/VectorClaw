@@ -41,8 +41,8 @@
   - If `vector_vision_reset` was already called, reconnect the MCP server to restore vision mode enablement.
   - Confirm the robot camera has line-of-sight to the subject (correct head angle, adequate lighting).
 
-### 6) `vector_drive_on_charger` times out with no robot motion
-- **Symptom:** Tool returns `timed_out: true` and attempts a motor stop as a fallback (see `motors_stopped` in the response), but Vector never approached the charger.
+### 6) `vector_drive_on_charger` does not approach the charger
+- **Symptom:** The SDK call may take time to complete; if it raises an exception, the tool returns an error status and message. The tool does not provide timeout protection or a fallback motor stop.
 - **Cause (precondition):** `drive_on_charger` requires the charger to be present in Vector's recently-observed world model. If Vector has not seen the charger in the current session the SDK command has nothing to navigate to.
 - **Action:**
   1. Place the charger in Vector's field of view.

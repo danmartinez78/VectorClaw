@@ -6,9 +6,9 @@ that is harmless; for ``vector_drive`` it means the robot keeps driving —
 possibly off a table.
 
 The guard refuses an *identical* actuating call (same tool, same arguments)
-that already succeeded within a short window, and returns a result telling
-the agent the action is done.  Different arguments, failed calls, and
-non-actuating tools are never blocked.
+that already succeeded as the most recent actuating call within a short
+window, and returns a result telling the agent the action is done. Different
+arguments, failed calls, and non-actuating tools are never blocked.
 
 Configure the window with ``VECTOR_REPEAT_GUARD_SECONDS`` (default 10);
 set it to ``0`` to disable the guard.
@@ -59,7 +59,9 @@ class RepeatGuard:
         self.window_s = _window_from_env() if window_s is None else window_s
         self._clock = clock
         self._lock = threading.Lock()
-        self._last: dict[tuple[str, str], float] = {}
+        self._last: tuple[tuple[str, str], float] | None = None
+        self._pending: dict[tuple[str, str], int] = {}
+        self._generation = 0
 
     @staticmethod
     def _key(name: str, arguments: dict[str, Any] | None) -> tuple[str, str]:
@@ -72,18 +74,63 @@ class RepeatGuard:
         key = self._key(name, arguments)
         now = self._clock()
         with self._lock:
-            last = self._last.get(key)
-        if last is None or now - last >= self.window_s:
+            if key in self._pending:
+                return self._skipped(name, "is already in progress")
+            last = self._last
+        if last is None or last[0] != key or now - last[1] >= self.window_s:
             return None
+        return self._skipped(name, f"already succeeded {now - last[1]:.1f}s ago")
+
+    @staticmethod
+    def _skipped(name: str, reason: str) -> dict[str, Any]:
         return {
             "status": "skipped",
             "reason": "duplicate_call",
             "message": (
-                f"Identical {name} call already succeeded {now - last:.1f}s ago, "
-                "so it was NOT repeated. The action is complete; report the "
-                "result to the user instead of calling the tool again."
+                f"Identical {name} call {reason}, so it was NOT repeated. "
+                "Wait for its result or report the completed action to the user."
             ),
         }
+
+    def begin(self, name: str, arguments: dict[str, Any] | None) -> dict[str, Any] | None:
+        """Atomically reject replays or reserve an actuating call before dispatch."""
+        if self.window_s <= 0 or name not in ACTUATING_TOOLS:
+            return None
+        key = self._key(name, arguments)
+        now = self._clock()
+        with self._lock:
+            if key in self._pending:
+                return self._skipped(name, "is already in progress")
+            if (
+                self._last is not None
+                and self._last[0] == key
+                and now - self._last[1] < self.window_s
+            ):
+                return self._skipped(name, f"already succeeded {now - self._last[1]:.1f}s ago")
+            self._generation += 1
+            self._last = None
+            self._pending[key] = self._generation
+        return None
+
+    def finish(
+        self,
+        name: str,
+        arguments: dict[str, Any] | None,
+        result: dict[str, Any] | None,
+    ) -> None:
+        """Release a reservation and remember its result if it is still current."""
+        if self.window_s <= 0 or name not in ACTUATING_TOOLS:
+            return
+        key = self._key(name, arguments)
+        with self._lock:
+            generation = self._pending.pop(key, None)
+            if (
+                generation is not None
+                and generation == self._generation
+                and isinstance(result, dict)
+                and result.get("status") == "ok"
+            ):
+                self._last = (key, self._clock())
 
     def record(self, name: str, arguments: dict[str, Any] | None, result: dict[str, Any]) -> None:
         """Remember a successful actuating call."""
@@ -92,17 +139,14 @@ class RepeatGuard:
         if not isinstance(result, dict) or result.get("status") != "ok":
             return
         with self._lock:
-            now = self._clock()
-            self._last = {
-                key: timestamp
-                for key, timestamp in self._last.items()
-                if now - timestamp < self.window_s
-            }
-            self._last[self._key(name, arguments)] = now
+            self._generation += 1
+            self._last = (self._key(name, arguments), self._clock())
 
     def reset(self) -> None:
         with self._lock:
-            self._last.clear()
+            self._generation += 1
+            self._last = None
+            self._pending.clear()
 
 
 repeat_guard = RepeatGuard()
