@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import time
 
 from vectorclaw_mcp.repeat_guard import DEFAULT_WINDOW_S, RepeatGuard
@@ -64,6 +65,16 @@ def test_intervening_actuation_invalidates_previous_success():
     assert guard.begin("vector_drive_off_charger", {}) is None
     guard.finish("vector_drive_off_charger", {}, OK)
     assert guard.check("vector_drive_on_charger", {}) is None
+
+
+def test_scan_behaviors_invalidate_previous_actuation():
+    guard = RepeatGuard(window_s=10, clock=FakeClock())
+
+    for name in ("vector_scan", "vector_find_faces"):
+        guard.record("vector_head", {"angle_deg": 0}, OK)
+        assert guard.begin(name, {}) is None
+        assert guard.begin("vector_head", {"angle_deg": 0}) is None
+        guard.finish("vector_head", {"angle_deg": 0}, OK)
 
 
 def test_argument_order_does_not_matter():
@@ -170,3 +181,50 @@ def test_call_tool_releases_reservation_after_exception(monkeypatch):
     assert first["status"] == "error"
     assert second["status"] == "ok"
     assert len(calls) == 2
+
+
+def test_call_tool_keeps_reservation_until_executor_finishes_after_cancellation(monkeypatch):
+    from vectorclaw_mcp import server
+
+    started = threading.Event()
+    release = threading.Event()
+    finished = threading.Event()
+    calls = []
+
+    def handler():
+        calls.append(True)
+        started.set()
+        release.wait(timeout=2)
+        finished.set()
+        return OK
+
+    monkeypatch.setattr(server, "build_dispatch", lambda arguments: {"vector_drive": handler})
+
+    async def invoke():
+        pending = asyncio.create_task(server.call_tool("vector_drive", {}))
+        assert await asyncio.to_thread(started.wait, 1)
+        pending.cancel()
+        try:
+            await pending
+        except asyncio.CancelledError:
+            pass
+
+        retry = await server.call_tool("vector_drive", {})
+        retry_result = json.loads(retry[0].text)
+        assert retry_result["status"] == "skipped"
+
+        release.set()
+        assert await asyncio.to_thread(finished.wait, 1)
+        for _ in range(100):
+            if not server.repeat_guard._pending:
+                break
+            await asyncio.sleep(0.01)
+
+        assert not server.repeat_guard._pending
+        assert server.repeat_guard.check("vector_drive", {}) is not None
+        assert len(calls) == 1
+
+    try:
+        asyncio.run(invoke())
+    finally:
+        release.set()

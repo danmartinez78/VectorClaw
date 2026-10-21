@@ -89,10 +89,17 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             result = skipped
         else:
             result = None
-            try:
-                result = await loop.run_in_executor(None, handler)
-            finally:
-                repeat_guard.finish(name, arguments, result)
+            future = loop.run_in_executor(None, handler)
+
+            def finish_reservation(completed: asyncio.Future[Any]) -> None:
+                try:
+                    completed_result = completed.result()
+                except BaseException:
+                    completed_result = None
+                repeat_guard.finish(name, arguments, completed_result)
+
+            future.add_done_callback(finish_reservation)
+            result = await asyncio.shield(future)
     except Exception as exc:
         logger.exception("Tool %r raised an exception", name)
         result = {"status": "error", "message": str(exc)}

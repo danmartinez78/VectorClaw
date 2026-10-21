@@ -37,6 +37,11 @@ ACTUATING_TOOLS = frozenset({
     "vector_lift",
 })
 
+INVALIDATING_TOOLS = frozenset({
+    "vector_scan",
+    "vector_find_faces",
+})
+
 
 def _window_from_env() -> float:
     raw = os.environ.get("VECTOR_REPEAT_GUARD_SECONDS")
@@ -94,7 +99,14 @@ class RepeatGuard:
 
     def begin(self, name: str, arguments: dict[str, Any] | None) -> dict[str, Any] | None:
         """Atomically reject replays or reserve an actuating call before dispatch."""
-        if self.window_s <= 0 or name not in ACTUATING_TOOLS:
+        if self.window_s <= 0:
+            return None
+        if name in INVALIDATING_TOOLS:
+            with self._lock:
+                self._generation += 1
+                self._last = None
+            return None
+        if name not in ACTUATING_TOOLS:
             return None
         key = self._key(name, arguments)
         now = self._clock()
