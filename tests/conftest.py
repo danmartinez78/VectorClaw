@@ -80,13 +80,16 @@ def _make_robot() -> MagicMock:
 @pytest.fixture(autouse=True)
 def reset_robot_manager():
     """Ensure the robot_manager singleton is reset between tests."""
+    from vectorclaw_mcp.repeat_guard import repeat_guard
     from vectorclaw_mcp.robot import robot_manager
 
     robot_manager.reset()
+    repeat_guard.reset()
     _fake_sdk.screen.dimensions.reset_mock()
     _fake_sdk.screen.convert_image_to_screen_data.reset_mock()
     yield
     robot_manager.reset()
+    repeat_guard.reset()
 
 
 @pytest.fixture()

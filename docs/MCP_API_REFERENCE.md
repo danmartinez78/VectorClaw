@@ -1,5 +1,22 @@
 # VectorClaw API Reference (MCP Tools)
 
+## Repeat guard
+
+Actuating tools (`vector_say`, `vector_animate`, `vector_drive`,
+`vector_drive_off_charger`, `vector_drive_on_charger`, `vector_face`,
+`vector_cube`, `vector_head`, `vector_lift`) refuse an identical call (same
+tool, same arguments) that already **succeeded** within the last
+`VECTOR_REPEAT_GUARD_SECONDS` seconds (default `10`; `0` disables). The refused
+call does not touch the robot and returns:
+
+```json
+{"status": "skipped", "reason": "duplicate_call", "message": "Identical vector_drive call already succeeded 2.1s ago, so it was NOT repeated. ..."}
+```
+
+Failed calls are not recorded (retrying an error is always allowed), changing
+any argument is always allowed, and perception/status tools and
+`vector_emergency_stop` are never guarded.
+
 ## Overview
 VectorClaw exposes robot controls as MCP tools. All tools return JSON with a `status` field.
 

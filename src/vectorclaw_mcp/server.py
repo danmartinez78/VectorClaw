@@ -20,6 +20,7 @@ from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
 from .compat import check_runtime_compatibility
+from .repeat_guard import repeat_guard
 from .robot import robot_manager
 from .tool_registry import TOOLS, build_dispatch
 
@@ -83,8 +84,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
                 "status": "error",
                 "message": f"Unknown tool: {name!r}",
             }
+        elif (skipped := repeat_guard.check(name, arguments)) is not None:
+            logger.warning("Refused duplicate %r call within repeat-guard window", name)
+            result = skipped
         else:
             result = await loop.run_in_executor(None, handler)
+            repeat_guard.record(name, arguments, result)
     except Exception as exc:
         logger.exception("Tool %r raised an exception", name)
         result = {"status": "error", "message": str(exc)}
