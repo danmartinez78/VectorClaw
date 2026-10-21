@@ -215,9 +215,9 @@ class VectorClawNode(Node):
             msg = PoseStamped()
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = self._frame_id
-            msg.pose.position.x = float(data.get("x", 0.0))
-            msg.pose.position.y = float(data.get("y", 0.0))
-            msg.pose.position.z = float(data.get("z", 0.0))
+            msg.pose.position.x = float(data.get("x", 0.0)) / 1000.0
+            msg.pose.position.y = float(data.get("y", 0.0)) / 1000.0
+            msg.pose.position.z = float(data.get("z", 0.0)) / 1000.0
             msg.pose.orientation = _yaw_to_quaternion(float(data.get("angle_deg", 0.0)))
             self._pub_pose.publish(msg)
         except Exception:
