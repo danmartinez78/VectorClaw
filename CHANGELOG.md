@@ -9,7 +9,7 @@ and this project follows Semantic Versioning.
 
 ### Added
 
-- No notable changes yet.
+- **ROS2 bridge** (`vectorclaw_ros2`): new `ament_python` package exposing the Vector robot as a standard ROS2 node. Publishes `/vector/status`, `/vector/pose`, `/vector/proximity`, `/vector/camera`, and `/vector/touch` topics; subscribes to `/vector/cmd_vel`, `/vector/cmd_say`, `/vector/cmd_head`, `/vector/cmd_lift`, and `/vector/cmd_animate`; exposes `/vector/emergency_stop` and `/vector/drive_off_charger` services. Compatible with ROS2 Jazzy and newer. See `docs/ROS2_BRIDGE.md` for setup and usage.
 
 ## [1.0.0] - 2026-03-01
 
