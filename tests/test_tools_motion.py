@@ -54,6 +54,22 @@ def test_vector_drive_cancels_after_motion_precheck(mock_robot):
     assert result["status"] == "cancelled"
 
 
+def test_vector_drive_cancels_after_automatic_undocking(mock_robot, monkeypatch):
+    from vectorclaw_mcp.tools_motion import vector_drive
+
+    monkeypatch.setenv("VECTOR_AUTO_DRIVE_OFF_CHARGER", "true")
+    mock_robot.status.is_charging = True
+    mock_robot.behavior.drive_off_charger.side_effect = (
+        lambda: setattr(mock_robot.status, "is_charging", False)
+    )
+
+    result = vector_drive(distance_mm=25, should_cancel=lambda: True)
+
+    mock_robot.behavior.drive_off_charger.assert_called_once()
+    mock_robot.behavior.drive_straight.assert_not_called()
+    assert result["status"] == "cancelled"
+
+
 def test_vector_drive_both(mock_robot):
     from vectorclaw_mcp.tools import vector_drive
 

@@ -60,7 +60,7 @@ import math
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any, Callable
 
 import rclpy
@@ -456,7 +456,7 @@ class VectorClawNode(Node):
                 if self._pending_stops == 0:
                     self._stop_complete.set()
 
-    def _schedule_stop(self):
+    def _schedule_stop(self) -> Future[dict[str, Any]] | None:
         with self._state_lock:
             self._pending_stops += 1
             self._stop_complete.clear()

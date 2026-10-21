@@ -287,6 +287,20 @@ class TestCmdVelCallback:
         assert calls[0]["angle_deg"] == pytest.approx(22.5)
         assert calls[0]["turn_speed_degps"] == pytest.approx(90.0)
 
+    def test_turn_step_and_speed_are_bounded(self, ros2_env):
+        node = ros2_env.VectorClawNode()
+
+        def fake_drive(**kw):
+            node._invalidate_motion()
+            return {"status": "ok"}
+
+        ros2_env.vector_drive.side_effect = fake_drive
+        node._cmd_vel_cb(_twist(z=10.0))
+        _drain(node)
+
+        assert ros2_env.vector_drive.call_args.kwargs["angle_deg"] == 45.0
+        assert ros2_env.vector_drive.call_args.kwargs["turn_speed_degps"] == 180.0
+
     def test_zero_twist_stops_motors(self, ros2_env):
         node = ros2_env.VectorClawNode()
         stopped = threading.Event()
